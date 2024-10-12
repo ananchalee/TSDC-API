@@ -1,0 +1,520 @@
+
+{
+  "header": {
+    "reportVersion": 1,
+    "event": "Allocation failed - JavaScript heap out of memory",
+    "trigger": "FatalError",
+    "filename": "report.20221212.181929.6432.0.001.json",
+    "dumpEventTime": "2022-12-12T18:19:29Z",
+    "dumpEventTimeStamp": "1670843969323",
+    "processId": 6432,
+    "cwd": "D:\\Project TSDC-internal\\API\\tsdc-project",
+    "commandLine": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\Administrator\\AppData\\Roaming\\npm\\node_modules\\pm2\\lib\\ProcessContainer.js"
+    ],
+    "nodejsVersion": "v12.13.0",
+    "wordSize": 64,
+    "arch": "x64",
+    "platform": "win32",
+    "componentVersions": {
+      "node": "12.13.0",
+      "v8": "7.7.299.13-node.12",
+      "uv": "1.32.0",
+      "zlib": "1.2.11",
+      "brotli": "1.0.7",
+      "ares": "1.15.0",
+      "modules": "72",
+      "nghttp2": "1.39.2",
+      "napi": "5",
+      "llhttp": "1.1.4",
+      "http_parser": "2.8.0",
+      "openssl": "1.1.1d",
+      "cldr": "35.1",
+      "icu": "64.2",
+      "tz": "2019a",
+      "unicode": "12.1"
+    },
+    "release": {
+      "name": "node",
+      "lts": "Erbium",
+      "headersUrl": "https://nodejs.org/download/release/v12.13.0/node-v12.13.0-headers.tar.gz",
+      "sourceUrl": "https://nodejs.org/download/release/v12.13.0/node-v12.13.0.tar.gz",
+      "libUrl": "https://nodejs.org/download/release/v12.13.0/win-x64/node.lib"
+    },
+    "osName": "Windows_NT",
+    "osRelease": "10.0.14393",
+    "osVersion": "Windows Server 2016 Standard",
+    "osMachine": "x86_64",
+    "cpus": [
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 2478656,
+        "nice": 0,
+        "sys": 632578,
+        "idle": 72958421,
+        "irq": 13437
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 3680015,
+        "nice": 0,
+        "sys": 404031,
+        "idle": 71985375,
+        "irq": 5937
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 5566765,
+        "nice": 0,
+        "sys": 522906,
+        "idle": 69979750,
+        "irq": 4906
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 3837437,
+        "nice": 0,
+        "sys": 660875,
+        "idle": 71571093,
+        "irq": 4875
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 2162250,
+        "nice": 0,
+        "sys": 415468,
+        "idle": 73491687,
+        "irq": 2156
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 2690968,
+        "nice": 0,
+        "sys": 349390,
+        "idle": 73029046,
+        "irq": 1968
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 1039656,
+        "nice": 0,
+        "sys": 230781,
+        "idle": 74798953,
+        "irq": 1125
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 945156,
+        "nice": 0,
+        "sys": 330171,
+        "idle": 74794062,
+        "irq": 2375
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 620390,
+        "nice": 0,
+        "sys": 240203,
+        "idle": 75208796,
+        "irq": 1328
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 3623156,
+        "nice": 0,
+        "sys": 467359,
+        "idle": 71978875,
+        "irq": 2843
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 1855171,
+        "nice": 0,
+        "sys": 264218,
+        "idle": 73949984,
+        "irq": 2437
+      },
+      {
+        "model": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
+        "speed": 2095,
+        "user": 2306359,
+        "nice": 0,
+        "sys": 790484,
+        "idle": 72972531,
+        "irq": 5218
+      }
+    ],
+    "networkInterfaces": [
+      {
+        "name": "Ethernet0",
+        "internal": false,
+        "mac": "00:50:56:b0:be:7f",
+        "address": "10.26.1.21",
+        "netmask": "255.255.255.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "Ethernet1",
+        "internal": false,
+        "mac": "00:50:56:b0:df:23",
+        "address": "2001:fb1:a9:24e7:9c03:7f01:8d89:6ab4",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
+        "name": "Ethernet1",
+        "internal": false,
+        "mac": "00:50:56:b0:df:23",
+        "address": "2001:fb1:aa:21ff:9c03:7f01:8d89:6ab4",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
+        "name": "Ethernet1",
+        "internal": false,
+        "mac": "00:50:56:b0:df:23",
+        "address": "fe80::9c03:7f01:8d89:6ab4",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 2
+      },
+      {
+        "name": "Ethernet1",
+        "internal": false,
+        "mac": "00:50:56:b0:df:23",
+        "address": "192.168.1.35",
+        "netmask": "255.255.255.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "Loopback Pseudo-Interface 1",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "::1",
+        "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
+        "name": "Loopback Pseudo-Interface 1",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "127.0.0.1",
+        "netmask": "255.0.0.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "Teredo Tunneling Pseudo-Interface",
+        "internal": false,
+        "mac": "00:00:00:00:00:00",
+        "address": "2001:0:2851:782c:347c:3aea:549e:d1a4",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
+        "name": "Teredo Tunneling Pseudo-Interface",
+        "internal": false,
+        "mac": "00:00:00:00:00:00",
+        "address": "fe80::347c:3aea:549e:d1a4",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 3
+      }
+    ],
+    "host": "API_TSDC"
+  },
+  "javascriptStack": {
+    "message": "No stack.",
+    "stack": [
+      "Unavailable."
+    ]
+  },
+  "nativeStack": [
+    {
+      "pc": "0x00007ff772331389",
+      "symbol": "std::basic_ostream<char,std::char_traits<char> >::operator<<+10873"
+    },
+    {
+      "pc": "0x00007ff7723357cc",
+      "symbol": "std::basic_ostream<char,std::char_traits<char> >::operator<<+28348"
+    },
+    {
+      "pc": "0x00007ff772334778",
+      "symbol": "std::basic_ostream<char,std::char_traits<char> >::operator<<+24168"
+    },
+    {
+      "pc": "0x00007ff77242332b",
+      "symbol": "v8::base::CPU::has_sse+37723"
+    },
+    {
+      "pc": "0x00007ff772c26f4e",
+      "symbol": "v8::Isolate::ReportExternalAllocationLimitReached+94"
+    },
+    {
+      "pc": "0x00007ff772c0ef91",
+      "symbol": "v8::SharedArrayBuffer::Externalize+833"
+    },
+    {
+      "pc": "0x00007ff772adc85c",
+      "symbol": "v8::internal::Heap::EphemeronKeyWriteBarrierFromCode+1436"
+    },
+    {
+      "pc": "0x00007ff772ae7c00",
+      "symbol": "v8::internal::Heap::ProtectUnprotectedMemoryChunks+1312"
+    },
+    {
+      "pc": "0x00007ff772ae4734",
+      "symbol": "v8::internal::Heap::PageFlagsAreConsistent+3204"
+    },
+    {
+      "pc": "0x00007ff772ad9fc3",
+      "symbol": "v8::internal::Heap::CollectGarbage+1283"
+    },
+    {
+      "pc": "0x00007ff772ad8794",
+      "symbol": "v8::internal::Heap::AddRetainedMap+2356"
+    },
+    {
+      "pc": "0x00007ff772af9a65",
+      "symbol": "v8::internal::Factory::NewFillerObject+53"
+    },
+    {
+      "pc": "0x00007ff772866239",
+      "symbol": "v8::internal::interpreter::JumpTableTargetOffsets::iterator::operator=+4057"
+    },
+    {
+      "pc": "0x00007ff773052c6d",
+      "symbol": "v8::internal::SetupIsolateDelegate::SetupHeap+567949"
+    },
+    {
+      "pc": "0x00000169ab70ea81",
+      "symbol": ""
+    }
+  ],
+  "javascriptHeap": {
+    "totalMemory": 2149720064,
+    "totalCommittedMemory": 2149720064,
+    "usedMemory": 1995923368,
+    "availableMemory": 52285088,
+    "memoryLimit": 2197815296,
+    "heapSpaces": {
+      "read_only_space": {
+        "memorySize": 262144,
+        "committedMemory": 262144,
+        "capacity": 261872,
+        "used": 32296,
+        "available": 229576
+      },
+      "new_space": {
+        "memorySize": 4194304,
+        "committedMemory": 4194304,
+        "capacity": 2094976,
+        "used": 400480,
+        "available": 1694496
+      },
+      "old_space": {
+        "memorySize": 2130554880,
+        "committedMemory": 2130554880,
+        "capacity": 1982363200,
+        "used": 1982192392,
+        "available": 170808
+      },
+      "code_space": {
+        "memorySize": 1736704,
+        "committedMemory": 1736704,
+        "capacity": 1335936,
+        "used": 1335936,
+        "available": 0
+      },
+      "map_space": {
+        "memorySize": 1576960,
+        "committedMemory": 1576960,
+        "capacity": 634080,
+        "used": 634080,
+        "available": 0
+      },
+      "large_object_space": {
+        "memorySize": 11345920,
+        "committedMemory": 11345920,
+        "capacity": 11324632,
+        "used": 11324632,
+        "available": 0
+      },
+      "code_large_object_space": {
+        "memorySize": 49152,
+        "committedMemory": 49152,
+        "capacity": 3552,
+        "used": 3552,
+        "available": 0
+      },
+      "new_large_object_space": {
+        "memorySize": 0,
+        "committedMemory": 0,
+        "capacity": 2094976,
+        "used": 0,
+        "available": 2094976
+      }
+    }
+  },
+  "resourceUsage": {
+    "userCpuSeconds": 9717.47,
+    "kernelCpuSeconds": 591.765,
+    "cpuConsumptionPercent": 13.5694,
+    "maxRss": 3280097280,
+    "pageFaults": {
+      "IORequired": 27827751,
+      "IONotRequired": 0
+    },
+    "fsActivity": {
+      "reads": 667,
+      "writes": 922798
+    }
+  },
+  "libuv": [
+  ],
+  "environmentVariables": {
+    "": "C:=C:\\",
+    "": "D:=D:\\Project TSDC-internal\\API\\tsdc-project",
+    "ALLUSERSPROFILE": "C:\\ProgramData",
+    "APPDATA": "C:\\Users\\Administrator\\AppData\\Roaming",
+    "automation": "true",
+    "autorestart": "true",
+    "axm_actions": "",
+    "axm_dynamic": "[object Object]",
+    "axm_monitor": "[object Object]",
+    "axm_options": "[object Object]",
+    "CLIENTNAME": "AUM",
+    "CommonProgramFiles": "C:\\Program Files\\Common Files",
+    "CommonProgramFiles(x86)": "C:\\Program Files (x86)\\Common Files",
+    "CommonProgramW6432": "C:\\Program Files\\Common Files",
+    "COMPUTERNAME": "API_TSDC",
+    "ComSpec": "C:\\Windows\\system32\\cmd.exe",
+    "created_at": "1659762014264",
+    "dp0": "C:\\Users\\Administrator\\AppData\\Roaming\\npm\\",
+    "env": "[object Object]",
+    "exec_interpreter": "node",
+    "exec_mode": "cluster_mode",
+    "filter_env": "",
+    "HOMEDRIVE": "C:",
+    "HOMEPATH": "\\Users\\Administrator",
+    "instance_var": "NODE_APP_INSTANCE",
+    "kill_retry_time": "100",
+    "km_link": "false",
+    "LOCALAPPDATA": "C:\\Users\\Administrator\\AppData\\Local",
+    "LOGONSERVER": "\\\\API_TSDC",
+    "name": "API_Online",
+    "namespace": "default",
+    "NODE_APP_INSTANCE": "2",
+    "node_args": "",
+    "node_version": "12.13.0",
+    "NUMBER_OF_PROCESSORS": "12",
+    "OS": "Windows_NT",
+    "Path": "C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Program Files (x86)\\Microsoft SQL Server\\140\\DTS\\Binn\\;C:\\Program Files (x86)\\Microsoft SQL Server\\150\\DTS\\Binn\\;C:\\Program Files\\Azure Data Studio\\bin;C:\\Program Files (x86)\\Microsoft SQL Server\\110\\DTS\\Binn\\;C:\\Program Files (x86)\\Microsoft SQL Server\\120\\DTS\\Binn\\;C:\\Program Files (x86)\\Microsoft SQL Server\\130\\DTS\\Binn\\;C:\\Program Files\\nodejs\\;C:\\Program Files (x86)\\Microsoft SQL Server\\140\\Tools\\Binn\\;C:\\Program Files\\Microsoft SQL Server\\140\\Tools\\Binn\\;C:\\Program Files\\Microsoft SQL Server\\140\\DTS\\Binn\\;C:\\Program Files\\Microsoft SQL Server\\Client SDK\\ODBC\\130\\Tools\\Binn\\;C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\WindowsApps;;C:\\Program Files\\Azure Data Studio\\bin;C:\\Users\\Administrator\\AppData\\Roaming\\npm;C:\\Users\\Administrator\\AppData\\Local\\Programs\\Microsoft VS Code\\bin",
+    "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JSE;.WSF;.WSH;.MSC",
+    "PM2_HOME": "C:\\Users\\Administrator\\.pm2",
+    "PM2_USAGE": "CLI",
+    "pmx": "true",
+    "pm_cwd": "D:\\Project TSDC-internal\\API\\tsdc-project",
+    "pm_err_log_path": "C:\\Users\\Administrator\\.pm2\\logs\\API-Online-error-4.log",
+    "pm_exec_path": "D:\\Project TSDC-internal\\API\\tsdc-project\\server.js",
+    "pm_id": "4",
+    "pm_out_log_path": "C:\\Users\\Administrator\\.pm2\\logs\\API-Online-out-4.log",
+    "pm_pid_path": "C:\\Users\\Administrator\\.pm2\\pids\\API-Online-4.pid",
+    "pm_uptime": "1670767993713",
+    "PROCESSOR_ARCHITECTURE": "AMD64",
+    "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 85 Stepping 7, GenuineIntel",
+    "PROCESSOR_LEVEL": "6",
+    "PROCESSOR_REVISION": "5507",
+    "ProgramData": "C:\\ProgramData",
+    "ProgramFiles": "C:\\Program Files",
+    "ProgramFiles(x86)": "C:\\Program Files (x86)",
+    "ProgramW6432": "C:\\Program Files",
+    "PROMPT": "$P$G",
+    "PSModulePath": "C:\\Program Files\\WindowsPowerShell\\Modules;C:\\Windows\\system32\\WindowsPowerShell\\v1.0\\Modules;C:\\Program Files (x86)\\Microsoft SQL Server\\140\\Tools\\PowerShell\\Modules\\",
+    "PUBLIC": "C:\\Users\\Public",
+    "restart_time": "0",
+    "SESSIONNAME": "RDP-Tcp#3",
+    "SILENT": "true",
+    "status": "launching",
+    "SystemDrive": "C:",
+    "SystemRoot": "C:\\Windows",
+    "TEMP": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\2",
+    "TMP": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\2",
+    "treekill": "true",
+    "unique_id": "7f0e2b99-6a83-4892-b76f-4649e17aca58",
+    "unstable_restarts": "0",
+    "USERDOMAIN": "API_TSDC",
+    "USERDOMAIN_ROAMINGPROFILE": "API_TSDC",
+    "USERNAME": "Administrator",
+    "USERPROFILE": "C:\\Users\\Administrator",
+    "version": "1.2.0",
+    "versioning": "null",
+    "vizion": "true",
+    "vizion_running": "false",
+    "watch": "true",
+    "windir": "C:\\Windows",
+    "windowsHide": "true",
+    "_pm2_version": "5.1.2",
+    "_prog": "node"
+  },
+  "sharedObjects": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "C:\\Windows\\SYSTEM32\\ntdll.dll",
+    "C:\\Windows\\System32\\KERNEL32.dll",
+    "C:\\Windows\\system32\\hmpalert.dll",
+    "C:\\Windows\\System32\\KERNELBASE.dll",
+    "C:\\Windows\\System32\\WS2_32.dll",
+    "C:\\Windows\\System32\\sechost.dll",
+    "C:\\Windows\\System32\\RPCRT4.dll",
+    "C:\\Windows\\System32\\ADVAPI32.dll",
+    "C:\\Windows\\System32\\msvcrt.dll",
+    "C:\\Windows\\System32\\USER32.dll",
+    "C:\\Windows\\System32\\win32u.dll",
+    "C:\\Windows\\System32\\GDI32.dll",
+    "C:\\Windows\\System32\\gdi32full.dll",
+    "C:\\Windows\\System32\\PSAPI.DLL",
+    "C:\\Windows\\System32\\CRYPT32.dll",
+    "C:\\Windows\\System32\\ucrtbase.dll",
+    "C:\\Windows\\System32\\MSASN1.dll",
+    "C:\\Windows\\SYSTEM32\\dbghelp.dll",
+    "C:\\Windows\\SYSTEM32\\IPHLPAPI.DLL",
+    "C:\\Windows\\SYSTEM32\\USERENV.dll",
+    "C:\\Windows\\System32\\profapi.dll",
+    "C:\\Windows\\SYSTEM32\\bcrypt.dll",
+    "C:\\Windows\\SYSTEM32\\WINMM.dll",
+    "C:\\Windows\\SYSTEM32\\WINMMBASE.dll",
+    "C:\\Windows\\System32\\cfgmgr32.dll",
+    "C:\\Windows\\System32\\IMM32.DLL",
+    "C:\\Windows\\System32\\powrprof.dll",
+    "C:\\Windows\\system32\\uxtheme.dll",
+    "C:\\Windows\\System32\\combase.dll",
+    "C:\\Windows\\System32\\bcryptPrimitives.dll",
+    "C:\\Windows\\system32\\mswsock.dll",
+    "C:\\Windows\\System32\\kernel.appcore.dll",
+    "C:\\Windows\\SYSTEM32\\CRYPTBASE.DLL",
+    "C:\\Windows\\System32\\NSI.dll",
+    "C:\\Windows\\SYSTEM32\\dhcpcsvc6.DLL",
+    "C:\\Windows\\SYSTEM32\\dhcpcsvc.DLL",
+    "C:\\Windows\\system32\\napinsp.dll",
+    "C:\\Windows\\SYSTEM32\\DNSAPI.dll",
+    "C:\\Windows\\System32\\winrnr.dll",
+    "C:\\Windows\\system32\\NLAapi.dll",
+    "C:\\Windows\\System32\\rasadhlp.dll",
+    "C:\\Windows\\System32\\fwpuclnt.dll"
+  ]
+}

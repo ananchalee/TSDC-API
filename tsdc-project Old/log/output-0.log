@@ -1,0 +1,2380 @@
+[[09:12:42.810]] [LOG]    TSDC Project api server running at port 1665
+[0mOPTIONS /api123/login [32m200 [0m8.144 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:14:00.323]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m184.228 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.905 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[09:14:06.996]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m268.056 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.649 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[09:14:48.018]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m29.951 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.552 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[09:14:50.624]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m26.119 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api123/login [32m200 [0m0.724 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:15:00.467]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m40.774 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m0.740 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:15:45.055]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m26.158 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m0.660 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:16:03.699]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m25.063 ms - 181[0m
+- "POST /api123/login"
+[[09:17:04.378]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m29.596 ms - 1382[0m
+- "POST /api123/dataUser"
+[0mOPTIONS /api123/login [32m200 [0m0.500 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:17:35.746]] [LOG]    USER LOGIN :wan004444
+[0mPOST /api123/login [32m200 [0m24.456 ms - 179[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m0.742 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:18:37.982]] [LOG]    USER LOGIN :TDLREC02
+[0mPOST /api123/login [32m200 [0m24.876 ms - 17[0m
+- "POST /api123/login"
+[[09:18:40.434]] [LOG]    USER LOGIN :TDLREC02
+[0mPOST /api123/login [32m200 [0m26.361 ms - 17[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m0.689 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:18:43.573]] [LOG]    USER LOGIN :TDLREC02
+[0mPOST /api123/login [32m200 [0m49.150 ms - 17[0m
+- "POST /api123/login"
+[[09:18:44.912]] [LOG]    USER LOGIN :TDLREC02
+[0mPOST /api123/login [32m200 [0m28.569 ms - 17[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m0.680 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:18:51.351]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m27.947 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m0.684 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:19:09.713]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m27.602 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m0.682 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:19:22.191]] [LOG]    USER LOGIN :wan004444
+[0mPOST /api123/login [32m200 [0m43.056 ms - 179[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m0.665 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:19:30.143]] [LOG]    USER LOGIN :TDLREC01
+[0mPOST /api123/login [32m200 [0m31.119 ms - 177[0m
+- "POST /api123/login"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.552 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[09:20:13.386]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m23.574 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api123/login [32m200 [0m1.027 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:45:21.046]] [LOG]    USER LOGIN :wan004444
+[0mPOST /api123/login [32m200 [0m26.867 ms - 179[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m1.216 ms - 4[0m
+- "OPTIONS /api123/login"
+[[09:59:53.067]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m30.754 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api123/login [32m200 [0m1.113 ms - 4[0m
+- "OPTIONS /api123/login"
+[[10:04:44.716]] [LOG]    USER LOGIN :wan004444
+[0mPOST /api123/login [32m200 [0m23.834 ms - 179[0m
+- "POST /api123/login"
+[[10:09:04.392]] [LOG]    TSDC Project api server running at port 1665
+[[10:09:53.322]] [LOG]    TSDC Project api server running at port 1665
+[0mOPTIONS /api123/login [32m200 [0m8.594 ms - 4[0m
+- "OPTIONS /api123/login"
+[[10:10:00.281]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m84.613 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api000/CheckCon [32m200 [0m3.250 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[10:23:34.976]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m28.809 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.607 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[10:23:38.892]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m27.938 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m1.818 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[10:23:38.945]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m28.215 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.536 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:23:41.892]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m25.354 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateStatusCancelCon [32m200 [0m0.562 ms - 4[0m
+- "OPTIONS /api000/updateStatusCancelCon"
+[[10:23:44.274]] [LOG]    updateStatusCancelCon
+[0mPOST /api000/updateStatusCancelCon [32m200 [0m28.328 ms - 20[0m
+- "POST /api000/updateStatusCancelCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.592 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[10:23:47.899]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m24.331 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.598 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:24:50.446]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m23.299 ms - 120[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.543 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[10:25:00.269]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m24.611 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.551 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:25:02.682]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m24.241 ms - 120[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.569 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[10:25:43.669]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m25.703 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.459 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[10:25:43.717]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m24.372 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/updateConQtyCheck [32m200 [0m0.461 ms - 4[0m
+- "OPTIONS /api000/updateConQtyCheck"
+[[10:25:43.764]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m40.785 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.525 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:25:44.891]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m30.530 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.562 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:25:49.967]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m23.808 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateForRescanCon [32m200 [0m0.542 ms - 4[0m
+- "OPTIONS /api000/updateForRescanCon"
+[[10:25:51.542]] [LOG]    updateForRescanCon
+[0mPOST /api000/updateForRescanCon [32m200 [0m36.163 ms - 20[0m
+- "POST /api000/updateForRescanCon"
+[[10:25:52.406]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m24.104 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.545 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[10:26:01.299]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m25.436 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.474 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[10:26:01.356]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m27.891 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/updateConQtyCheck [32m200 [0m0.476 ms - 4[0m
+- "OPTIONS /api000/updateConQtyCheck"
+[[10:26:01.434]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m25.107 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.555 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:26:12.447]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m30.529 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.558 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:26:19.081]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m28.120 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.644 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[10:26:55.956]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m26.023 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.485 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[10:26:56.006]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m25.824 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/updateConQtyCheck [32m200 [0m0.499 ms - 4[0m
+- "OPTIONS /api000/updateConQtyCheck"
+[[10:26:56.055]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m25.563 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[10:26:58.322]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m31.858 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[[10:26:58.364]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m24.246 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[[10:26:58.402]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m28.565 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.509 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:27:03.711]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m25.627 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.555 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[10:28:23.833]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m29.315 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.163 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[10:28:23.883]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m19.433 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.553 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:28:33.877]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m26.355 ms - 117[0m
+- "POST /api000/summaryCon"
+[[10:28:35.863]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m23.542 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.539 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:28:41.454]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m23.827 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateForRescanCon [32m200 [0m0.555 ms - 4[0m
+- "OPTIONS /api000/updateForRescanCon"
+[[10:28:46.049]] [LOG]    updateForRescanCon
+[0mPOST /api000/updateForRescanCon [32m200 [0m22.671 ms - 20[0m
+- "POST /api000/updateForRescanCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.565 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[10:28:48.549]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m26.722 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.239 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[10:28:48.595]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m17.913 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m1.554 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:28:53.854]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m26.918 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateForRescanCon [32m200 [0m0.541 ms - 4[0m
+- "OPTIONS /api000/updateForRescanCon"
+[[10:28:55.482]] [LOG]    updateForRescanCon
+[0mPOST /api000/updateForRescanCon [32m200 [0m22.975 ms - 20[0m
+- "POST /api000/updateForRescanCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.543 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[10:28:59.304]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m26.240 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.459 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[10:28:59.367]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m24.702 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.609 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:30:05.884]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m29.671 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.546 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:30:46.511]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m28.475 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.616 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[10:31:24.888]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m24.446 ms - 117[0m
+- "POST /api000/summaryCon"
+[[10:31:29.459]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m29.846 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateStatusProcessCon [32m200 [0m0.555 ms - 4[0m
+- "OPTIONS /api000/updateStatusProcessCon"
+[[10:31:31.757]] [LOG]    updateStatusProcessCon
+[0mPOST /api000/updateStatusProcessCon [32m200 [0m31.870 ms - 20[0m
+- "POST /api000/updateStatusProcessCon"
+[0mOPTIONS /api123/login [32m200 [0m1.181 ms - 4[0m
+- "OPTIONS /api123/login"
+[[10:51:46.307]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m27.844 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.587 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[11:01:30.887]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m25.522 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.564 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[11:06:51.934]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m27.956 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.476 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[11:06:57.642]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m25.834 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.413 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[11:06:57.692]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m25.014 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.495 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[11:06:59.418]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m28.957 ms - 117[0m
+- "POST /api000/summaryCon"
+[[11:13:51.922]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m34.510 ms - 1368[0m
+- "POST /api123/dataUser"
+[[11:14:11.660]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m25.524 ms - 1368[0m
+- "POST /api123/dataUser"
+[[11:14:56.722]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.632 ms - 919[0m
+- "POST /api123/dataUser"
+[[13:51:40.165]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m22.652 ms - 919[0m
+- "POST /api123/dataUser"
+[[13:51:57.028]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m24.923 ms - 919[0m
+- "POST /api123/dataUser"
+[[13:58:56.406]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m24.448 ms - 919[0m
+- "POST /api123/dataUser"
+[[14:23:03.588]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m26.758 ms - 919[0m
+- "POST /api123/dataUser"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.803 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[15:07:42.631]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m26.593 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.572 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[15:07:45.358]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m20.569 ms - 120[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.542 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[15:07:49.362]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m34.363 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.487 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[15:07:49.425]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m28.734 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/updateConQtyCheck [32m200 [0m1.193 ms - 4[0m
+- "OPTIONS /api000/updateConQtyCheck"
+[[15:07:49.478]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m37.900 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[15:07:51.572]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m29.573 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[[15:07:51.614]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m16.445 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[[15:07:51.641]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m23.860 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[15:07:53.185]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m33.295 ms - 21[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.559 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[15:07:55.918]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m27.403 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.462 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[15:07:55.969]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m22.667 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/updateConQtyCheck [32m200 [0m0.471 ms - 4[0m
+- "OPTIONS /api000/updateConQtyCheck"
+[[15:07:56.014]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m24.653 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[15:07:57.706]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m23.354 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[[15:07:57.742]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m15.130 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[[15:07:57.773]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m18.680 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[15:07:59.375]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m23.347 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[[15:07:59.414]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m16.321 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[[15:07:59.441]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m21.777 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.516 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[15:08:01.453]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m22.970 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.192 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[15:08:01.497]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m26.943 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.501 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[15:08:03.811]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m22.237 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateForRescanCon [32m200 [0m0.512 ms - 4[0m
+- "OPTIONS /api000/updateForRescanCon"
+[[15:08:05.741]] [LOG]    updateForRescanCon
+[0mPOST /api000/updateForRescanCon [32m200 [0m28.883 ms - 20[0m
+- "POST /api000/updateForRescanCon"
+[[15:08:06.289]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m23.759 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateStatusCancelCon [32m200 [0m0.881 ms - 4[0m
+- "OPTIONS /api000/updateStatusCancelCon"
+[[15:33:22.769]] [LOG]    updateStatusCancelCon
+[0mPOST /api000/updateStatusCancelCon [32m200 [0m28.537 ms - 20[0m
+- "POST /api000/updateStatusCancelCon"
+[[16:24:00.061]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m39.335 ms - 919[0m
+- "POST /api123/dataUser"
+[[16:55:23.189]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m27.758 ms - 919[0m
+- "POST /api123/dataUser"
+[0mOPTIONS /api000/CheckCon [32m200 [0m1.718 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[16:55:33.244]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m24.122 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.522 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:55:34.952]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m23.609 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.540 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[16:55:41.177]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m35.193 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.467 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[16:55:41.258]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m26.496 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.515 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:55:44.357]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m22.167 ms - 117[0m
+- "POST /api000/summaryCon"
+[[16:55:47.289]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m25.166 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateForRescanCon [32m200 [0m0.540 ms - 4[0m
+- "OPTIONS /api000/updateForRescanCon"
+[[16:55:48.427]] [LOG]    updateForRescanCon
+[0mPOST /api000/updateForRescanCon [32m200 [0m28.361 ms - 20[0m
+- "POST /api000/updateForRescanCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.528 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[16:55:52.094]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m23.742 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.443 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[16:55:52.140]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m22.060 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.526 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:55:54.273]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m24.969 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateStatusCancelCon [32m200 [0m0.527 ms - 4[0m
+- "OPTIONS /api000/updateStatusCancelCon"
+[[16:55:59.963]] [LOG]    updateStatusCancelCon
+[0mPOST /api000/updateStatusCancelCon [32m200 [0m24.091 ms - 20[0m
+- "POST /api000/updateStatusCancelCon"
+[0mOPTIONS /api123/login [32m200 [0m1.547 ms - 4[0m
+- "OPTIONS /api123/login"
+[[08:26:12.222]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m33.867 ms - 181[0m
+- "POST /api123/login"
+[[08:57:19.550]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m30.191 ms - 919[0m
+- "POST /api123/dataUser"
+[[09:38:41.411]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m24.487 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:21:05.610]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.033 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:43:20.107]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.666 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:43:28.785]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m24.185 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:47:17.680]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.654 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:49:12.696]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m21.885 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:49:17.684]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m29.189 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:49:22.217]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m29.129 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:53:09.465]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m24.828 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:53:15.896]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.258 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:54:17.481]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m21.440 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:55:00.379]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m25.091 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:55:25.676]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m24.307 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:55:57.813]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.369 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:56:08.677]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m24.220 ms - 919[0m
+- "POST /api123/dataUser"
+[[10:57:28.482]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.993 ms - 919[0m
+- "POST /api123/dataUser"
+[[11:09:25.233]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m32.380 ms - 919[0m
+- "POST /api123/dataUser"
+[[11:11:03.968]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.390 ms - 919[0m
+- "POST /api123/dataUser"
+[[11:13:26.899]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m24.179 ms - 919[0m
+- "POST /api123/dataUser"
+[[11:14:12.318]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m26.889 ms - 919[0m
+- "POST /api123/dataUser"
+[[11:16:38.821]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m23.475 ms - 919[0m
+- "POST /api123/dataUser"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m0.746 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[13:29:35.067]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m37.778 ms - 17[0m
+- "POST /api123/listOfAsn"
+[[13:36:32.764]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m22.534 ms - 919[0m
+- "POST /api123/dataUser"
+[[14:04:05.123]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m27.314 ms - 919[0m
+- "POST /api123/dataUser"
+[0mOPTIONS /api000/CheckCon [32m200 [0m2.646 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[16:13:55.546]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m39.039 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.550 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:13:58.098]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m28.522 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.478 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[16:14:02.764]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m27.468 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.474 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:14:04.827]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m23.431 ms - 120[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.462 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[16:14:10.325]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m21.352 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.436 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[16:14:10.368]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m26.171 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/updateConQtyCheck [32m200 [0m0.170 ms - 4[0m
+- "OPTIONS /api000/updateConQtyCheck"
+[[16:14:10.416]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m32.280 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[16:14:12.069]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m31.658 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[[16:14:12.114]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m26.768 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[[16:14:12.155]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m24.898 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[16:14:13.681]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m27.115 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[[16:14:13.720]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m19.315 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[[16:14:13.751]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m17.166 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.449 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[16:14:15.471]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m17.727 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.387 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[16:14:15.510]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m21.913 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.432 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:14:17.587]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m18.141 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.463 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:14:23.578]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m18.555 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateForRescanCon [32m200 [0m0.472 ms - 4[0m
+- "OPTIONS /api000/updateForRescanCon"
+[[16:14:25.252]] [LOG]    updateForRescanCon
+[0mPOST /api000/updateForRescanCon [32m200 [0m19.098 ms - 20[0m
+- "POST /api000/updateForRescanCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.493 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[16:14:27.143]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m23.208 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.375 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[16:14:27.191]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m16.704 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[[16:14:28.350]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m16.402 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateStatusCancelCon [32m200 [0m0.544 ms - 4[0m
+- "OPTIONS /api000/updateStatusCancelCon"
+[[16:14:30.608]] [LOG]    updateStatusCancelCon
+[0mPOST /api000/updateStatusCancelCon [32m200 [0m19.000 ms - 20[0m
+- "POST /api000/updateStatusCancelCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.499 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[16:14:33.913]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m18.206 ms - 17[0m
+- "POST /api000/CheckCon"
+[[16:14:35.302]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m17.565 ms - 17[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.465 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[16:14:42.116]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m19.782 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.460 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:14:47.695]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m16.293 ms - 120[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateForRescanCon [32m200 [0m0.464 ms - 4[0m
+- "OPTIONS /api000/updateForRescanCon"
+[[16:14:49.232]] [LOG]    updateForRescanCon
+[0mPOST /api000/updateForRescanCon [32m200 [0m17.854 ms - 20[0m
+- "POST /api000/updateForRescanCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.479 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[16:14:52.133]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m16.878 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.330 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[16:14:52.172]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m16.712 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/updateConQtyCheck [32m200 [0m0.376 ms - 4[0m
+- "OPTIONS /api000/updateConQtyCheck"
+[[16:14:52.210]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m17.193 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[16:14:53.844]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m18.786 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[[16:14:53.876]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m14.164 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[[16:14:53.902]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m17.153 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[[16:14:56.989]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m15.562 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[[16:14:57.017]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m14.872 ms - 127[0m
+- "POST /api000/checkEqualCon"
+[[16:14:57.048]] [LOG]    updateConQtyCheck
+[0mPOST /api000/updateConQtyCheck [32m200 [0m15.511 ms - 20[0m
+- "POST /api000/updateConQtyCheck"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.489 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[16:14:58.499]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m16.200 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateStatusProcessCon [32m200 [0m0.473 ms - 4[0m
+- "OPTIONS /api000/updateStatusProcessCon"
+[[16:15:00.283]] [LOG]    updateStatusProcessCon
+[0mPOST /api000/updateStatusProcessCon [32m200 [0m21.296 ms - 20[0m
+- "POST /api000/updateStatusProcessCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m9.214 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[09:52:22.427]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m57.780 ms - 17[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.795 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[09:52:35.719]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m22.669 ms - 17[0m
+- "POST /api000/CheckCon"
+[[09:52:40.067]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m21.294 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.518 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[09:52:43.049]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m20.117 ms - 117[0m
+- "POST /api000/summaryCon"
+[[09:52:46.230]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m21.619 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m1.656 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[15:42:41.021]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m23.377 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.543 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[15:42:42.505]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m18.405 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.631 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[15:42:50.543]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m24.249 ms - 21[0m
+- "POST /api000/matchItemInCon"
+[[15:42:55.048]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m18.336 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.236 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[15:42:55.090]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m15.291 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.530 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[15:42:58.285]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m17.630 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.515 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[15:43:06.335]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m20.997 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.524 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[15:43:08.627]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m17.712 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.550 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[15:43:14.208]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m19.015 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.525 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[15:43:15.471]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m19.888 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.523 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[15:43:21.622]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m18.216 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.527 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[15:43:23.099]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m18.725 ms - 120[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api123/login [32m200 [0m2.538 ms - 4[0m
+- "OPTIONS /api123/login"
+[[11:11:33.195]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m27.566 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.705 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[12:13:08.137]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m17.368 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.597 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[12:13:10.381]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m19.943 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.524 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[12:13:19.743]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m17.630 ms - 17[0m
+- "POST /api000/CheckCon"
+[[12:13:23.901]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m17.197 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.539 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[12:13:26.220]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m21.438 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/CheckCon [32m200 [0m0.519 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[12:13:38.310]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m16.550 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.527 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[12:13:47.241]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m21.693 ms - 21[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.539 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[12:13:49.945]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m18.075 ms - 120[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api123/login [32m200 [0m1.946 ms - 4[0m
+- "OPTIONS /api123/login"
+[[08:48:37.195]] [LOG]    USER LOGIN :admin
+[0mPOST /api123/login [32m200 [0m25.763 ms - 181[0m
+- "POST /api123/login"
+[0mOPTIONS /api000/CheckCon [32m200 [0m1.400 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[08:48:45.222]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m21.854 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m1.039 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[09:07:38.751]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m34.568 ms - 105[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.841 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:10:11.054]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m95.664 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.640 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:10:11.188]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m93.221 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.627 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:10:11.314]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m25.370 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.762 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:10:21.095]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m83.400 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.629 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:10:21.216]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m84.202 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.671 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:10:21.329]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m23.611 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.695 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:10:28.652]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m77.608 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.628 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:10:28.766]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m81.211 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.661 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:10:28.896]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m26.947 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.714 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:10:35.578]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.077 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.436 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:10:35.680]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.590 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.689 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:10:35.799]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m22.143 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.583 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:10:42.688]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m82.159 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.531 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:10:42.798]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m80.803 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.504 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:10:42.907]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m21.682 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.566 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:10:50.268]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m77.804 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.490 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:10:50.381]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m83.684 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.513 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:10:50.514]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m26.257 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.587 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:10:58.522]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m87.434 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.510 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:10:58.648]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m74.307 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.530 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:10:58.757]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m24.255 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.562 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:11:06.472]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m81.505 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.495 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:11:06.599]] [LOG]    matchItemInAsn :
+[[09:11:06.605]] [LOG]    checkEqual :
+[0mPOST /api123/matchItemInAsn [32m200 [0m131.955 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mPOST /api123/checkEqual [32m200 [0m147.572 ms - 217[0m
+- "POST /api123/checkEqual"
+[[09:11:06.754]] [LOG]    checkEqual :
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.283 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:11:06.799]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m22.765 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mPOST /api123/checkEqual [32m200 [0m73.794 ms - 217[0m
+- "POST /api123/checkEqual"
+[[09:11:06.854]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m18.025 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/summaryAsn [32m200 [0m0.566 ms - 4[0m
+- "OPTIONS /api123/summaryAsn"
+[[09:11:08.527]] [LOG]    summaryAsn :
+[0mPOST /api123/summaryAsn [32m200 [0m26.084 ms - 1262[0m
+- "POST /api123/summaryAsn"
+[0mOPTIONS /api123/updateStatusProcess [32m200 [0m0.572 ms - 4[0m
+- "OPTIONS /api123/updateStatusProcess"
+[[09:11:11.903]] [LOG]    updateStatusProcess
+[0mPOST /api123/updateStatusProcess [32m200 [0m23.256 ms - 20[0m
+- "POST /api123/updateStatusProcess"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m0.610 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[09:11:22.498]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m26.611 ms - 105[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.561 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:11:29.790]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m80.033 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.515 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:11:29.906]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m93.118 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.516 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:11:30.037]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m25.133 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.556 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:11:36.852]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m82.582 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.522 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:11:36.989]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m80.894 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.523 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:11:37.115]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m24.184 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.589 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:11:43.100]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m80.472 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.513 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:11:43.212]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m76.891 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.525 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:11:43.328]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m22.861 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.569 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:11:49.427]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m80.690 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.481 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:11:49.536]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m80.310 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.486 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:11:49.648]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m24.158 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.544 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:11:55.351]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m77.918 ms - 203[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.497 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:11:55.476]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.929 ms - 222[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.519 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:11:55.586]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m22.131 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.542 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:12:01.145]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m83.038 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.505 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:12:01.263]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m93.019 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.480 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:12:01.384]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m22.247 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.548 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:12:07.169]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m81.322 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.314 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:12:07.286]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m79.472 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.514 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:12:07.390]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m23.801 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.559 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[09:12:13.373]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m80.177 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.523 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[09:12:13.496]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m93.237 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.530 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[09:12:13.642]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m23.560 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/summaryAsn [32m200 [0m0.546 ms - 4[0m
+- "OPTIONS /api123/summaryAsn"
+[[09:12:15.010]] [LOG]    summaryAsn :
+[0mPOST /api123/summaryAsn [32m200 [0m28.395 ms - 1262[0m
+- "POST /api123/summaryAsn"
+[0mOPTIONS /api123/updateStatusProcess [32m200 [0m0.574 ms - 4[0m
+- "OPTIONS /api123/updateStatusProcess"
+[[09:12:17.999]] [LOG]    updateStatusProcess
+[0mPOST /api123/updateStatusProcess [32m200 [0m24.307 ms - 20[0m
+- "POST /api123/updateStatusProcess"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m0.798 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[09:21:07.978]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m18.479 ms - 17[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m1.765 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[09:59:55.498]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m36.757 ms - 17[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m0.668 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[10:00:17.510]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m16.825 ms - 17[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m0.800 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[10:00:35.390]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m21.781 ms - 104[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m0.724 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[10:00:57.133]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m20.166 ms - 104[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.891 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:02:14.660]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m83.155 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.623 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:02:14.777]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m87.857 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.651 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:02:14.904]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m32.319 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.674 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:02:30.962]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.998 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.640 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:02:31.124]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m77.674 ms - 214[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.610 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:02:31.232]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.154 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.753 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:02:56.978]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m80.031 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.617 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:02:57.086]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m77.691 ms - 214[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.627 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:02:57.193]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m19.254 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:02:58.052]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.441 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:02:58.145]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m88.115 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:02:58.246]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m14.828 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:02:58.931]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m90.240 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:02:59.040]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m91.439 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:02:59.145]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m20.004 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:02:59.839]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.935 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:02:59.929]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m87.583 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:00.030]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.857 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:00.753]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m79.229 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:00.847]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m84.942 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:00.947]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.655 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:01.709]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m81.297 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:01.807]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m86.512 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:01.912]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.898 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m1.103 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:03:08.529]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m82.568 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.557 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:03:08.638]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m77.012 ms - 214[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.598 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:03:09.047]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m17.917 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.651 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:03:15.794]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m82.502 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.606 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:03:15.936]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m83.178 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.631 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:03:16.061]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m28.863 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:17.951]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.551 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:18.050]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m78.745 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:18.139]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m21.360 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:18.808]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.110 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:18.896]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m80.093 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:18.992]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.136 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:19.553]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.704 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:19.645]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m100.585 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:19.760]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.239 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:20.225]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.007 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:20.315]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m71.351 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:20.402]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.574 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.606 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:03:20.851]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m81.916 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.576 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:03:20.967]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m89.693 ms - 214[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.576 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:03:21.089]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m17.691 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:21.495]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.172 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:21.583]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m74.438 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:21.673]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.615 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:22.134]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m72.627 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:22.257]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m83.406 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:22.357]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.689 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:22.743]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.566 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:22.830]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.020 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:22.919]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m14.209 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:23.356]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m81.334 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:23.456]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m78.351 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:03:23.550]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.058 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:23.823]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.652 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:23.974]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m86.860 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:03:24.075]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m15.962 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:24.428]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.612 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:24.543]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.536 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:03:24.651]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.054 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:24.993]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.926 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:25.083]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m74.474 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:03:25.170]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.092 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:03:25.572]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.426 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:03:25.662]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.521 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:03:25.757]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m21.826 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.539 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:03:37.389]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m79.849 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.504 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:03:37.748]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.210 ms - 215[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.499 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:03:37.956]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m20.244 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.586 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:04:08.217]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m82.803 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.492 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:04:08.322]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m78.410 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.514 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:04:08.502]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m31.157 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:09.014]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.514 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:09.102]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m64.993 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:04:09.182]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.413 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:09.626]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.804 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:09.750]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m82.408 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:04:09.850]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.885 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:10.191]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.218 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:10.278]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m86.078 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:04:10.377]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.643 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:10.767]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m72.709 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:10.855]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.280 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:04:10.942]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m14.385 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:11.325]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m83.428 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:11.430]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m84.845 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:04:11.554]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.887 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:11.888]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.872 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:11.981]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.721 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:04:12.068]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.055 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:12.794]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.618 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:12.888]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.634 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:04:12.975]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m21.255 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.554 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:04:13.712]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.906 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.491 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:04:13.817]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m79.251 ms - 214[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.500 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:04:13.928]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.743 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:14.503]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m72.881 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:14.590]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m74.676 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:04:14.685]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.532 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:15.247]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m73.364 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:15.338]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m79.333 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:15.430]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m17.459 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:15.883]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m72.802 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:15.975]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.104 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:16.062]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m15.107 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:16.658]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m64.816 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:16.736]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m70.473 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:16.820]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.166 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:17.506]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.339 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:17.624]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.727 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:17.724]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m17.142 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:18.324]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.571 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:18.433]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.506 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:18.531]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m20.077 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.566 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:04:22.136]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m76.805 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.347 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:04:22.306]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m72.237 ms - 215[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.510 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:04:22.413]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.855 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.603 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:04:51.219]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m85.595 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.498 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:04:51.339]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.503 ms - 215[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.493 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:04:51.447]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m17.858 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:52.193]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m72.826 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:52.284]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m74.845 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:52.378]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.336 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:53.129]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.899 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:53.218]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.876 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:53.306]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.630 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:54.243]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m84.551 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:54.341]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.900 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:54.433]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m14.407 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:55.137]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.466 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:55.237]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m78.004 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:55.329]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m20.237 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:55.943]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m96.879 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:56.054]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m76.284 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:56.156]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.323 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.530 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:04:56.788]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m82.250 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.472 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:04:56.906]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m83.377 ms - 215[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.484 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:04:57.025]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.623 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:04:57.611]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m70.968 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[[10:04:57.695]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m70.313 ms - 215[0m
+- "POST /api123/checkEqual"
+[[10:04:57.784]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m19.485 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.546 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:05:02.689]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.465 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.452 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:05:02.816]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m86.449 ms - 215[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.480 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:05:02.934]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m18.276 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/summaryAsn [32m200 [0m0.530 ms - 4[0m
+- "OPTIONS /api123/summaryAsn"
+[[10:05:04.267]] [LOG]    summaryAsn :
+[0mPOST /api123/summaryAsn [32m200 [0m29.393 ms - 475[0m
+- "POST /api123/summaryAsn"
+[0mOPTIONS /api123/updateForRescan [32m200 [0m0.632 ms - 4[0m
+- "OPTIONS /api123/updateForRescan"
+[[10:08:01.813]] [LOG]    updateForRescan
+[0mPOST /api123/updateForRescan [32m200 [0m30.089 ms - 20[0m
+- "POST /api123/updateForRescan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.576 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:08:07.895]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m95.600 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.515 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:08:08.016]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.511 ms - 214[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.477 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:08:08.117]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m15.994 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:08:08.691]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m75.764 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:08:08.783]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m91.262 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:08:08.891]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m15.659 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:08:09.487]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m81.467 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:08:09.580]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.939 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:08:09.676]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.104 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:08:10.230]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m85.345 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:08:10.333]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m76.163 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:08:10.422]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m26.829 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:08:11.029]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m88.307 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:08:11.135]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m75.710 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:08:11.236]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m15.980 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:08:11.754]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m79.044 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:08:11.850]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m84.348 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:08:11.953]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m17.678 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:08:12.886]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m85.751 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:08:12.988]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m83.548 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:08:13.085]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m17.589 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.967 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[10:08:13.690]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.619 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.537 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[10:08:13.792]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m73.770 ms - 214[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyCheck [32m200 [0m0.550 ms - 4[0m
+- "OPTIONS /api123/updateQtyCheck"
+[[10:08:13.895]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m15.143 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:08:14.458]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m88.144 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:08:14.559]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m72.408 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:08:14.644]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m15.980 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[[10:08:17.952]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m74.112 ms - 195[0m
+- "POST /api123/matchItemInAsn"
+[[10:08:18.039]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m74.632 ms - 214[0m
+- "POST /api123/checkEqual"
+[[10:08:18.127]] [LOG]    updateQtyCheck
+[0mPOST /api123/updateQtyCheck [32m200 [0m16.298 ms - 20[0m
+- "POST /api123/updateQtyCheck"
+[0mOPTIONS /api123/summaryAsn [32m200 [0m1.288 ms - 4[0m
+- "OPTIONS /api123/summaryAsn"
+[[10:08:47.626]] [LOG]    summaryAsn :
+[0mPOST /api123/summaryAsn [32m200 [0m22.328 ms - 476[0m
+- "POST /api123/summaryAsn"
+[0mOPTIONS /api123/updateStatusProcess [32m200 [0m1.029 ms - 4[0m
+- "OPTIONS /api123/updateStatusProcess"
+[[10:09:35.935]] [LOG]    updateStatusProcess
+[0mPOST /api123/updateStatusProcess [32m200 [0m21.033 ms - 20[0m
+- "POST /api123/updateStatusProcess"
+[0mOPTIONS /api000/CheckCon [32m200 [0m3.970 ms - 4[0m
+- "OPTIONS /api000/CheckCon"
+[[13:38:05.991]] [LOG]    CheckCon :
+[0mPOST /api000/CheckCon [32m200 [0m60.744 ms - 135[0m
+- "POST /api000/CheckCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.927 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[13:38:10.430]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m27.265 ms - 21[0m
+- "POST /api000/matchItemInCon"
+[[13:38:11.800]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m21.601 ms - 21[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/matchItemInCon [32m200 [0m0.521 ms - 4[0m
+- "OPTIONS /api000/matchItemInCon"
+[[13:38:22.656]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m24.262 ms - 21[0m
+- "POST /api000/matchItemInCon"
+[[13:38:24.889]] [LOG]    matchItemInCon :
+[0mPOST /api000/matchItemInCon [32m200 [0m19.161 ms - 135[0m
+- "POST /api000/matchItemInCon"
+[0mOPTIONS /api000/checkEqualCon [32m200 [0m0.532 ms - 4[0m
+- "OPTIONS /api000/checkEqualCon"
+[[13:38:24.935]] [LOG]    checkEqual :
+[0mPOST /api000/checkEqualCon [32m200 [0m17.254 ms - 123[0m
+- "POST /api000/checkEqualCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.518 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[13:38:28.280]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m17.124 ms - 117[0m
+- "POST /api000/summaryCon"
+[[13:38:32.382]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m17.029 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/updateForRescanCon [32m200 [0m0.509 ms - 4[0m
+- "OPTIONS /api000/updateForRescanCon"
+[[13:38:34.651]] [LOG]    updateForRescanCon
+[0mPOST /api000/updateForRescanCon [32m200 [0m19.721 ms - 20[0m
+- "POST /api000/updateForRescanCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.508 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[13:38:35.659]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m18.247 ms - 117[0m
+- "POST /api000/summaryCon"
+[0mOPTIONS /api000/summaryCon [32m200 [0m0.511 ms - 4[0m
+- "OPTIONS /api000/summaryCon"
+[[13:38:44.561]] [LOG]    summaryCon :
+[0mPOST /api000/summaryCon [32m200 [0m16.813 ms - 117[0m
+- "POST /api000/summaryCon"
+[[13:39:00.869]] [LOG]    dataUser :
+[0mPOST /api123/dataUser [32m200 [0m28.415 ms - 919[0m
+- "POST /api123/dataUser"
+[0mGET / [32m200 [0m27.955 ms - 2789[0m
+- "GET /"
+[0mGET /favicon.ico [32m200 [0m8.854 ms - 2789[0m
+- "GET /favicon.ico"
+[[09:18:16.509]] [LOG]    TSDC Project api server running at port 1665
+[[09:22:16.812]] [LOG]    TSDC Project api server running at port 1665
+[[10:51:45.179]] [LOG]    TSDC Project api server running at port 1665
+[[10:51:53.313]] [LOG]    TSDC Project api server running at port 1665
+[[10:14:50.577]] [LOG]    TSDC Project api server running at port 1665
+[[10:15:09.266]] [LOG]    TSDC Project api server running at port 1665
+[0mOPTIONS /api123/listOfAsn [32m200 [0m8.868 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[15:13:50.803]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m109.788 ms - 104[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m1.218 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[15:17:51.774]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m102.195 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m2.353 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[15:17:51.912]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m90.589 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.654 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[15:17:52.042]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m32.132 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.734 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[15:20:10.240]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m88.398 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.631 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[15:20:10.369]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m91.609 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.666 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[15:20:10.499]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m37.828 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.725 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[15:20:46.278]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m87.733 ms - 198[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.652 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[15:20:46.403]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m92.504 ms - 217[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.696 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[15:20:46.537]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m31.462 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/summaryAsn [32m200 [0m0.747 ms - 4[0m
+- "OPTIONS /api123/summaryAsn"
+[[15:20:48.551]] [LOG]    summaryAsn :
+[0mPOST /api123/summaryAsn [32m200 [0m35.769 ms - 476[0m
+- "POST /api123/summaryAsn"
+[0mOPTIONS /api123/updateStatusProcess [32m200 [0m0.718 ms - 4[0m
+- "OPTIONS /api123/updateStatusProcess"
+[[15:20:53.324]] [LOG]    updateStatusProcess
+[0mPOST /api123/updateStatusProcess [32m200 [0m31.176 ms - 20[0m
+- "POST /api123/updateStatusProcess"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m0.947 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[15:26:41.586]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m36.689 ms - 17[0m
+- "POST /api123/listOfAsn"
+[[15:26:45.991]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m25.953 ms - 17[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m0.697 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[15:27:08.131]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m27.934 ms - 17[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/listOfAsn [32m200 [0m1.014 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[15:36:46.634]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m35.047 ms - 104[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m0.796 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[15:38:00.316]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m103.516 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.637 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[15:38:00.453]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m91.465 ms - 211[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/matchItemInAsn [32m200 [0m1.568 ms - 4[0m
+- "OPTIONS /api123/matchItemInAsn"
+[[15:38:15.734]] [LOG]    matchItemInAsn :
+[0mPOST /api123/matchItemInAsn [32m200 [0m86.331 ms - 196[0m
+- "POST /api123/matchItemInAsn"
+[0mOPTIONS /api123/checkEqual [32m200 [0m0.681 ms - 4[0m
+- "OPTIONS /api123/checkEqual"
+[[15:38:15.869]] [LOG]    checkEqual :
+[0mPOST /api123/checkEqual [32m200 [0m89.356 ms - 211[0m
+- "POST /api123/checkEqual"
+[0mOPTIONS /api123/updateQtyFromScan [32m200 [0m0.719 ms - 4[0m
+- "OPTIONS /api123/updateQtyFromScan"
+[[15:38:19.309]] [LOG]    updateQtyFromScan
+[0mPOST /api123/updateQtyFromScan [32m200 [0m30.716 ms - 20[0m
+- "POST /api123/updateQtyFromScan"
+[0mOPTIONS /api123/summaryAsn [32m200 [0m0.742 ms - 4[0m
+- "OPTIONS /api123/summaryAsn"
+[[15:38:23.531]] [LOG]    summaryAsn :
+[0mPOST /api123/summaryAsn [32m200 [0m46.663 ms - 475[0m
+- "POST /api123/summaryAsn"
+[0mOPTIONS /api123/updateStatusProcess [32m200 [0m0.714 ms - 4[0m
+- "OPTIONS /api123/updateStatusProcess"
+[[15:38:38.033]] [LOG]    updateStatusProcess
+[0mPOST /api123/updateStatusProcess [32m200 [0m31.346 ms - 20[0m
+- "POST /api123/updateStatusProcess"
+[[10:27:57.604]] [LOG]    TSDC Project api server running at port 1665
+[[14:50:17.435]] [LOG]    TSDC Project api server running at port 1665
+[[14:50:57.383]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m123.034 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[14:51:52.360]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m63.184 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[14:52:10.305]] [LOG]    TSDC Project api server running at port 1665
+[[13:22:56.596]] [LOG]    TSDC Project api server running at port 1665
+[[15:04:31.727]] [LOG]    TSDC Project api server running at port 1665
+[[15:23:50.338]] [LOG]    TSDC Project api server running at port 1665
+[[15:24:26.205]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m116.782 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:25:21.129]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m68.721 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:26:16.146]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m77.625 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:27:11.145]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.079 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:28:06.128]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m68.415 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:29:01.091]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m63.930 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:29:56.112]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m64.989 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:30:51.100]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m72.122 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:31:46.116]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.744 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:32:40.901]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m66.578 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:33:35.838]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m64.981 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:34:31.058]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m65.600 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:35:26.057]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m66.250 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:36:21.029]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m81.677 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:37:16.070]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m65.631 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:38:11.150]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.706 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:39:06.130]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m69.958 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:40:01.083]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m70.145 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:40:56.022]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m65.732 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:41:51.010]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m66.936 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:42:46.028]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m73.831 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:43:41.027]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m75.066 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:44:35.997]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.343 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:45:31.420]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m72.896 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:46:26.026]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m70.150 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:47:21.007]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m63.155 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:48:15.944]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m63.016 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:49:10.959]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m63.442 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:50:06.012]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m66.425 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:51:01.072]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m68.302 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:51:56.065]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m65.656 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:52:51.107]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m74.394 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:53:46.109]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m62.065 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:54:41.137]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m72.532 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:55:36.163]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m72.433 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:56:31.157]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m68.703 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:57:26.119]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.155 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:58:21.152]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m65.452 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[15:59:16.154]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m66.679 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:00:11.147]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m70.028 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:01:06.097]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m64.599 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:02:01.097]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.655 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:02:56.200]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m64.007 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:03:51.223]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.533 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:04:46.194]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.559 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:05:41.146]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m64.253 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:06:36.162]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m68.514 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:07:31.165]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m63.341 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:08:26.208]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m64.379 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:09:21.242]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m70.606 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:10:16.241]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m68.272 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:11:11.219]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m64.835 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:12:06.328]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.554 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:13:01.424]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m69.671 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:13:56.331]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m64.850 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:14:51.314]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m67.951 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:15:00.740]] [LOG]    TSDC Project api server running at port 1665
+[[16:27:45.969]] [LOG]    TSDC Project api server running at port 1665
+[[16:41:52.313]] [LOG]    TSDC Project api server running at port 1665
+[[16:42:05.759]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m134.804 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[0mOPTIONS /api123/filterJobInStation [32m200 [0m3.058 ms - 4[0m
+- "OPTIONS /api123/filterJobInStation"
+[[16:42:17.775]] [LOG]    filterJobInStation :
+[0mPOST /api123/filterJobInStation [32m200 [0m74.112 ms - 183[0m
+- "POST /api123/filterJobInStation"
+[0mOPTIONS /api123/ReportFromJobNumber [32m200 [0m0.786 ms - 4[0m
+- "OPTIONS /api123/ReportFromJobNumber"
+[[16:42:19.809]] [LOG]    ReportFromJobNumber
+[[16:42:19.838]] [LOG]      
+        Select A.STATION_NUMBER, A.JOB_NUMBER, CART_LABEL, A.CONTAINER
+        from TSDC_Conveyor..TSDC_CONSOLIDATE_STATION_QUEUE A
+        Where A.STATUS_PRINT = 'N'
+        and A.STATION_NUMBER = '3' 
+        and A.JOB_NUMBER = 'STA03-0002' 
+        
+[0mPOST /api123/ReportFromJobNumber [32m200 [0m31.706 ms - 292[0m
+- "POST /api123/ReportFromJobNumber"
+[[16:43:00.742]] [LOG]    conveyorInboundOutbound :
+[0mPOST /api123/conveyorInboundOutbound [32m200 [0m68.716 ms - 216[0m
+- "POST /api123/conveyorInboundOutbound"
+[[16:43:29.372]] [LOG]    TSDC Project api server running at port 1665
+[0mOPTIONS /api123/filterJobInStation [32m200 [0m9.453 ms - 4[0m
+- "OPTIONS /api123/filterJobInStation"
+[[16:43:47.032]] [LOG]    filterJobInStation :
+[0mPOST /api123/filterJobInStation [32m200 [0m104.746 ms - 183[0m
+- "POST /api123/filterJobInStation"
+[0mOPTIONS /api123/ReportFromJobNumber [32m200 [0m0.995 ms - 4[0m
+- "OPTIONS /api123/ReportFromJobNumber"
+[[16:43:48.524]] [LOG]    ReportFromJobNumber
+[[16:43:48.555]] [LOG]      
+        Select A.STATION_NUMBER, A.JOB_NUMBER, CART_LABEL, A.CONTAINER
+        from TSDC_Conveyor..TSDC_CONSOLIDATE_STATION_QUEUE A
+        Where A.STATUS_PRINT = 'N'
+        and A.STATION_NUMBER = '3' 
+        and A.JOB_NUMBER = 'STA03-0001' 
+        
+[0mPOST /api123/ReportFromJobNumber [32m200 [0m32.399 ms - 292[0m
+- "POST /api123/ReportFromJobNumber"
+[[16:46:44.382]] [LOG]    TSDC Project api server running at port 1665
+[0mOPTIONS /api123/filterJobInStation [32m200 [0m9.319 ms - 4[0m
+- "OPTIONS /api123/filterJobInStation"
+[[16:48:59.256]] [LOG]    filterJobInStation :
+[0mPOST /api123/filterJobInStation [32m200 [0m94.092 ms - 183[0m
+- "POST /api123/filterJobInStation"
+[0mOPTIONS /api123/ReportFromJobNumber [32m200 [0m0.943 ms - 4[0m
+- "OPTIONS /api123/ReportFromJobNumber"
+[[16:49:00.922]] [LOG]    ReportFromJobNumber
+[[16:49:00.949]] [LOG]      
+        Select A.STATION_NUMBER, A.JOB_NUMBER, CART_LABEL, A.CONTAINER
+        from TSDC_Conveyor..TSDC_CONSOLIDATE_STATION_QUEUE A
+        Where A.STATUS_PRINT = 'N'
+        and A.STATION_NUMBER = '3' 
+        and A.JOB_NUMBER = 'STA03-0001' 
+        
+[0mPOST /api123/ReportFromJobNumber [32m200 [0m29.262 ms - 292[0m
+- "POST /api123/ReportFromJobNumber"
+[[16:51:34.369]] [LOG]    TSDC Project api server running at port 1665
+[[16:52:51.783]] [LOG]    TSDC Project api server running at port 1665
+[[16:55:24.027]] [LOG]    TSDC Project api server running at port 1665
+[0mOPTIONS /api123/listOfAsn [32m200 [0m9.106 ms - 4[0m
+- "OPTIONS /api123/listOfAsn"
+[[16:58:07.665]] [LOG]    listOfAsn :
+[0mPOST /api123/listOfAsn [32m200 [0m100.242 ms - 17[0m
+- "POST /api123/listOfAsn"
+[0mOPTIONS /api123/filterJobInStation [32m200 [0m1.040 ms - 4[0m
+- "OPTIONS /api123/filterJobInStation"
+[[16:58:16.060]] [LOG]    filterJobInStation :
+[0mPOST /api123/filterJobInStation [32m200 [0m42.876 ms - 183[0m
+- "POST /api123/filterJobInStation"
+[0mOPTIONS /api123/ReportFromJobNumber [32m200 [0m0.700 ms - 4[0m
+- "OPTIONS /api123/ReportFromJobNumber"
+[[16:58:17.990]] [LOG]    ReportFromJobNumber
+[[16:58:18.016]] [LOG]      
+        Select A.STATION_NUMBER, A.JOB_NUMBER, CART_LABEL, A.CONTAINER
+        from TSDC_Conveyor..TSDC_CONSOLIDATE_STATION_QUEUE A
+        Where A.STATUS_PRINT = 'N'
+        and A.STATION_NUMBER = '3' 
+        and A.JOB_NUMBER = 'STA03-0001' 
+        
+[0mPOST /api123/ReportFromJobNumber [32m200 [0m26.821 ms - 292[0m
+- "POST /api123/ReportFromJobNumber"
+[[17:00:35.551]] [LOG]    TSDC Project api server running at port 1665
+[0mOPTIONS /api123/filterJobInStation [32m200 [0m9.608 ms - 4[0m
+- "OPTIONS /api123/filterJobInStation"
+[[17:05:25.462]] [LOG]    filterJobInStation :
+[0mPOST /api123/filterJobInStation [32m200 [0m119.696 ms - 183[0m
+- "POST /api123/filterJobInStation"
+[0mOPTIONS /api123/ReportFromJobNumber [32m200 [0m5.024 ms - 4[0m
+- "OPTIONS /api123/ReportFromJobNumber"
+[[17:05:27.391]] [LOG]    ReportFromJobNumber
+[[17:05:27.423]] [LOG]      
+        UPDATE TSDC_Conveyor..TSDC_CONSOLIDATE_STATION_QUEUE
+        SET  STATUS_PRINT = 'Y'
+        WHERE STATION_NUMBER = '3' 
+        and JOB_NUMBER = 'STA03-0001'  ;
+        Go
+
+        INSERT INTO TSDC_CONSOLIDATE_STATION_HEADER
+        SELECT TOP 1 
+            JOB_NUMBER,
+            STATION_NUMBER,
+            COUNT(CONTAINER) AS FULL_QTY,
+            '' AS USER_UPDATE,
+            GETDATE() AS CREATE_DATE,
+            '' AS START_JOB_TIME,
+            '' AS END_JOB_TIME,
+            STATUS_PRINT,
+            '' AS CONFIRM_END_TIME
+            FROM TSDC_CONSOLIDATE_STATION_QUEUE 
+            WHERE STATION_NUMBER = '3' 
+             and JOB_NUMBER = 'STA03-0001' 
+            GROUP BY JOB_NUMBER,STATION_NUMBER,STATUS_PRINT;
+
+        Go
+
+            INSERT INTO TSDC_CONSOLIDATE_STATION_DETAIL
+            SELECT 
+                JOB_NUMBER,
+                CART_LABEL,
+                COUNT(CONTAINER) AS CONTAINER_QTY,
+                0 AS UPDATE_QTY,
+                ROW_NUMBER() OVER(PARTITION BY JOB_NUMBER ORDER BY CART_LABEL) AS CART_NUMBER,
+                STATION_NUMBER,
+                'N' AS STATUS_PICK
+            FROM TSDC_CONSOLIDATE_STATION_QUEUE
+            WHERE STATION_NUMBER = '3' 
+            and JOB_NUMBER = 'STA03-0001' 
+            GROUP BY JOB_NUMBER,CART_LABEL,STATION_NUMBER
+            ORDER BY CART_LABEL;
+
+        Go
+
+            INSERT INTO TSDC_CONSOLIDATE_STATION_CONTAINER
+            SELECT
+                A.JOB_NUMBER,
+                A.CONTAINER,
+                A.STATION_NUMBER,
+                '' AS STATION_TIMESTAMP,
+                CART_LABEL,
+                '' AS CART_TIMESTAP,
+                '' AS USER_UPDATE,
+                GETDATE() AS CREATE_DATE
+            FROM TSDC_CONSOLIDATE_STATION_QUEUE A 
+            WHERE STATION_NUMBER = '3' 
+            and JOB_NUMBER = 'STA03-0001'  ;
+
+
+             
+[0mPOST /api123/ReportFromJobNumber [32m200 [0m34.665 ms - 2991[0m
+- "POST /api123/ReportFromJobNumber"
+[[17:19:10.963]] [LOG]    TSDC Project api server running at port 1665
+[[17:20:10.138]] [LOG]    TSDC Project api server running at port 1665
+[0mOPTIONS /api123/filterJobInStation [32m200 [0m7.587 ms - 4[0m
+- "OPTIONS /api123/filterJobInStation"
+[[17:30:46.234]] [LOG]    filterJobInStation :
+[0mPOST /api123/filterJobInStation [32m200 [0m98.258 ms - 183[0m
+- "POST /api123/filterJobInStation"
+[0mOPTIONS /api123/ReportFromJobNumber [32m200 [0m0.935 ms - 4[0m
+- "OPTIONS /api123/ReportFromJobNumber"
+[[17:30:48.156]] [LOG]    ReportFromJobNumber
+[[17:30:48.188]] [LOG]      
+        Select A.STATION_NUMBER, A.JOB_NUMBER, CART_LABEL, A.CONTAINER
+        from TSDC_Conveyor..TSDC_CONSOLIDATE_STATION_QUEUE A
+        Where A.STATUS_PRINT = 'N'
+        and A.STATION_NUMBER = '3' 
+        and A.JOB_NUMBER = 'STA03-0001' 
+        
+[0mPOST /api123/ReportFromJobNumber [32m200 [0m33.917 ms - 292[0m
+- "POST /api123/ReportFromJobNumber"
+[[17:33:00.370]] [LOG]    TSDC Project api server running at port 1665
