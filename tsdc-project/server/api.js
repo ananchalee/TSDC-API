@@ -619,9 +619,9 @@ app.post('/CheckWork', function (req, res) {
         var query = `
         
      
-        select distinct CONTAINER_ID ,'${fromdata.USER_NAME}' as USER_NAME,ORDER_TYPE,SHIPMENT_ID
-         from TSDC_PICK_CHECK_NEW
-        where   shipment_id = ( select distinct shipment_id from TSDC_CONTAINER_MAPORDER
+        select distinct CONTAINER_ID ,'${fromdata.USER_NAME}' as USER_NAME,TSDC_PICK_CHECK_NEW.ORDER_TYPE,TSDC_PICK_CHECK_NEW.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
+         from TSDC_PICK_CHECK_NEW left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on TSDC_PICK_CHECK_NEW.SHIPMENT_ID = p.SHIPMENT_ID
+        where   TSDC_PICK_CHECK_NEW.shipment_id = ( select distinct shipment_id from TSDC_CONTAINER_MAPORDER
                      WHERE  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
         AND  SELLER_NO = ( select distinct SELLER_NO from TSDC_CONTAINER_MAPORDER
         WHERE  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
@@ -3169,8 +3169,8 @@ app.post('/CheckTrack', function (req, res) {
 
         var query =
             `
-        select BOX_SIZE,REF_INDEX,a.PO_NO,SELLER_NO,QTY,BOX_NO_ORDER,TABLE_CHECK,CUST_NAME ,TCHANNEL
-        from TSDC_PICK_CHECK_BOX_CONTROL_NEW a,
+        select BOX_SIZE,REF_INDEX,a.PO_NO,SELLER_NO,QTY,BOX_NO_ORDER,TABLE_CHECK,CUST_NAME ,TCHANNEL,p.COMPANY, (FORMAT(ORDER_DATE,'dd-MM-yyyy')) ORDER_DATE
+        from TSDC_PICK_CHECK_BOX_CONTROL_NEW a left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on a.PO_NO = p.SHIPMENT_ID ,
         (select  SHIPPING_NAME,PO_NO,SHIP_NO,TCHANNEL from TSDC_INTERFACE_ORDER_HEADER) as c
             where  a.PO_NO = c.PO_NO
             and a.SELLER_NO = c.SHIP_NO 
