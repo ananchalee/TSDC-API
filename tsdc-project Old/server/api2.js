@@ -3346,14 +3346,13 @@ app.post('/UPDATE_CARTON_PRINT', function (req, res) {
         NUll as DELIVERY_DATE 
         into #tepmall
       From TSDC_PICK_PRINT_SHIP_DELIVERY d
-      Where BATCH_CODE like 'R%'
-      and not exists
+      Where not exists
    (select 1 
    from TSDC_SORTER_PRINT_SHIP_DELIVERY a ,
       TSDC_PICK_PRINT_SHIP_DELIVERY b 
    where a.BILL_NO = b.BILL_NO 
       and a.BATCH_CODE = b.BATCH_CODE
-      and b.BATCH_CODE like 'R%'
+      --and b.BATCH_CODE like 'R%'
    and a.bill_no = d.bill_no)
       and PRINT_STATUS = 'Y'
      -- and CONTAINER_ID = '${fromdata.CONTAINER_ID}'
@@ -3424,8 +3423,7 @@ select [BATCH_CODE] ,
        [PRINTER_SORTER_IP] ,
        [NET_AMOUNT] ,GETDATE() 
 	    From TSDC_PICK_PRINT_SHIP_DELIVERY
-       Where BATCH_CODE like 'R%'
-       and PRINT_STATUS = 'Y'
+       Where  PRINT_STATUS = 'Y'
        and BILL_N8_BLH = (select distinct shipment_ID from TSDC_PICK_CHECK
         where CONTAINER_ID = '${fromdata.CONTAINER_ID}')
       --  and CONTAINER_ID = '${fromdata.CONTAINER_ID}'

@@ -3549,10 +3549,6 @@ app.post('/insertTracking_confirmOutbound', function (req, res) {
                             };
                             res.json(dataout);
 
-                            
-                            var query3 = `
-                                    drop table #temp_NewTable
-                                `;
                         }
                     }
                     sql.close();
@@ -3576,12 +3572,12 @@ app.post('/update_Tracking_confirm_outbound', function (req, res) {
         and pallet_no = '${fromdata.Pallet_NO}'
         and CONVERT(date,CREATE_DATE) = '${fromdata.currentDateString}'
 
-        update [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
-        set QTY_BOX  = QTY_BOX+ 1
-        ,CREATE_DATE = getdate()
-        where bill_no = '${fromdata.TRACK_CODE}'
-        and pallet_no = '${fromdata.Pallet_NO}'
-        and CONVERT(date,CREATE_DATE) = '${fromdata.currentDateString}'
+        --update [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+        --set QTY_BOX  = QTY_BOX+ 1
+        --,CREATE_DATE = getdate()
+        --where bill_no = '${fromdata.TRACK_CODE}'
+        --and pallet_no = '${fromdata.Pallet_NO}'
+        --and CONVERT(date,CREATE_DATE) = '${fromdata.currentDateString}'
      
    `;
 
@@ -3638,10 +3634,6 @@ app.post('/update_Tracking_confirm_outbound', function (req, res) {
                             };
                             res.json(dataout);
 
-                            
-                            var query3 = `
-                                    drop table #temp_NewTable
-                                `;
                         }
                     }
                     sql.close();
