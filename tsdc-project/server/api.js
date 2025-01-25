@@ -1596,7 +1596,7 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
                     return pool.request().query(query, function (err_query) {
                         if (err_query) {
                             dataout = {
-                                status: 'error insert BOX_CONTROL_detail',
+                                status: 'error',
                                 member: err_query,
                                 query: query
                             };
@@ -1625,7 +1625,7 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
                     return pool.request().query(query, function (err_query) {
                         if (err_query) {
                             dataout = {
-                                status: 'error update BOX_CONTROL_detail',
+                                status: 'error',
                                 member: err_query,
                                 query: query
                             };
@@ -1964,14 +1964,14 @@ app.post('/tracking_running', function (req, res) {
                 ,${fromdata.CARTON_BOX_W}
                 ,${fromdata.CARTON_BOX_H}
                 ,${fromdata.CARTON_BOX_L}
-                ,'TRANSPORT'
-                ,'TRACKING'
-                ,'SORTCODE'
-                ,'SORTINGLINECODE'
-                ,'STORENAME'
+                ,''
+                ,''
+                ,''
+                ,''
+                ,''
                 ,'${fromdata.SHIPPING_NAME}'
-                ,'CUST_ADDRESS'
-                ,'CUST_TEL'
+                ,''
+                ,''
                 ,getdate()
                 ,getdate()
                 ,getdate()
@@ -3793,7 +3793,18 @@ app.post('/interface_Tracking_confirm_outbound', function (req, res) {
 		(
 		Select BILL_NO From [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
 		)
+        and A.PALLET_NO ='${fromdata.Pallet_NO}'
 
+
+    update [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND 
+        set QTY_BOX  = b.QTY_BOX 
+        ,CREATE_DATE = b.CREATE_DATE 
+		from [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND a,TSDC_CONFIRM_OUTBOUND b 
+        where a.bill_no = b.bill_no 
+        and a.pallet_no = b.pallet_no 
+        and CONVERT(date,a.CREATE_DATE) = CONVERT(date,b.CREATE_DATE) 
+		and a.QTY_BOX != b.QTY_BOX 
+		and  b.PALLET_NO = '${fromdata.Pallet_NO}'
 
         
 
@@ -3816,6 +3827,404 @@ app.post('/interface_Tracking_confirm_outbound', function (req, res) {
                 res.json(dataout);
             }
             sql.close();
+        });
+    });
+});
+
+/////////////////////////////////////////////// upgrage sql
+
+app.post('/CheckWork_ug', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+        
+     
+        select distinct TSDC_PICK_CHECK_NEW.CONTAINER_ID ,TSDC_PICK_CHECK_NEW.SELLER_NO,'${fromdata.USER_NAME}' as USER_NAME,TSDC_PICK_CHECK_NEW.ORDER_TYPE,TSDC_PICK_CHECK_NEW.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
+         from TSDC_PICK_CHECK_NEW 
+		  inner join TSDC_CONTAINER_MAPORDER  m on TSDC_PICK_CHECK_NEW.CONTAINER_ID = m.CONTAINER_ID
+		 left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on TSDC_PICK_CHECK_NEW.SHIPMENT_ID = p.SHIPMENT_ID		
+        where  TSDC_PICK_CHECK_NEW.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+        AND  TSDC_PICK_CHECK_NEW.SELLER_NO = m.SELLER_NO
+		and TSDC_PICK_CHECK_NEW.SHIPMENT_ID = m.SHIPMENT_ID
+       
+                       
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/CheckConOnline_ug', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    console.log("CheckConOnline :");
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+
+        select *  from (
+           SELECT  sum(QTY_CHECK) as SUMCHECK
+              ,sum(QTY_PICK) as SUMCON
+              ,shipment_id
+              ,SELLER_NO
+              ,'' as USER_DEF5
+              ,customer_id as 'Owner'
+              ,status_print as 'Print_Tracking'
+                FROM   TSDC_PICK_CHECK_NEW A,TSDC_CONTROL_PRINT_ONLINE_TRACKING B
+                WHERE SHIPMENT_ID = '${fromdata.shipment_id}'
+                and SELLER_NO = '${fromdata.SELLER_NO}'
+                and a.SELLER_NO = b.SELLER_id
+                group by  shipment_id,SELLER_NO
+                --,BRAND
+               ,customer_id,status_print ) as a,
+           (select  SHIPPING_NAME,PO_NO,SHIP_NO,TCHANNEL from TSDC_INTERFACE_ORDER_HEADER) as c
+               where  a.SHIPMENT_ID = c.PO_NO
+               and a.SELLER_NO = c.SHIP_NO 
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null',
+                        query: query,
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/matchItemInCon_ug', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+       
+        SELECT   SHIPMENT_ID
+                ,ITEM_ID
+                ,ITEM_DESC
+				,SELLER_NO
+                ,QTY_REQUESTED
+                ,QTY_PICK 
+                ,QTY_CHECK
+				,FORMAT(TRANSACTION_DATE,'dd-MM-yyyy') as TRANSACTION_DATE
+        FROM   TSDC_PICK_CHECK_NEW
+        WHERE  SHIPMENT_ID = '${fromdata.shipment_id}'
+        and SELLER_NO = '${fromdata.SELLER_NO}'
+        AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'notfound'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/checkEqualCon_ug', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+
+        SELECT  
+        ITEM_ID,
+        QTY_PICK,
+        (case
+            when sum(QTY_CHECK) = QTY_PICK then 'equal'
+            when sum(QTY_CHECK) > QTY_PICK then 'equal'
+            else 'not_equal'
+            end) as QTY_equal
+       
+FROM   TSDC_PICK_CHECK_NEW   
+where SHIPMENT_ID = '${fromdata.shipment_id}'
+and SELLER_NO = '${fromdata.SELLER_NO}'
+AND  ITEM_ID_BARCODE =  '${fromdata.ITEM_ID_BARCODE}'
+
+       group by  ITEM_ID,QTY_PICK,SHIPMENT_ID,SELLER_NO
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/BOX_CONTROL_DETAIL_ug', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    console.log("BOX_CONTROL :");
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+
+        select * from  TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+        where REF_INDEX is null
+        and TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+        and PO_NO = '${fromdata.shipment_id}'
+        AND SELLER_NO = '${fromdata.SELLER_NO}'
+        and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'      
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+
+                    var query = `        
+                            
+                    BEGIN TRANSACTION;
+
+                    BEGIN TRY
+                            INSERT INTO TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+                                ([REF_INDEX]
+                                ,[CONTAINERID]
+                                ,[PO_NO]
+                                ,SELLER_NO
+                                ,[BOX_NO_ORDER]
+                                ,[ITEM_ID]
+                                ,[QTY]
+                                ,[USER_CHECK]
+                                ,[TABLE_CHECK]
+                                ,[ITEM_ID_BARCODE])
+                            VALUES
+                                (NULL
+                                ,'${fromdata.CONTAINER_ID}'
+                                ,'${fromdata.shipment_id}'
+                                ,'${fromdata.SELLER_NO}'
+                                ,NULL
+                                ,'${fromdata.ITEM_ID}'
+                                ,1
+                                ,'${fromdata.PIN_CODE}'
+                                ,LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))
+                                ,'${fromdata.ITEM_ID_BARCODE}');
+
+
+                                UPDATE  TSDC_PICK_CHECK_NEW
+                                SET		QTY_CHECK = QTY_CHECK + 1 
+                                ,   USER_CHECK = '${fromdata.USER_NAME}'
+                                 , END_DATE_TIME = getdate() , 
+                                START_DATE_TIME = (case when QTY_CHECK = 0 then GETDATE() else START_DATE_TIME end),
+                                TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+                                where   SHIPMENT_ID = (select SHIPMENT_ID from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+                                and SELLER_NO =  (select SELLER_NO from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+                                    AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
+                                    and QTY_CHECK < QTY_PICK
+
+
+                                    insert into [TSDC_PICK_CHECK_LOG_NEW]
+                                    select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+                                
+                                select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW
+                                where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+                                    AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
+                                
+                                    ) as a;
+
+                            COMMIT TRANSACTION;
+                            END TRY
+                            BEGIN CATCH
+                            -- If an error occurs, roll back the transaction
+                            ROLLBACK TRANSACTION;
+
+                            -- Optionally, log or re-throw the error
+                            DECLARE @ErrorMessage NVARCHAR(4000), @ErrorSeverity INT, @ErrorState INT;
+                            SELECT
+                                @ErrorMessage = ERROR_MESSAGE(),
+                                @ErrorSeverity = ERROR_SEVERITY(),
+                                @ErrorState = ERROR_STATE();
+                            RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+                        END CATCH;
+
+
+                        `;
+                    return pool.request().query(query, function (err_query) {
+                        if (err_query) {
+                            dataout = {
+                                status: 'error',
+                                member: err_query,
+                                query: query
+                            };
+                            res.json(dataout);
+                        } else {
+                            dataout = {
+                                status: 'success',
+                                query: query
+                            };
+                            res.json(dataout);
+                        }
+                        sql.close();
+                    });
+
+                } else {
+                    var query = `
+
+                    BEGIN TRANSACTION;
+
+                    BEGIN TRY
+
+                    update TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+                    set QTY = QTY+1
+                    where   REF_INDEX is null
+                    and TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+                    and PO_NO = '${fromdata.shipment_id}'
+                    AND SELLER_NO = '${fromdata.SELLER_NO}'
+                    and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}' 
+                    and QTY < '${fromdata.check_QTY_PICK}' 
+
+
+                    UPDATE  TSDC_PICK_CHECK_NEW
+                    SET		QTY_CHECK = QTY_CHECK + 1 
+                    ,   USER_CHECK = '${fromdata.USER_NAME}'
+                     , END_DATE_TIME = getdate() , 
+                    START_DATE_TIME = (case when QTY_CHECK = 0 then GETDATE() else START_DATE_TIME end),
+                    TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+                    where   SHIPMENT_ID = (select SHIPMENT_ID from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+                    and SELLER_NO =  (select SELLER_NO from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+                        AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
+                        and QTY_CHECK < QTY_PICK
+
+
+                    insert into [TSDC_PICK_CHECK_LOG_NEW]
+                            select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+                        
+                        select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW
+                        where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+                            AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
+                        
+                            ) as a;
+
+                            -- If all succeed, commit the transaction
+                            COMMIT TRANSACTION;
+                        END TRY
+                        BEGIN CATCH
+                            -- If an error occurs, roll back the transaction
+                            ROLLBACK TRANSACTION;
+                        
+                            -- Optionally, log or re-throw the error
+                            DECLARE @ErrorMessage NVARCHAR(4000), @ErrorSeverity INT, @ErrorState INT;
+                            SELECT
+                                @ErrorMessage = ERROR_MESSAGE(),
+                                @ErrorSeverity = ERROR_SEVERITY(),
+                                @ErrorState = ERROR_STATE();
+                            RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+                        END CATCH;                    
+
+                     `;
+                    return pool.request().query(query, function (err_query) {
+                        if (err_query) {
+                            dataout = {
+                                status: 'error',
+                                member: err_query,
+                                query: query
+                            };
+                            res.json(dataout);
+                        } else {
+                            dataout = {
+                                status: 'success',
+                                query: query
+                            };
+                            res.json(dataout);
+                        }
+                        sql.close();
+                    });
+                }
+            }
         });
     });
 });

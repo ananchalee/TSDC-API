@@ -1585,7 +1585,7 @@ app.post('/tracking_running_Old', function (req, res) {
         declare @YY char(2)
         declare @MM char(2)
         declare @DD char(2)
-        declare @count  numeric(3)
+        declare @count  numeric(4)
 
 			set @count = 1; 
 
@@ -1662,14 +1662,14 @@ app.post('/tracking_running_Old', function (req, res) {
                 ,0 as CARTON_BOX_W
                 ,0 as CARTON_BOX_H
                 ,0 as CARTON_BOX_L
-                ,'TRANSPORT'
-                ,'TRACKING'
-                ,'SORTCODE'
-                ,'SORTINGLINECODE'
-                ,'STORENAME'
+                ,''
+                ,''
+                ,''
+                ,''
+                ,''
                 ,'${fromdata.SHIPPING_NAME}'
-                ,'CUST_ADDRESS'
-                ,'CUST_TEL'
+                ,''
+                ,''
                 ,getdate()
                 ,getdate()
                 ,getdate()
@@ -1776,8 +1776,8 @@ app.post('/tracking_running_Old2', function (req, res) {
         declare @YY char(2)
         declare @MM char(2)
         declare @DD char(2)
-        declare @count  numeric(3)
-        declare @count_size  numeric(3)
+        declare @count  numeric(4)
+        declare @count_size  numeric(4)
 
 			set @count = 1; `;
 
@@ -1856,14 +1856,14 @@ app.post('/tracking_running_Old2', function (req, res) {
                 ,'${element.CARTON_BOX_W}' as CARTON_BOX_W
                 ,'${element.CARTON_BOX_H}' as CARTON_BOX_H
                 ,'${element.CARTON_BOX_L}' as CARTON_BOX_L
-                ,'TRANSPORT'
-                ,'TRACKING'
-                ,'SORTCODE'
-                ,'SORTINGLINECODE'
-                ,'STORENAME'
+                ,''
+                ,''
+                ,''
+                ,''
+                ,''
                 ,'${fromdata.SHIPPING_NAME}'
-                ,'CUST_ADDRESS'
-                ,'CUST_TEL'
+                ,''
+                ,''
                 ,getdate()
                 ,getdate()
                 ,getdate()
@@ -3358,6 +3358,7 @@ app.post('/UPDATE_CARTON_PRINT', function (req, res) {
      -- and CONTAINER_ID = '${fromdata.CONTAINER_ID}'
       and BILL_N8_BLH = (select distinct shipment_ID from TSDC_PICK_CHECK
        where CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+       order by BATCH_CODE desc
 `;
 
 query += `
