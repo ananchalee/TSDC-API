@@ -4003,10 +4003,10 @@ app.post('/checkEqualCon_ug', function (req, res) {
             else 'not_equal'
             end) as QTY_equal
        
-FROM   TSDC_PICK_CHECK_NEW   
-where SHIPMENT_ID = '${fromdata.shipment_id}'
-and SELLER_NO = '${fromdata.SELLER_NO}'
-AND  ITEM_ID_BARCODE =  '${fromdata.ITEM_ID_BARCODE}'
+        FROM   TSDC_PICK_CHECK_NEW   
+        where SHIPMENT_ID = '${fromdata.shipment_id}'
+        and SELLER_NO = '${fromdata.SELLER_NO}'
+        AND  ITEM_ID_BARCODE =  '${fromdata.ITEM_ID_BARCODE}'
 
        group by  ITEM_ID,QTY_PICK,SHIPMENT_ID,SELLER_NO
         
@@ -4225,6 +4225,45 @@ app.post('/BOX_CONTROL_DETAIL_ug', function (req, res) {
                     });
                 }
             }
+        });
+    });
+});
+
+app.get('/get_transport', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+
+        select * from [10.26.1.11].TSDC_Conveyor.dbo.TSDC_TRANSPORT
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+            sql.close();
         });
     });
 });
