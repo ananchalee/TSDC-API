@@ -3,6 +3,7 @@ var sql = require('mssql');
 var fs = require('fs');
 var app = express.Router();
 var bodyParser = require('body-parser');
+const { query } = require('express');
 require('./config/connect.js');
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
@@ -4262,6 +4263,130 @@ app.get('/get_transport', function (req, res) {
                     };
                     res.json(dataout);
                 }
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/Moniter_statusRTS', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+
+        SELECT *,FORMAT(FDCreatedate,'dd-MM-yyyy HH:mm:ss') as Createdate 
+        ,FORMAT(FDLastupdate,'dd-MM-yyyy HH:mm:ss') as Lastupdate FROM TSDC_SHOPEE_PACKAGE_HD
+        ${fromdata.condition}
+        order by FDLastupdate desc
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/Moniter_SumstatusRTS', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+
+        SELECT 
+        SUM(CASE WHEN FNStaUpLoad_rts = 0 THEN 1 ELSE 0 END) AS status_0,
+        SUM(CASE WHEN FNStaUpLoad_rts = 2 THEN 1 ELSE 0 END) AS status_2,
+        SUM(CASE WHEN FNStaUpLoad_rts = 99 THEN 1 ELSE 0 END) AS status_99,
+        SUM(CASE WHEN FNStaUpLoad_rts = 1 THEN 1 ELSE 0 END) AS status_1,
+        SUM(CASE WHEN FNStaUpLoad_rts = 5 THEN 1 ELSE 0 END) AS status_5
+        FROM TSDC_SHOPEE_PACKAGE_HD
+        ${fromdata.conditionSum}
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/update_statusRTS', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    console.log('update_statusRTS');
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+        var query = `
+        `
+        fromdata.forEach(function (element) {
+            query += ` 
+            update TSDC_SHOPEE_PACKAGE_HD
+            set FNStaUpLoad_rts = 0
+            ,FTStaUpLoad_rts_desc = 'wait_update'
+            ,FDLastupdate = getdate()
+            where FTOrdernumber = '${element.FTOrdernumber}';
+            `
+        });
+        
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
             }
             sql.close();
         });
