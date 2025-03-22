@@ -658,6 +658,49 @@ app.post('/CheckWork', function (req, res) {
     });
 });
 
+app.post('/CheckOrder_Cancel', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    console.log("CheckOrder_Cancel :");
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+        
+     
+        select * from [10.26.1.11].[TSDC_Conveyor].dbo.ONLINE_ORDER_CANCEL
+        where ORDER_NUMBER_OOC = ( select distinct shipment_id from TSDC_CONTAINER_MAPORDER
+                     WHERE  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
 
 
 app.post('/CheckCon', function (req, res) {
@@ -948,6 +991,7 @@ app.post('/summaryCon', function (req, res) {
      ,ITEM_DESC
      ,sum(QTY_CHECK) as QTY_CHECK
      ,SHIPMENT_ID
+     ,case when ORDER_TYPE = 'CANCEL' then 'CANCEL' else '' end  as ITME_CANCEL
      ,SELLER_NO
      ,BRAND
      ,UOM_PICK
@@ -971,7 +1015,7 @@ end MaxBox_NO
      where SHIPMENT_ID  = '${fromdata.shipment_id}'
      AND SELLER_NO = '${fromdata.SELLER_NO}'
      group by shipment_ID ,SELLER_NO, ITEM_ID   ,QTY_REQUESTED,ITEM_ID_BARCODE
-     ,QTY_PICK ,BRAND,ITEM_DESC,UOM_PICK
+     ,QTY_PICK ,BRAND,ITEM_DESC,UOM_PICK,ORDER_TYPE
      order by STATUS_CHECK , QTY_CHECK
       
         
@@ -3789,7 +3833,7 @@ app.post('/interface_Tracking_confirm_outbound', function (req, res) {
         where  NOT EXISTS 
         (SELECT 1 FROM [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND B
             WHERE A.[BILL_NO] = B.[BILL_NO] 
-            and CONVERT(date,CREATE_DATE) = CONVERT(date,getdate()) 
+            and CAST(CREATE_DATE AS DATE)  = CAST(GETDATE() AS DATE)  
         ) and BILL_NO not in
 		(
 		Select BILL_NO From [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
@@ -3797,16 +3841,17 @@ app.post('/interface_Tracking_confirm_outbound', function (req, res) {
         and A.PALLET_NO ='${fromdata.Pallet_NO}'
 
 
-    update [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND 
-        set QTY_BOX  = b.QTY_BOX 
+        UPDATE a
+        SET a.QTY_BOX = b.QTY_BOX
         ,CREATE_DATE = b.CREATE_DATE 
-		from [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND a,TSDC_CONFIRM_OUTBOUND b 
-        where a.bill_no = b.bill_no 
-        and a.pallet_no = b.pallet_no 
-        and CONVERT(date,a.CREATE_DATE) = CONVERT(date,b.CREATE_DATE) 
-		and a.QTY_BOX != b.QTY_BOX 
-		and  b.PALLET_NO = '${fromdata.Pallet_NO}'
-
+        FROM [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND a
+        INNER JOIN TSDC_CONFIRM_OUTBOUND b 
+            ON a.BILL_NO = b.BILL_NO 
+            AND a.PALLET_NO = b.PALLET_NO
+            AND CONVERT(DATE, a.CREATE_DATE) = CONVERT(DATE, b.CREATE_DATE) 
+        WHERE  b.PALLET_NO = '${fromdata.Pallet_NO}' 
+        and a.QTY_BOX <> b.QTY_BOX 
+        AND CONVERT(DATE, b.CREATE_DATE) = CONVERT(DATE, GETDATE());
         
 
    `;
@@ -3848,6 +3893,7 @@ app.post('/CheckWork_ug', function (req, res) {
 		  inner join TSDC_CONTAINER_MAPORDER  m on TSDC_PICK_CHECK_NEW.CONTAINER_ID = m.CONTAINER_ID
 		 left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on TSDC_PICK_CHECK_NEW.SHIPMENT_ID = p.SHIPMENT_ID		
         where  TSDC_PICK_CHECK_NEW.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+        and  TSDC_PICK_CHECK_NEW.ORDER_TYPE != 'CANCEL'
         AND  TSDC_PICK_CHECK_NEW.SELLER_NO = m.SELLER_NO
 		and TSDC_PICK_CHECK_NEW.SHIPMENT_ID = m.SHIPMENT_ID
        
@@ -3865,10 +3911,42 @@ app.post('/CheckWork_ug', function (req, res) {
             } else {
                 var data = recordset.recordset;
                 if (recordset.recordset.length === 0) {
-                    dataout = {
-                        status: 'null'
-                    };
-                    res.json(dataout);
+                    
+                    var query2 = `        
+
+                    select distinct TSDC_PICK_CHECK_NEW.CONTAINER_ID ,TSDC_PICK_CHECK_NEW.SELLER_NO,'${fromdata.USER_NAME}' as USER_NAME,TSDC_PICK_CHECK_NEW.ORDER_TYPE,TSDC_PICK_CHECK_NEW.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
+                    from TSDC_PICK_CHECK_NEW 
+                     inner join TSDC_CONTAINER_MAPORDER  m on TSDC_PICK_CHECK_NEW.CONTAINER_ID = m.CONTAINER_ID
+                    left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on TSDC_PICK_CHECK_NEW.SHIPMENT_ID = p.SHIPMENT_ID		
+                   where  TSDC_PICK_CHECK_NEW.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+                   AND  TSDC_PICK_CHECK_NEW.SELLER_NO = m.SELLER_NO
+                   and TSDC_PICK_CHECK_NEW.SHIPMENT_ID = m.SHIPMENT_ID
+                    
+                   `;
+                    return pool.request().query(query2, function (err_query, recordset) {
+                        if (err_query) {
+                            dataout = {
+                                status: 'error',
+                                member: err_query,
+                                query: query2,
+                            };
+                            res.json(dataout);
+                        } else {
+                            var data = recordset.recordset;
+                            if (recordset.recordset.length === 0) {
+                                dataout = {
+                                    status: 'null'
+                                };
+                                res.json(dataout);
+                            } else {
+                                dataout = {
+                                    status: 'success',
+                                    data: data
+                                };
+                                res.json(dataout);
+                            }
+                        }
+                    });
                 } else {
                     dataout = {
                         status: 'success',
@@ -3955,6 +4033,7 @@ app.post('/matchItemInCon_ug', function (req, res) {
                 ,QTY_PICK 
                 ,QTY_CHECK
 				,FORMAT(TRANSACTION_DATE,'dd-MM-yyyy') as TRANSACTION_DATE
+                ,ORDER_TYPE
         FROM   TSDC_PICK_CHECK_NEW
         WHERE  SHIPMENT_ID = '${fromdata.shipment_id}'
         and SELLER_NO = '${fromdata.SELLER_NO}'
