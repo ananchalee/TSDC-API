@@ -1586,6 +1586,7 @@ app.post('/tracking_running_Old', function (req, res) {
         declare @MM char(2)
         declare @DD char(2)
         declare @count  numeric(4)
+        declare @Bill_NO_REF  varchar(25)
 
 			set @count = 1; 
 
@@ -1607,6 +1608,8 @@ app.post('/tracking_running_Old', function (req, res) {
                                     when len(@TABLE_RUNNING) = 4 then  CONVERT(nvarchar,@TABLE_RUNNING)
                                 end REF_INDEX )
 
+            SET @Bill_NO_REF    ='${fromdata.BILL_NO}' + RIGHT('0000' + CONVERT(nvarchar, @counticc), 4);                          
+        
             insert into TSDC_PICK_CHECK_BOX_CONTROL_NEW
                 ( REF_INDEX
                 ,CONTAINERID
@@ -1646,6 +1649,8 @@ app.post('/tracking_running_Old', function (req, res) {
                 ,VAS_NAME_08
                 ,VAS_NAME_09
                 ,VAS_NAME_10
+                ,BILL_NO
+                ,BILL_NO_REF
                 )
                 select 
                 @REF_INDEX 
@@ -1695,6 +1700,8 @@ app.post('/tracking_running_Old', function (req, res) {
                 ,''
                 ,''
                 ,''
+                ,'${fromdata.BILL_NO}'
+                ,@Bill_NO_REF
 
             SET @count = @count + 1;
 
@@ -1717,6 +1724,7 @@ app.post('/tracking_running_Old', function (req, res) {
                         ,TABLE_RUNNING
                         ,PO_NO
                         ,SELLER_NO
+                        ,Bill_NO_REF
                 from  TSDC_PICK_CHECK_BOX_CONTROL_NEW
                 where TABLE_CHECK = '${fromdata.TABLE_CHECK}'
                 and PO_NO = '${fromdata.shipment_id}'
@@ -1778,6 +1786,7 @@ app.post('/tracking_running_Old2', function (req, res) {
         declare @DD char(2)
         declare @count  numeric(4)
         declare @count_size  numeric(4)
+        declare @Bill_NO_REF  varchar(25)
 
 			set @count = 1; `;
 
@@ -1800,6 +1809,14 @@ app.post('/tracking_running_Old2', function (req, res) {
                                     when len(@TABLE_RUNNING) = 3 then '0'+ CONVERT(nvarchar,@TABLE_RUNNING)
                                     when len(@TABLE_RUNNING) = 4 then  CONVERT(nvarchar,@TABLE_RUNNING)
                                 end REF_INDEX )
+
+              SET @Bill_NO_REF      = (SELECT  '${fromdata.BILL_NO}'
+                                + case WHEN @count is NULL THEN '0001'
+                                    when len(@count) = 1 then '000'+ CONVERT(nvarchar,@count)
+                                    when len(@count) = 2 then '00'+ CONVERT(nvarchar,@count)
+                                    when len(@count) = 3 then '0'+ CONVERT(nvarchar,@count)
+                                    when len(@count) = 4 then  CONVERT(nvarchar,@count)
+                                end Bill_NO_REF )
 
             insert into TSDC_PICK_CHECK_BOX_CONTROL_NEW
                 ( REF_INDEX
@@ -1840,6 +1857,8 @@ app.post('/tracking_running_Old2', function (req, res) {
                 ,VAS_NAME_08
                 ,VAS_NAME_09
                 ,VAS_NAME_10
+                ,BILL_NO
+                ,BILL_NO_REF
                 )
                 select 
                 @REF_INDEX 
@@ -1889,6 +1908,8 @@ app.post('/tracking_running_Old2', function (req, res) {
                 ,''
                 ,''
                 ,''
+                ,'${fromdata.BILL_NO}'
+                ,@Bill_NO_REF 
 
             SET @count = @count + 1;
             SET @count_size = @count_size + 1;
@@ -1913,6 +1934,7 @@ app.post('/tracking_running_Old2', function (req, res) {
                         ,PO_NO
                         ,SELLER_NO
                         ,BOX_SIZE
+                        ,Bill_NO_REF
                 from  TSDC_PICK_CHECK_BOX_CONTROL_NEW
                 where TABLE_CHECK = '${fromdata.TABLE_CHECK}'
                 and PO_NO = '${fromdata.shipment_id}'

@@ -2317,7 +2317,10 @@ app.post('/Rescan_checkitem', function (req, res) {
 
         var query = `  
         update TSDC_PICK_CHECK_NEW
-		set QTY_CHECK = QTY_CHECK - QTY
+		set QTY_CHECK = CASE 
+                    WHEN QTY_CHECK - QTY < 0 THEN 0
+                    ELSE QTY_CHECK - QTY
+                END
         ,CHECK_DATE = NULL
 		from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a,TSDC_PICK_CHECK_NEW b
         where   REF_INDEX is null
@@ -3408,6 +3411,88 @@ app.post('/check_Pallet_confirm_outbound', function (req, res) {
     });
 });
 
+app.post('/check_Pallet_confirm_outbound11', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = ` 
+        select top 1*
+        from TSDC_CONFIRM_OUTBOUND
+        where PALLET_NO  = '${fromdata.Pallet_NO}'
+        and CONVERT(date,CREATE_DATE) = CONVERT(date,getdate()) 
+        and driver_name is not null
+                        
+        `
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'NULL'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/check_Tracking_Order_Cancel', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = ` 
+        select top 1*
+        from TSDC_OUTBOUND_ORDER_CANCEL
+        where TRACK_NO  = '${fromdata.TRACK_CODE}'
+                        
+        `
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'NULL'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+            sql.close();
+        });
+    });
+});
+
 app.post('/check_Tracking_confirm_outbound2', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
@@ -3610,6 +3695,7 @@ app.post('/update_Tracking_confirm_outbound', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         var query = `
+
         update TSDC_CONFIRM_OUTBOUND
         set QTY_BOX  = QTY_BOX+ 1
         ,CREATE_DATE = getdate()
@@ -3617,12 +3703,114 @@ app.post('/update_Tracking_confirm_outbound', function (req, res) {
         and pallet_no = '${fromdata.Pallet_NO}'
         and CONVERT(date,CREATE_DATE) = '${fromdata.currentDateString}'
 
-        --update [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+     
+   `;
+
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                console.log(1)
+                dataout = {
+                    status: 'error1',
+                    data: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                query2 = `
+               
+                select
+                format ( CREATE_DATE ,'yyyy-MM-dd hh:mm:ss') as scandate
+                ,PALLET_NO,QTY_BOX,BILL_NO,
+                SHIP_PROVIDER_OOD,TCHANNEL
+                ,ORDER_NO
+				,(select sum(QTY_BOX) 
+                        from TSDC_CONFIRM_OUTBOUND
+                        where PALLET_NO  = '${fromdata.Pallet_NO}'
+                        and CONVERT(date,CREATE_DATE) = CONVERT(date,getdate()) 
+						) as count_qty
+
+					from TSDC_CONFIRM_OUTBOUND
+                        where PALLET_NO  = '${fromdata.Pallet_NO}'
+                        and CONVERT(date,CREATE_DATE) = CONVERT(date,getdate()) 
+                        order by CREATE_DATE desc
+                        
+
+                     `;
+                return pool.request().query(query2, function (err_query, recordset) {
+                    if (err_query) {
+                        dataout = {
+                            status: 'error',
+                            data: err_query,
+                            query: query2
+                        };
+                        res.json(dataout);
+                    } else {
+                        var data = recordset.recordset;
+
+                        if (recordset.recordset.length === 0) {
+                            dataout = {
+                                status: 'null'
+                            };
+                            res.json(dataout);
+                        } else {
+                            dataout = {
+                                status: 'success',
+                                data: data
+                            };
+                            res.json(dataout);
+
+                        }
+                    }
+                    sql.close();
+                });
+            }
+        });
+
+    });
+});
+
+app.post('/update_Tracking_confirm_outbound2', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+
+        MERGE INTO TSDC_CONFIRM_OUTBOUND AS target
+        USING (SELECT TOP 1 *
+        FROM TSDC_CONFIRM_OUTBOUND
+        WHERE bill_no = '${fromdata.TRACK_CODE}'
+         AND pallet_no = '${fromdata.Pallet_NO}'
+         AND CAST(CREATE_DATE AS DATE) = CAST(GETDATE() AS DATE)) AS source
+        ON target.bill_no = source.bill_no
+        AND target.pallet_no = source.pallet_no
+        AND CAST(target.CREATE_DATE AS DATE) = CAST(GETDATE() AS DATE)
+        WHEN MATCHED THEN
+        UPDATE SET target.QTY_BOX = target.QTY_BOX + 1,
+               target.CREATE_DATE = GETDATE()
+        WHEN NOT MATCHED BY TARGET THEN
+        INSERT (BILL_NO, PALLET_NO, QTY_BOX, CREATE_DATE, PIN_ID, INTERNAL_ID, USER_CONFIRM_DELIVERY,
+            DATE_DELIVERY, STATUS_DELIVERY, STATUS, SHIP_PROVIDER_OOD, ORDER_NO, TCHANNEL)
+        VALUES ('${fromdata.TRACK_CODE}', '${fromdata.Pallet_NO}', 1, GETDATE(), '${fromdata.PIN_ID}',
+            '${fromdata.INTERNAL_ID}', NULL, '', 'N', 'N', '${fromdata.SHIP_PROVIDER_OOD}',
+            (SELECT DISTINCT ORDER_NUMBER_OOD
+             FROM ONLINE_ORDER_DETAIL
+             WHERE TRACK_CODE_OOD = '${fromdata.TRACK_CODE}'),
+            (SELECT DISTINCT B.PARTNERNAME
+             FROM ONLINE_ORDER_DETAIL A
+             JOIN ONLINE_CUSTOMER_PARTNER B
+                 ON A.SHOPID_OOD = B.SHOPID
+             WHERE A.TRACK_CODE_OOD = '${fromdata.TRACK_CODE}'));
+
+
+        --update TSDC_CONFIRM_OUTBOUND
         --set QTY_BOX  = QTY_BOX+ 1
         --,CREATE_DATE = getdate()
         --where bill_no = '${fromdata.TRACK_CODE}'
         --and pallet_no = '${fromdata.Pallet_NO}'
         --and CONVERT(date,CREATE_DATE) = '${fromdata.currentDateString}'
+
      
    `;
 
@@ -3840,20 +4028,6 @@ app.post('/interface_Tracking_confirm_outbound', function (req, res) {
 		)
         and A.PALLET_NO ='${fromdata.Pallet_NO}'
 
-
-        UPDATE a
-        SET a.QTY_BOX = b.QTY_BOX
-        ,CREATE_DATE = b.CREATE_DATE 
-        FROM [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND a
-        INNER JOIN TSDC_CONFIRM_OUTBOUND b 
-            ON a.BILL_NO = b.BILL_NO 
-            AND a.PALLET_NO = b.PALLET_NO
-            AND CONVERT(DATE, a.CREATE_DATE) = CONVERT(DATE, b.CREATE_DATE) 
-        WHERE  b.PALLET_NO = '${fromdata.Pallet_NO}' 
-        and a.QTY_BOX <> b.QTY_BOX 
-        AND CONVERT(DATE, b.CREATE_DATE) = CONVERT(DATE, GETDATE());
-        
-
    `;
 
 
@@ -3876,6 +4050,52 @@ app.post('/interface_Tracking_confirm_outbound', function (req, res) {
         });
     });
 });
+
+// app.post('/interface_Tracking_confirm_outbound2', function (req, res) {
+//     var fromdata = req.body;
+//     var Datenow = DateNow();
+//     //sql.close();
+//     new sql.ConnectionPool(db).connect().then(pool => {
+
+//         var query = `
+//         delete [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+//         where CAST(CREATE_DATE AS DATE)  = CAST(GETDATE() AS DATE) 
+//         and PALLET_NO ='${fromdata.Pallet_NO}';
+
+//         insert into [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+//         select * from TSDC_CONFIRM_OUTBOUND A
+//         where  NOT EXISTS 
+//         (SELECT 1 FROM [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND B
+//             WHERE A.[BILL_NO] = B.[BILL_NO] 
+//             and CAST(CREATE_DATE AS DATE)  = CAST(GETDATE() AS DATE)  
+//         ) and BILL_NO not in
+// 		(
+// 		Select BILL_NO From [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+// 		)
+//         and A.PALLET_NO ='${fromdata.Pallet_NO}'
+        
+//    `;
+
+
+//         return pool.request().query(query, function (err_query) {
+//             if (err_query) {
+//                 dataout = {
+//                     status: 'error',
+//                     member: err_query,
+//                     query: query
+//                 };
+//                 res.json(dataout);
+//             } else {
+//                 dataout = {
+//                     status: 'success',
+//                     query: query
+//                 };
+//                 res.json(dataout);
+//             }
+//             sql.close();
+//         });
+//     });
+// });
 
 /////////////////////////////////////////////// upgrage sql
 
