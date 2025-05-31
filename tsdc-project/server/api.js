@@ -4,6 +4,7 @@ var fs = require('fs');
 var app = express.Router();
 var bodyParser = require('body-parser');
 const { query } = require('express');
+var path = require('path');
 require('./config/connect.js');
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
@@ -39,7 +40,87 @@ app.get('/download/:filename', function (req, res) {
     res.download(file);
 });
 
+app.get('/downloadfile_NetworkPath', (req, res) => {
+    const NETWORK_BASE_PATHS = {
+        '23': '\\\\10.26.1.23',
+        '26': '\\\\10.26.1.26',
+    };
 
+    const networkKey = req.query.networkKey;
+    const relativePath = decodeURIComponent(req.query.path || '').replace(/^[/\\]+/, ''); // ลบ / หรือ \ นำหน้าออก
+    const basePath = NETWORK_BASE_PATHS[networkKey];
+    const fullPath = path.join(basePath, relativePath);
+
+    if (!networkKey || !relativePath) {
+        return res.status(400).send('networkKey และ path ต้องถูกระบุ');
+    }
+
+    if (!basePath) {
+        return res.status(403).send('networkKey นี้ไม่ได้รับอนุญาต');
+    }
+
+    // ตรวจสอบไฟล์ว่ามีอยู่และอ่านได้หรือไม่
+    fs.access(fullPath, fs.constants.F_OK | fs.constants.R_OK, (err) => {
+        if (err) {
+            if (err.code === 'ENOENT') return res.status(404).send('ไม่พบไฟล์');
+            if (err.code === 'EACCES') return res.status(403).send('ไม่มีสิทธิ์เข้าถึงไฟล์');
+            return res.status(500).send('เกิดข้อผิดพลาด: ' + err.message);
+        }
+
+        // ส่งไฟล์ให้ client ดาวน์โหลด
+        res.download(fullPath, path.basename(fullPath), (err) => {
+            if (err) {
+                console.error('ดาวน์โหลดล้มเหลว:', err);
+                return res.status(500).send('ดาวน์โหลดล้มเหลว');
+            }
+        });
+    });
+});
+
+app.post('/checkpathfile_labeltrack', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `      
+        
+        select  *  from [10.26.1.11].[TSDC_CONVEYOR].[DBO].ONLINE_ORDER_SHIPPING
+        where  RTS_STATUS_OOS = 'S'
+        and FILE_PACKING_OOS != ''
+        and FILE_PACKING_OOS is not null
+        and TRACKING_OOS != ''
+        and TRACKING_OOS is not null
+        and order_number_oos = '${fromdata.shipment_id}'
+        and SHOPID_OOS = '${fromdata.SELLER_NO}'
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
 
 
 
@@ -3419,7 +3500,7 @@ app.post('/check_Pallet_confirm_outbound11', function (req, res) {
 
         var query = ` 
         select top 1*
-        from TSDC_CONFIRM_OUTBOUND
+        from [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_CONFIRM_OUTBOUND
         where PALLET_NO  = '${fromdata.Pallet_NO}'
         and CONVERT(date,CREATE_DATE) = CONVERT(date,getdate()) 
         and driver_name is not null
@@ -4051,51 +4132,56 @@ app.post('/interface_Tracking_confirm_outbound', function (req, res) {
     });
 });
 
-// app.post('/interface_Tracking_confirm_outbound2', function (req, res) {
-//     var fromdata = req.body;
-//     var Datenow = DateNow();
-//     //sql.close();
-//     new sql.ConnectionPool(db).connect().then(pool => {
+app.post('/interface_Tracking_confirm_outbound2', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
 
-//         var query = `
-//         delete [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
-//         where CAST(CREATE_DATE AS DATE)  = CAST(GETDATE() AS DATE) 
-//         and PALLET_NO ='${fromdata.Pallet_NO}';
+        var query = `
+        delete [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+        where CAST(CREATE_DATE AS DATE)  = CAST(GETDATE() AS DATE) 
+        and PALLET_NO ='${fromdata.Pallet_NO}' ${fromdata.condition};
 
-//         insert into [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
-//         select * from TSDC_CONFIRM_OUTBOUND A
-//         where  NOT EXISTS 
-//         (SELECT 1 FROM [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND B
-//             WHERE A.[BILL_NO] = B.[BILL_NO] 
-//             and CAST(CREATE_DATE AS DATE)  = CAST(GETDATE() AS DATE)  
-//         ) and BILL_NO not in
-// 		(
-// 		Select BILL_NO From [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
-// 		)
-//         and A.PALLET_NO ='${fromdata.Pallet_NO}'
+        insert into [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+        select * from TSDC_CONFIRM_OUTBOUND 
+        where CAST(CREATE_DATE AS DATE)  = CAST(GETDATE() AS DATE) 
+        and PALLET_NO ='${fromdata.Pallet_NO}' ${fromdata.condition};
+
+        --insert into [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+        --select * from TSDC_CONFIRM_OUTBOUND A
+        --where  NOT EXISTS 
+        --(SELECT 1 FROM [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND B
+        --    WHERE A.[BILL_NO] = B.[BILL_NO] 
+        --    and CAST(CREATE_DATE AS DATE)  = CAST(GETDATE() AS DATE)  
+        --) and BILL_NO not in
+		--(
+	    --Select BILL_NO From [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
+		--)
+        --and A.PALLET_NO ='${fromdata.Pallet_NO}'
         
-//    `;
+   `;
 
 
-//         return pool.request().query(query, function (err_query) {
-//             if (err_query) {
-//                 dataout = {
-//                     status: 'error',
-//                     member: err_query,
-//                     query: query
-//                 };
-//                 res.json(dataout);
-//             } else {
-//                 dataout = {
-//                     status: 'success',
-//                     query: query
-//                 };
-//                 res.json(dataout);
-//             }
-//             sql.close();
-//         });
-//     });
-// });
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
 
 /////////////////////////////////////////////// upgrage sql
 
