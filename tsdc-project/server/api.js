@@ -128,8 +128,6 @@ app.post('/login', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     var query;
-    console.log("USER LOGIN :" + fromdata.user_id);
-    console.log("password LOGIN :" + fromdata.password);
     new sql.ConnectionPool(db).connect().then(pool => {
         query = `
         SELECT 
@@ -173,7 +171,6 @@ app.post('/login', function (req, res) {
 app.post('/LOAD_USERTABLECHECK', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("LOAD_USERTABLECHECK :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -227,7 +224,6 @@ app.post('/LOAD_USERTABLECHECK', function (req, res) {
 app.post('/insert_user_tablecheck', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log('insert_user_tablecheck');
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -342,7 +338,6 @@ app.get('/get_userpincode', function (req, res) {
 app.post('/insert_user_tablecheck2', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log('insert_user_tablecheck2');
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -421,7 +416,6 @@ app.post('/insert_user_tablecheck2', function (req, res) {
 app.post('/load_checkinPack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("load_checkinPack :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -650,7 +644,6 @@ app.post('/CheckWork_V2', function (req, res) {
 app.post('/Checkorder_block', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("Checkorder_block :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -742,7 +735,6 @@ app.post('/CheckWork', function (req, res) {
 app.post('/CheckOrder_Cancel', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("CheckOrder_Cancel :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -787,7 +779,6 @@ app.post('/CheckOrder_Cancel', function (req, res) {
 app.post('/CheckCon', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("CheckCon :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -854,7 +845,6 @@ app.post('/CheckCon', function (req, res) {
 app.post('/CheckConOnline', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("CheckConOnline :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -949,7 +939,6 @@ app.post('/CheckConOnline', function (req, res) {
 app.post('/CheckConOffline', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("CheckConOffline :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1003,7 +992,6 @@ app.post('/CheckConOffline', function (req, res) {
 app.post('/CheckConSorter', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("CheckConSorter :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1059,7 +1047,6 @@ app.post('/CheckConSorter', function (req, res) {
 app.post('/summaryCon', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("summaryCon :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1133,7 +1120,6 @@ end MaxBox_NO
 app.post('/summaryConSorter', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("summaryConSorter :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1189,7 +1175,6 @@ END AS STATUS_CHECK
 app.post('/matchItemInCon', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("matchItemInCon :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1240,7 +1225,6 @@ app.post('/matchItemInCon', function (req, res) {
 app.post('/matchItemInConSORTER', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("matchItemInConSORTER :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1288,7 +1272,6 @@ app.post('/matchItemInConSORTER', function (req, res) {
 app.post('/checkEqualCon', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("checkEqual :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1343,7 +1326,6 @@ AND  ITEM_ID_BARCODE =  '${fromdata.ITEM_ID_BARCODE}'
 app.post('/checkEqualConSorter', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("checkEqualConSorter :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1395,7 +1377,6 @@ AND  ITEM_ID_BARCODE =  '${fromdata.ITEM_ID_BARCODE}'
 app.post('/updateConQtyCheck', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log('updateConQtyCheck');
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1451,7 +1432,6 @@ app.post('/updateConQtyCheck', function (req, res) {
 app.post('/updateCoverSheet', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log('updateCoverSheet');
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1494,7 +1474,6 @@ app.post('/updateCoverSheet', function (req, res) {
 app.post('/updateConQtyCheck_SORTER', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log('updateConQtyCheck_SORTER');
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1550,7 +1529,6 @@ app.post('/updateConQtyCheck_SORTER', function (req, res) {
 app.post('/updateConQtyCheck_SORTER_fullcarton', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log('updateConQtyCheck_SORTER_fullcarton');
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1609,7 +1587,6 @@ WHERE  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
 app.post('/updateConQtyCheck_fullcarton', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log('updateConQtyCheck_fullcarton');
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1668,18 +1645,18 @@ app.post('/updateConQtyCheck_fullcarton', function (req, res) {
 app.post('/BOX_CONTROL_DETAIL', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("BOX_CONTROL :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
         var query = `        
 
-        select * from  TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+        select * from  TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
         where REF_INDEX is null
         and TABLE_CHECK = '${fromdata.TABLE_CHECK}'
         and PO_NO = '${fromdata.shipment_id}'
         AND SELLER_NO = '${fromdata.SELLER_NO}'
-        and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'      
+        and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'     
+        ${fromdata.conditiontracking || ''}
        `;
         return pool.request().query(query, function (err_query, recordset) {
             if (err_query) {
@@ -1705,7 +1682,9 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
                                 ,[QTY]
                                 ,[USER_CHECK]
                                 ,[TABLE_CHECK]
-                                ,[ITEM_ID_BARCODE])
+                                ,[ITEM_ID_BARCODE]
+                                ,[Tracking]
+                                )
                             VALUES
                                 (NULL
                                 ,'${fromdata.CONTAINER_ID}'
@@ -1716,7 +1695,9 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
                                 ,1
                                 ,'${fromdata.PIN_CODE}'
                                 ,LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))
-                                ,'${fromdata.ITEM_ID_BARCODE}')
+                                ,'${fromdata.ITEM_ID_BARCODE}'
+                                ,'${fromdata.TRACKING}'
+                                )
 
                         `;
                     return pool.request().query(query, function (err_query) {
@@ -1739,14 +1720,16 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
 
                 } else {
                     var query = `
-                    update TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+                    update TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW 
                     set QTY = QTY+1
+                    from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
                     where   REF_INDEX is null
                     and TABLE_CHECK = '${fromdata.TABLE_CHECK}'
                     and PO_NO = '${fromdata.shipment_id}'
                     AND SELLER_NO = '${fromdata.SELLER_NO}'
                     and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}' 
                     and QTY < '${fromdata.check_QTY_PICK}' 
+                    ${fromdata.conditiontracking || ''}
                      `;
                     return pool.request().query(query, function (err_query) {
                         if (err_query) {
@@ -1774,7 +1757,6 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
 app.post('/BOX_CONTROL_DETAIL_FULLCARTON', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("BOX_CONTROL_DETAIL_FULLCARTON :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1879,7 +1861,6 @@ app.post('/BOX_CONTROL_DETAIL_FULLCARTON', function (req, res) {
 app.post('/check_master_box', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("checkEqual :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -1966,11 +1947,13 @@ app.post('/tracksum_qty', function (req, res) {
 
         var query = `        
 
-        select sum(qty) as TRACKSUM_QTY
-        from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+        select sum(qty) as TRACKSUM_QTY,Tracking
+        from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
         where   REF_INDEX is null
         and PO_NO = '${fromdata.shipment_id}'
         AND SELLER_NO = '${fromdata.SELLER_NO}'
+        ${fromdata.conditiontracking || ''}
+        group by Tracking
         
        `;
         return pool.request().query(query, function (err_query, recordset) {
@@ -2003,7 +1986,7 @@ app.post('/tracksum_qty', function (req, res) {
 
 app.post('/tracking_running', function (req, res) {
     var fromdata = req.body;
-    var Datenow = DateNow();
+    //var Datenow = DateNow();
     console.log('tracking_running');
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
@@ -2091,7 +2074,7 @@ app.post('/tracking_running', function (req, res) {
                 ,${fromdata.CARTON_BOX_H}
                 ,${fromdata.CARTON_BOX_L}
                 ,''
-                ,''
+                ,'${fromdata.TRACKING}'
                 ,''
                 ,''
                 ,''
@@ -2122,13 +2105,16 @@ app.post('/tracking_running', function (req, res) {
 
 
         query += `
-                    UPDATE TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+                    UPDATE TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW 
                     SET    REF_INDEX = @REF_INDEX,
                            BOX_NO_ORDER = @BOX_NO_ORDER,
                            BOX_SIZE = '${fromdata.BOX_SIZE}'
+                    from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
                     where  REF_INDEX is null
                     and PO_NO = '${fromdata.shipment_id}'
                     AND SELLER_NO = '${fromdata.SELLER_NO}'
+                    ${fromdata.conditiontracking || ''}
+                    
 
                     
     
@@ -2199,7 +2185,6 @@ app.post('/tracking_running', function (req, res) {
 app.post('/loadTracking', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
-    console.log("loadTracking :");
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
@@ -2209,9 +2194,9 @@ app.post('/loadTracking', function (req, res) {
         from TSDC_PICK_CHECK_BOX_CONTROL_NEW
         where PO_NO  = '${fromdata.shipment_id}'
         AND SELLER_NO = '${fromdata.SELLER_NO}') as MaxBox_NO
-         from TSDC_PICK_CHECK_BOX_CONTROL_NEW
+         from TSDC_PICK_CHECK_BOX_CONTROL_NEW a
         where po_no = '${fromdata.shipment_id}'
-        and SELLER_NO =  '${fromdata.SELLER_NO}'
+        and SELLER_NO =  '${fromdata.SELLER_NO}' ${fromdata.conditiontracking || ''}
         order by CREATE_DATE 
                
 
@@ -2670,6 +2655,12 @@ app.post('/ReprintTracking', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         var query = `
+
+        update TSDC_PICK_CHECK_BOX_CONTROL_NEW
+        set REPRINT_DATE = getdate()
+        where REF_INDEX = '${fromdata.REF_INDEX}'
+        and PO_NO = '${fromdata.PO_NO}'
+        AND SELLER_NO = '${fromdata.SELLER_NO}' ; 
 
         select REF_INDEX
         ,QTY
@@ -3384,6 +3375,7 @@ app.post('/updateBoxTracking', function (req, res) {
         ,WIDTH = ${fromdata.CARTON_BOX_W}
         ,HIGH = ${fromdata.CARTON_BOX_H}
         ,DEEP = ${fromdata.CARTON_BOX_L}
+        ,REPRINT_DATE = getdate()
         where   REF_INDEX =  '${fromdata.REF_INDEX}';
 
         UPDATE  TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
@@ -4777,5 +4769,710 @@ app.post('/update_statusRTS', function (req, res) {
         });
     });
 });
+
+app.post('/check_order_notclose', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+    select * from [V_WORK_INSTRUCTION_VIEW_ORDER_NOT_CLOSE] a inner join  TSDC_PICK_CHECK_NEW b
+    on a.SHIPMENT_ID collate Thai_CI_AS = b.SHIPMENT_ID
+	where b.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+//////////////////// check_TRACKING
+app.post('/CheckWorktrack', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+        
+   
+        select distinct PICK_CHECK.CONTAINER_ID ,PICK_CHECK.SELLER_NO,'${fromdata.USER_NAME}' as USER_NAME,PICK_CHECK.ORDER_TYPE,PICK_CHECK.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
+        from TSDC_PICK_CHECK_NEW_TRACKING as PICK_CHECK
+		  inner join TSDC_CONTAINER_MAPORDER  m on PICK_CHECK.CONTAINER_ID = m.CONTAINER_ID
+		left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on PICK_CHECK.SHIPMENT_ID = p.SHIPMENT_ID		
+        where  PICK_CHECK.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+        and  PICK_CHECK.ORDER_TYPE != 'CANCEL'
+        AND  PICK_CHECK.SELLER_NO = m.SELLER_NO
+		and PICK_CHECK.SHIPMENT_ID = m.SHIPMENT_ID
+       
+                       
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    
+                    var query2 = `        
+
+                    select distinct PICK_CHECK.CONTAINER_ID ,PICK_CHECK.SELLER_NO,'${fromdata.USER_NAME}' as USER_NAME,PICK_CHECK.ORDER_TYPE,PICK_CHECK.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
+                    from TSDC_PICK_CHECK_NEW_TRACKING as  PICK_CHECK
+                     inner join TSDC_CONTAINER_MAPORDER  m on PICK_CHECK.CONTAINER_ID = m.CONTAINER_ID
+                    left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on PICK_CHECK.SHIPMENT_ID = p.SHIPMENT_ID		
+                   where  PICK_CHECK.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+                   AND  PICK_CHECK.SELLER_NO = m.SELLER_NO
+                   and PICK_CHECK.SHIPMENT_ID = m.SHIPMENT_ID
+                    
+                   `;
+                    return pool.request().query(query2, function (err_query, recordset) {
+                        if (err_query) {
+                            dataout = {
+                                status: 'error',
+                                member: err_query,
+                                query: query2,
+                            };
+                            res.json(dataout);
+                        } else {
+                            var data = recordset.recordset;
+                            if (recordset.recordset.length === 0) {
+                                dataout = {
+                                    status: 'null'
+                                };
+                                res.json(dataout);
+                            } else {
+                                dataout = {
+                                    status: 'success',
+                                    data: data
+                                };
+                                res.json(dataout);
+                            }
+                        }
+                    });
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/CheckConOnlinetrack', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    console.log("CheckConOnlinetrack :");
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+
+        select *  from (
+            SELECT  sum(QTY_CHECK) as SUMCHECK
+               ,sum(QTY_PICK) as SUMCON
+               ,shipment_id
+               ,SELLER_NO
+               ,'' as USER_DEF5
+               ,customer_id as 'Owner'
+               ,status_print as 'Print_Tracking'
+                 FROM   TSDC_PICK_CHECK_NEW_TRACKING A,TSDC_CONTROL_PRINT_ONLINE_TRACKING B
+                 WHERE SHIPMENT_ID = '${fromdata.shipment_id}'
+                 and SELLER_NO = '${fromdata.SELLER_NO}' ${fromdata.conditiontracking}
+                 and a.SELLER_NO = b.SELLER_id
+                 and a.ORDER_TYPE != 'CANCEL'
+                 group by  shipment_id,SELLER_NO
+                 --,BRAND
+                ,customer_id,status_print ) as a,
+            (select  SHIPPING_NAME,PO_NO,SHIP_NO,TCHANNEL from TSDC_INTERFACE_ORDER_HEADER) as c
+                where  a.SHIPMENT_ID = c.PO_NO
+                and a.SELLER_NO = c.SHIP_NO 
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null',
+                        query: query,
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/summaryContrack', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+    
+        select ITEM_ID
+        ,QTY_REQUESTED
+        ,QTY_PICK
+        ,ITEM_ID_BARCODE
+        ,ITEM_DESC
+        ,sum(QTY_CHECK) as QTY_CHECK
+        ,SHIPMENT_ID
+        ,case when ORDER_TYPE = 'CANCEL' then 'CANCEL' else '' end  as ITME_CANCEL
+        ,a.SELLER_NO
+        ,BRAND
+        ,UOM_PICK
+        ,CASE
+    WHEN sum(QTY_CHECK) <> QTY_PICK THEN '0'
+    ELSE '1'
+   END AS STATUS_CHECK
+   , case when (select    max(BOX_NO_ORDER)  MaxBox_NO
+        from TSDC_PICK_CHECK_BOX_CONTROL_NEW a
+        where PO_NO  = '${fromdata.shipment_id}'
+        AND SELLER_NO = '${fromdata.SELLER_NO}' ${fromdata.conditiontracking}
+       ) IS NULL then 0
+   else (select    max(BOX_NO_ORDER)  MaxBox_NO
+        from TSDC_PICK_CHECK_BOX_CONTROL_NEW a
+        where PO_NO = '${fromdata.shipment_id}'
+        AND SELLER_NO = '${fromdata.SELLER_NO}' ${fromdata.conditiontracking}
+       )
+   end MaxBox_NO ,a.TRACKING,b.REF_INDEX
+   
+        FROM TSDC_PICK_CHECK_NEW_TRACKING a
+        left join TSDC_PICK_CHECK_BOX_CONTROL_NEW b on a.TRACKING = b.TRACKING
+        where SHIPMENT_ID  = '${fromdata.shipment_id}'
+        AND a.SELLER_NO = '${fromdata.SELLER_NO}'${fromdata.conditiontracking}
+        group by shipment_ID ,a.SELLER_NO, ITEM_ID  ,a.TRACKING  ,QTY_REQUESTED,ITEM_ID_BARCODE
+        ,QTY_PICK ,BRAND,ITEM_DESC,UOM_PICK,ORDER_TYPE,b.REF_INDEX
+        order by STATUS_CHECK , QTY_CHECK
+         
+      
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                        , query: query
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                        query: query
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/matchItemInContrack', async function (req, res) {
+    const fromdata = req.body;
+    const Datenow = DateNow();
+    let pool;
+
+    try {
+        pool = await new sql.ConnectionPool(db).connect();
+
+        const query = `
+            SELECT SHIPMENT_ID, ITEM_ID, ITEM_DESC, SELLER_NO,
+                   QTY_REQUESTED, QTY_PICK, QTY_CHECK,
+                   FORMAT(TRANSACTION_DATE,'dd-MM-yyyy') as TRANSACTION_DATE,
+                   ORDER_TYPE, TRACKING
+            FROM TSDC_PICK_CHECK_NEW_TRACKING a
+            WHERE SHIPMENT_ID = @shipment_id
+            AND SELLER_NO = @SELLER_NO
+            AND ITEM_ID_BARCODE = @ITEM_ID_BARCODE
+            ${fromdata.conditiontracking || ''}
+        `;
+
+        const result = await pool.request()
+            .input('shipment_id', sql.VarChar, fromdata.shipment_id)
+            .input('SELLER_NO', sql.VarChar, fromdata.SELLER_NO)
+            .input('ITEM_ID_BARCODE', sql.VarChar, fromdata.ITEM_ID_BARCODE)
+            .query(query);
+
+        if (result.recordset.length === 0) {
+            return res.json({ status: 'notfound' });
+        }
+
+        res.json({ status: 'success', data: result.recordset });
+
+    } catch (err) {
+        res.json({ status: 'error', data: err });
+    } finally {
+        if (pool) await pool.close(); 
+    }
+});
+
+
+app.post('/checktracking_Inshipment', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+       
+        select TRACKING,sum(QTY_PICK) QTY_PICK ,sum(QTY_CHECK) QTY_CHECK  
+        FROM   TSDC_PICK_CHECK_NEW_TRACKING  a
+         WHERE  SHIPMENT_ID = '${fromdata.shipment_id}'
+         and SELLER_NO = '${fromdata.SELLER_NO}' ${fromdata.condition_nontracking}
+         and TRACKING is not null
+         and TRACKING != ''
+         and ORDER_TYPE != 'CANCEL'
+         group by SHIPMENT_ID,SELLER_NO,TRACKING 
+         HAVING  SUM(QTY_CHECK) > 0 AND  SUM(QTY_PICK) != SUM(QTY_CHECK);
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/checkEqualContrack', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+
+        SELECT  top 1 
+        ITEM_ID,
+        QTY_PICK,
+        (case
+            when sum(QTY_CHECK) = QTY_PICK then 'equal'
+            when sum(QTY_CHECK) > QTY_PICK then 'equal'
+            else 'not_equal'
+            end) as QTY_equal
+       
+        FROM   TSDC_PICK_CHECK_NEW_TRACKING   
+        where SHIPMENT_ID = '${fromdata.shipment_id}'
+        and SELLER_NO = '${fromdata.SELLER_NO}'
+        AND  ITEM_ID_BARCODE =  '${fromdata.ITEM_ID_BARCODE}'
+        and TRACKING =  '${fromdata.TRACKING}'
+
+       group by  ITEM_ID,QTY_PICK,SHIPMENT_ID,SELLER_NO
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null',
+                        query: query,
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+
+app.post('/updateConQtyChecktrack', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+
+        
+        UPDATE  TSDC_PICK_CHECK_NEW_TRACKING
+        SET		QTY_CHECK = QTY_CHECK + 1 
+        ,   USER_CHECK = '${fromdata.USER_NAME}'
+        , END_DATE_TIME = getdate() , 
+        START_DATE_TIME = (case when QTY_CHECK = 0 then GETDATE() else START_DATE_TIME end),
+        TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+        where   SHIPMENT_ID = (select SHIPMENT_ID from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+        and SELLER_NO =  (select SELLER_NO from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+            AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
+            and TRACKING = '${fromdata.TRACKING}'
+            and QTY_CHECK < QTY_PICK
+   
+     `;
+
+
+        query += `
+
+     insert into [TSDC_PICK_CHECK_LOG_NEW]
+     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+  
+  select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW_TRACKING
+  where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+      AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
+  
+     ) as a
+    
+`;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/UpdateChecktrackdate', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+        UPDATE  TSDC_PICK_CHECK_NEW_TRACKING a
+        SET 	CHECK_DATE = GETDATE()
+        WHERE	
+                 SHIPMENT_ID = '${fromdata.shipment_id}'
+				 and SELLER_NO = '${fromdata.SELLER_NO}'
+                 and CHECK_DATE is null
+                 ${fromdata.conditiontracking || ''}
+     
+        `;
+
+
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/checkpathfile_labeltracking', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `      
+        
+        select  *  from TSDC_PICK_CHECK_NEW_TRACKING a
+        where   FILE_PACKING != ''
+        and FILE_PACKING is not null
+        and TRACKING != ''
+        and TRACKING is not null
+        and SHIPMENT_ID = '${fromdata.shipment_id}'
+        and SELLER_NO = '${fromdata.SELLER_NO}'
+        and TRACKING ='${fromdata.TRACKING}'
+                           
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/updateCoverSheettrack', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+  
+        UPDATE  TSDC_PICK_CHECK_NEW_TRACKING
+        SET	CHECK_DATE = getdate()	
+        where   SHIPMENT_ID =  '${fromdata.shipment_id}'
+        and SELLER_NO =  '${fromdata.SELLER_NO}';
+
+        update TSDC_PICK_PRINT_SHIP_DELIVERY
+        set CARTON_NO = '${fromdata.MaxBox_NO}'
+        ,PRINT_STATUS = 'Y'
+        where (BILL_N8_BLH = '${fromdata.shipment_id}' or BILL_NO = '${fromdata.shipment_id}')  
+        and STORE_NO = '${fromdata.SELLER_NO}'
+   
+     `;
+
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/summary_ITEM_LACK_Track', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+
+       
+            select ITEM_ID
+            ,QTY_REQUESTED
+            ,QTY_PICK
+            ,sum(QTY_CHECK) as QTY_CHECK
+            ,(QTY_PICK -sum(QTY_CHECK)) as QTY_LACK
+            ,a.SHIPMENT_ID
+            ,(FORMAT(GETDATE(),'dd-MM-yyyy ') 
+            + CONVERT(VARCHAR(5),CONVERT(DATETIME, GETDATE() , 0), 108) )as TO_DAY
+            ,STORE_NO
+            ,STORE_NAME
+            ,(FORMAT(BILL_DATE,'dd-MM-yyyy'))  as ORDER_DATE
+            FROM TSDC_PICK_CHECK_NEW_TRACKING  a , TSDC_PICK_PRINT_SHIP_DELIVERY b
+            where a.SHIPMENT_ID = '${fromdata.shipment_id}' 
+            and SELLER_NO  =   '${fromdata.SELLER_NO}' 
+            and (a.SHIPMENT_ID = b.BILL_N8_BLH or a.SHIPMENT_ID = b.BILL_NO)
+            and a.SELLER_NO = b.STORE_NO
+            group by a.shipment_ID , ITEM_ID   ,QTY_REQUESTED ,QTY_PICK ,STORE_NO
+            ,STORE_NAME
+            ,BILL_DATE
+            HAVING (sum(QTY_CHECK) - QTY_PICK) <> '0'
+                
+    
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null',
+                        data: err_query
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                        query: query
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/Rescan_checkitem_track', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+        update TSDC_PICK_CHECK_NEW_TRACKING
+		set QTY_CHECK = CASE 
+                    WHEN QTY_CHECK - QTY < 0 THEN 0
+                    ELSE QTY_CHECK - QTY
+                END
+        ,CHECK_DATE = NULL
+		from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a,TSDC_PICK_CHECK_NEW_TRACKING b
+        where   REF_INDEX is null
+        and PO_NO = '${fromdata.shipment_id}'
+        AND a.SELLER_NO = '${fromdata.SELLER_NO}'  ${fromdata.conditiontracking}
+		and a.PO_NO = b.SHIPMENT_ID 
+		AND a.SELLER_NO = B.SELLER_NO
+		AND a.ITEM_ID = B.ITEM_ID
+        And a.Tracking = B.TRACKING
+
+     `;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+
+                var query2 = `
+                delete TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW 
+                from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
+                where   REF_INDEX is null
+                and PO_NO = '${fromdata.shipment_id}'
+                AND SELLER_NO = '${fromdata.SELLER_NO}'  ${fromdata.conditiontracking};
+             `;
+
+                return pool.request().query(query2, function (err_query) {
+                    if (err_query) {
+                        dataout = {
+                            status: 'error',
+                            member: err_query,
+                            query: query
+                        };
+                        res.json(dataout);
+                    } else {
+                        dataout = {
+                            status: 'success',
+                            query: query
+                        };
+                        res.json(dataout);
+                    }
+                    sql.close();
+                });
+
+            }
+            sql.close();
+        });
+    });
+});
+
 
 module.exports = app;
