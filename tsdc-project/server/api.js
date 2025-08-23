@@ -5474,5 +5474,81 @@ app.post('/Rescan_checkitem_track', function (req, res) {
     });
 });
 
+app.post('/Get_ONLINE_ORDER_SHIPPING', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `      
+        
+        select  *,CONVERT(VARCHAR(16), CAST(RTS_DATE_OOS AS DATETIME), 120) AS RTS_DATE  from [10.26.1.11].[TSDC_CONVEYOR].[DBO].ONLINE_ORDER_SHIPPING
+        where  order_number_oos = '${fromdata.shipment_id}'
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/UPDATE_TrackingAndRTS', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+  
+        UPDATE  [10.26.1.11].[TSDC_CONVEYOR].[DBO].ONLINE_ORDER_SHIPPING
+        SET	RTS_DATE_OOS = getdate()
+        ,RTS_STATUS_OOS = 'S'
+        ,TRACKING_OOS = '${fromdata.TRACK_CODE}'
+        where   ORDER_NUMBER_OOS =  '${fromdata.shipment_id}'
+
+     `;
+
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
 
 module.exports = app;
