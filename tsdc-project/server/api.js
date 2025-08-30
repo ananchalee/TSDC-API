@@ -4732,6 +4732,51 @@ app.post('/Moniter_SumstatusRTS', function (req, res) {
     });
 });
 
+
+app.post('/Moniter_InterfaceErrorManH', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+
+        SELECT ERROR_MSG,COMPANY,FORMAT(DATE_TIME_STAMP,'dd-MM-yyyy HH:mm:ss') as DATE_TIME_STAMP,REFERENCE_ID01 as SHIPMENT_ID
+        FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR
+        where INTERFACE_PROCESS = 'Shipping'
+        and WAREHOUSE is not null
+        and REFERENCE_ID01 not in (select shipment_id from [10.26.1.83].ILS.dbo.SHIPMENT_HEADER )
+        and CAST(DATE_TIME_STAMP AS DATE) = CAST(GETDATE() AS DATE)
+        order by DATE_TIME_STAMP desc 
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
 app.post('/update_statusRTS', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
