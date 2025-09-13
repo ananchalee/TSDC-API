@@ -2383,18 +2383,22 @@ app.post('/Rescan_checkitem', function (req, res) {
 
         var query = `  
         update TSDC_PICK_CHECK_NEW
-		set QTY_CHECK = CASE 
-                    WHEN QTY_CHECK - QTY < 0 THEN 0
-                    ELSE QTY_CHECK - QTY
-                END
+        set QTY_CHECK = CASE 
+               WHEN QTY_CHECK - QTY < 0 THEN 0
+               ELSE QTY_CHECK - QTY
+               END
+        ,USER_CHECK = NULL
         ,CHECK_DATE = NULL
-		from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a,TSDC_PICK_CHECK_NEW b
-        where   REF_INDEX is null
-        and PO_NO = '${fromdata.shipment_id}'
-        AND a.SELLER_NO = '${fromdata.SELLER_NO}'
-		and a.PO_NO = b.SHIPMENT_ID 
-		AND a.SELLER_NO = B.SELLER_NO
-		AND a.ITEM_ID = B.ITEM_ID;
+        ,START_DATE_TIME = NULL
+        ,END_DATE_TIME = NULL
+        ,TABLE_CHECK = NULL
+         from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a,TSDC_PICK_CHECK_NEW b
+         where   REF_INDEX is null
+         and PO_NO = '${fromdata.shipment_id}'
+         AND a.SELLER_NO = '${fromdata.SELLER_NO}'
+         and a.PO_NO = b.SHIPMENT_ID 
+         AND a.SELLER_NO = B.SELLER_NO
+         AND a.ITEM_ID = B.ITEM_ID;
 
      `;
 
@@ -4741,13 +4745,59 @@ app.post('/Moniter_InterfaceErrorManH', function (req, res) {
 
         var query = `        
 
-        SELECT ERROR_MSG,COMPANY,FORMAT(DATE_TIME_STAMP,'dd-MM-yyyy HH:mm:ss') as DATE_TIME_STAMP,REFERENCE_ID01 as SHIPMENT_ID
-        FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR
-        where INTERFACE_PROCESS = 'Shipping'
-        and WAREHOUSE is not null
-        and REFERENCE_ID01 not in (select shipment_id from [10.26.1.83].ILS.dbo.SHIPMENT_HEADER )
-        and CAST(DATE_TIME_STAMP AS DATE) = CAST(GETDATE() AS DATE)
-        order by DATE_TIME_STAMP desc 
+        (
+            SELECT 
+                ERROR_MSG,
+                COMPANY,
+                FORMAT(DATE_TIME_STAMP,'dd-MM-yyyy HH:mm:ss') AS DATE_TIME_STAMP,
+                REFERENCE_ID01 AS SHIPMENT_ID,INTERFACE_PROCESS
+            FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR
+            WHERE INTERFACE_PROCESS = 'Shipping'
+              AND WAREHOUSE IS NOT NULL
+              AND REFERENCE_ID01 NOT IN (
+                    SELECT shipment_id 
+                    FROM [10.26.1.83].ILS.dbo.SHIPMENT_HEADER
+              )
+              AND CAST(DATE_TIME_STAMP AS DATE) = CAST(GETDATE() AS DATE)
+        )
+        UNION ALL
+        (
+            SELECT 
+                'TITEM = ' + IE.REFERENCE_ID06 + ' : ' + ERROR_MSG,
+                COMPANY,
+                FORMAT(DATE_TIME_STAMP,'dd-MM-yyyy HH:mm:ss') AS DATE_TIME_STAMP,
+                REFERENCE_ID01 AS SHIPMENT_ID,INTERFACE_PROCESS
+            FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR IE
+            WHERE IE.interface_process = 'Receiving'
+              AND (IE.REFERENCE_ID01 IS NULL OR IE.REFERENCE_ID01 = '')
+              AND CAST(DATE_TIME_STAMP AS DATE) = CAST(GETDATE() AS DATE)
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM [10.26.1.83].ILS.dbo.RECEIPT_DETAIL RD
+                    WHERE RD.item = IE.REFERENCE_ID06
+                      AND RD.ERP_ORDER_LINE_NUM = IE.REFERENCE_ID07
+                      AND CAST(RD.DATE_TIME_STAMP AS DATE) = CAST(IE.DATE_TIME_STAMP AS DATE)
+              )
+        )
+        UNION ALL
+        (
+            SELECT 
+                ERROR_MSG,
+                COMPANY,
+                FORMAT(DATE_TIME_STAMP,'dd-MM-yyyy HH:mm:ss') AS DATE_TIME_STAMP,
+                REFERENCE_ID01 AS SHIPMENT_ID,INTERFACE_PROCESS
+            FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR IE
+            WHERE IE.interface_process = 'Receiving'
+              AND IE.REFERENCE_ID01 IS NOT NULL 
+              AND  IE.REFERENCE_ID01 != ''
+              AND CAST(DATE_TIME_STAMP AS DATE) = CAST(GETDATE() AS DATE)
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM [10.26.1.83].ILS.dbo.RECEIPT_HEADER RH
+                    WHERE RH.RECEIPT_ID = IE.REFERENCE_ID01
+              )
+        )
+        ORDER BY DATE_TIME_STAMP DESC;
         
        `;
         return pool.request().query(query, function (err_query, recordset) {
