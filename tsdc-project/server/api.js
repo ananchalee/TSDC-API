@@ -2077,7 +2077,7 @@ app.post('/tracking_running', function (req, res) {
                 ,${fromdata.CARTON_BOX_H}
                 ,${fromdata.CARTON_BOX_L}
                 ,''
-                ,,${trackingValue}
+                ,${trackingValue}
                 ,''
                 ,''
                 ,''
@@ -4875,7 +4875,7 @@ app.post('/check_order_notclose', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         var query = `        
-    select * from [V_WORK_INSTRUCTION_VIEW_ORDER_NOT_CLOSE] a inner join  TSDC_PICK_CHECK_NEW b
+    select * from [V_WORK_INSTRUCTION_VIEW_ORDER_NOT_CLOSE] a inner join  TSDC_CONTAINER_MAPORDER b
     on a.SHIPMENT_ID collate Thai_CI_AS = b.SHIPMENT_ID
 	where b.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
         
