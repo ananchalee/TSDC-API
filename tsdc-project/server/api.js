@@ -1992,7 +1992,7 @@ app.post('/tracking_running', function (req, res) {
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
-        const trackingValue = fromdata.TRACKING ? `'${fromdata.TRACKING}'` : 'NULL';
+        const trackingValue = fromdata.TRACKING ? `'${fromdata.TRACKING}'` : `''` ;
 
         var query = `  
 
@@ -2111,11 +2111,11 @@ app.post('/tracking_running', function (req, res) {
                     UPDATE TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW 
                     SET    REF_INDEX = @REF_INDEX,
                            BOX_NO_ORDER = @BOX_NO_ORDER,
-                           BOX_SIZE = '${fromdata.BOX_SIZE}'
+                          BOX_SIZE = '${fromdata.BOX_SIZE}'
                     from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
                     where  REF_INDEX is null
                     and PO_NO = '${fromdata.shipment_id}'
-                    AND SELLER_NO = '${fromdata.SELLER_NO}'
+                  AND SELLER_NO = '${fromdata.SELLER_NO}'
                     ${fromdata.conditiontracking || ''}
                     
 
