@@ -1399,7 +1399,7 @@ app.post('/updateConQtyCheck', function (req, res) {
         query += `
 
      insert into [TSDC_PICK_CHECK_LOG_NEW]
-     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK,null from (
   
   select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW
   where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
@@ -1495,7 +1495,7 @@ app.post('/updateConQtyCheck_SORTER', function (req, res) {
         query += `
 
      insert into [TSDC_PICK_CHECK_LOG_NEW]
-     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK ,nullfrom (
   
   select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW
   where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
@@ -1553,7 +1553,7 @@ WHERE  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
         query += `
 
      insert into [TSDC_PICK_CHECK_LOG_NEW]
-     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK,null from (
   
   select CONTAINER_ID,ITEM_ID,'${fromdata.QTY}' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW
   where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
@@ -1611,7 +1611,7 @@ app.post('/updateConQtyCheck_fullcarton', function (req, res) {
         query += `
 
      insert into [TSDC_PICK_CHECK_LOG_NEW]
-     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK,null from (
   
   select CONTAINER_ID,ITEM_ID,'${fromdata.QTY}'  as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW
   where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
@@ -1993,6 +1993,7 @@ app.post('/tracking_running', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const trackingValue = fromdata.TRACKING ? `'${fromdata.TRACKING}'` : `''` ;
+        const Status = fromdata.VAS_NAME_10 ? `'${fromdata.VAS_NAME_10}'` : `''` ;
 
         var query = `  
 
@@ -2099,7 +2100,7 @@ app.post('/tracking_running', function (req, res) {
                 ,'${fromdata.VAS_NAME_07}'
                 ,'${fromdata.VAS_NAME_08}'
                 ,'${fromdata.VAS_NAME_09}'
-                ,'${fromdata.VAS_NAME_10}'
+                ,${Status}
             from 	 TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
             where REF_INDEX is null
             and PO_NO = '${fromdata.shipment_id}'
@@ -2139,6 +2140,7 @@ app.post('/tracking_running', function (req, res) {
                         ,PO_NO
                         ,SELLER_NO
                         ,BOX_NO_ORDER
+                        ,BILL_NO_REF
                 from  TSDC_PICK_CHECK_BOX_CONTROL_NEW
                 where TABLE_CHECK = '${fromdata.TABLE_CHECK}'
                 and PO_NO = '${fromdata.shipment_id}'
@@ -2676,6 +2678,7 @@ app.post('/ReprintTracking', function (req, res) {
         ,BOX_NO_ORDER
         ,BOX_SIZE
 		,TABLE_CHECK
+        ,BILL_NO_REF
         from  TSDC_PICK_CHECK_BOX_CONTROL_NEW
         where REF_INDEX = '${fromdata.REF_INDEX}'
         and PO_NO = '${fromdata.PO_NO}'
@@ -2729,6 +2732,7 @@ app.post('/ReprintTrackingAll', function (req, res) {
         ,BOX_NO_ORDER
         ,BOX_SIZE
 		,TABLE_CHECK
+        ,BILL_NO_REF
         from  TSDC_PICK_CHECK_BOX_CONTROL_NEW
         where CONTAINERID = '${fromdata.CONTAINER_ID}'
             
@@ -3296,7 +3300,7 @@ app.post('/CheckTrack', function (req, res) {
 
         var query =
             `
-        select BOX_SIZE,REF_INDEX,a.PO_NO,SELLER_NO,QTY,BOX_NO_ORDER,TABLE_CHECK,CUST_NAME ,TCHANNEL,p.COMPANY, (FORMAT(ORDER_DATE,'dd-MM-yyyy')) ORDER_DATE
+        select BOX_SIZE,REF_INDEX,a.PO_NO,SELLER_NO,QTY,BOX_NO_ORDER,TABLE_CHECK,CUST_NAME ,TCHANNEL,p.COMPANY, (FORMAT(ORDER_DATE,'dd-MM-yyyy')) ORDER_DATE,BILL_NO_REF
         from TSDC_PICK_CHECK_BOX_CONTROL_NEW a left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on a.PO_NO = p.SHIPMENT_ID ,
         (select  SHIPPING_NAME,PO_NO,SHIP_NO,TCHANNEL from TSDC_INTERFACE_ORDER_HEADER) as c
             where  a.PO_NO = c.PO_NO
@@ -3401,7 +3405,7 @@ app.post('/updateBoxTracking', function (req, res) {
             } else {
                 var query =
                     `
-                    select BOX_SIZE,REF_INDEX,PO_NO,SELLER_NO,QTY,BOX_NO_ORDER,TABLE_CHECK,CUST_NAME
+                    select BOX_SIZE,REF_INDEX,PO_NO,SELLER_NO,QTY,BOX_NO_ORDER,TABLE_CHECK,CUST_NAME,BILL_NO_REF
                     from TSDC_PICK_CHECK_BOX_CONTROL_NEW 
                     where REF_INDEX = '${fromdata.REF_INDEX}'
                      `;
@@ -3433,6 +3437,139 @@ app.post('/updateBoxTracking', function (req, res) {
                     });
             }
             sql.close();
+        });
+    });
+});
+
+app.post('/pickcheck_print_ordercancel', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+        INSERT INTO [TSDC_PICK_CHECK_PRINTCANCEL]
+        ( container_id
+        ,shipment_id
+        ,user_check
+        ,table_check
+        ,zone
+        ,print_date
+        )
+        VALUES ('${fromdata.CONTAINER_ID}'
+                ,'${fromdata.shipment_id}'
+                ,'${fromdata.USER_NAME}'
+                ,'${fromdata.TABLE_CHECK}'
+                ,'${fromdata.Zone}'
+                ,GETDATE() 
+                );
+     `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success'
+                };
+                res.json(dataout); sql.close();
+            }
+
+        });
+    });
+});
+
+app.get('/get_table_printcancel', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+        select distinct table_check from TSDC_PICK_CHECK_printcancel order by table_check 
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/get_report_printcancel', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_zone = fromdata.zone
+        ? ` AND zone = '${fromdata.zone}' `
+        : '';
+
+        const condition_tablecheck = fromdata.tablecheck
+        ? ` AND table_check = '${fromdata.tablecheck}' `
+        : '';
+
+        const fromDateTime = `${fromdata.printDate} ${fromdata.timeFrom}:00`;
+        const toDateTime   = `${fromdata.printDate} ${fromdata.timeTo}:59`;
+
+        var query = `        
+        select  CONVERT(VARCHAR(10), print_date, 103) + ' ' +
+        LEFT(CONVERT(VARCHAR(8), print_date, 108), 5) 
+        AS print_datetime,* from TSDC_PICK_CHECK_printcancel
+        WHERE print_date BETWEEN '${fromDateTime}' AND '${toDateTime}'
+        ${condition_zone} ${condition_tablecheck}
+        order by print_date 
+
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
         });
     });
 });
@@ -4088,6 +4225,71 @@ app.post('/deleteTracking_outbount', function (req, res) {
     });
 });
 
+app.post('/report_pallet_outbound', function (req, res) {
+    var fromdata = req.body;
+    new sql.ConnectionPool(db).connect().then(pool => {
+        var query = `
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY CREATE_DATE ASC) AS ID,
+            PALLET_NO,
+            BILL_NO,
+            ORDER_NO,
+            SHIP_PROVIDER_OOD,
+            FORMAT(CREATE_DATE, 'yyyy-MM-dd HH:mm:ss') AS scandate,
+            PIN_ID,
+            STATUS_DELIVERY
+        FROM TSDC_CONFIRM_OUTBOUND
+        WHERE PALLET_NO = '${fromdata.Pallet_NO}'
+        AND CONVERT(date, CREATE_DATE) = '${fromdata.report_date}'
+        ORDER BY CREATE_DATE ASC
+        `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = { status: 'error', member: err_query, query: query };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (data.length === 0) {
+                    dataout = { status: 'null' };
+                } else {
+                    dataout = { status: 'success', data: data };
+                }
+                res.json(dataout);
+                sql.close();
+            }
+        });
+    });
+});
+
+app.post('/delete_report_pallet_outbound', function (req, res) {
+    var fromdata = req.body;
+    new sql.ConnectionPool(db).connect().then(pool => {
+        var query = `
+        DELETE TSDC_CONFIRM_OUTBOUND
+        WHERE PALLET_NO = '${fromdata.Pallet_NO}'
+        AND BILL_NO = '${fromdata.BILL_NO}'
+        AND CONVERT(date, CREATE_DATE) = '${fromdata.report_date}'
+        AND (STATUS_DELIVERY IS NULL OR STATUS_DELIVERY != 'S')
+
+        DELETE [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_CONFIRM_OUTBOUND
+        WHERE PALLET_NO = '${fromdata.Pallet_NO}'
+        AND BILL_NO = '${fromdata.BILL_NO}'
+        AND CONVERT(date, CREATE_DATE) = '${fromdata.report_date}'
+        AND (STATUS_DELIVERY IS NULL OR STATUS_DELIVERY != 'S')
+        `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = { status: 'error', data: err_query, query: query };
+                res.json(dataout);
+            } else {
+                dataout = { status: 'success' };
+                res.json(dataout);
+                sql.close();
+            }
+        });
+    });
+});
+
 app.post('/interface_Tracking_confirm_outbound', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
@@ -4493,7 +4695,7 @@ app.post('/BOX_CONTROL_DETAIL_ug', function (req, res) {
 
 
                                     insert into [TSDC_PICK_CHECK_LOG_NEW]
-                                    select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+                                    select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK,null from (
                                 
                                 select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW
                                 where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
@@ -4566,7 +4768,7 @@ app.post('/BOX_CONTROL_DETAIL_ug', function (req, res) {
 
 
                     insert into [TSDC_PICK_CHECK_LOG_NEW]
-                            select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+                            select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK,null from (
                         
                         select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW
                         where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
@@ -4875,9 +5077,46 @@ app.post('/check_order_notclose', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         var query = `        
-    select * from [V_WORK_INSTRUCTION_VIEW_ORDER_NOT_CLOSE] a inner join  TSDC_CONTAINER_MAPORDER b
-    on a.SHIPMENT_ID collate Thai_CI_AS = b.SHIPMENT_ID
-	where b.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+    select * from [V_WORK_INSTRUCTION_VIEW_ORDER_NOT_CLOSE] 
+	where CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/check_order_closed', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+    select * from [V_WORK_INSTRUCTION_VIEW_ORDER_CLOSED] 
+	where CONTAINER_ID = '${fromdata.CONTAINER_ID}'
         
        `;
         return pool.request().query(query, function (err_query, recordset) {
@@ -5084,6 +5323,7 @@ app.post('/summaryContrack', function (req, res) {
    
         FROM TSDC_PICK_CHECK_NEW_TRACKING a
         left join TSDC_PICK_CHECK_BOX_CONTROL_NEW b on a.TRACKING = b.TRACKING
+        and a.SHIPMENT_ID = b.PO_NO
         where SHIPMENT_ID  = '${fromdata.shipment_id}'
         AND a.SELLER_NO = '${fromdata.SELLER_NO}'${fromdata.conditiontracking || ''}
         group by shipment_ID ,a.SELLER_NO, ITEM_ID  ,a.TRACKING  ,QTY_REQUESTED,ITEM_ID_BARCODE
@@ -5291,7 +5531,7 @@ app.post('/updateConQtyChecktrack', function (req, res) {
         query += `
 
      insert into [TSDC_PICK_CHECK_LOG_NEW]
-     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK from (
+     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK,null from (
   
   select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW_TRACKING
   where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
@@ -5575,6 +5815,40 @@ app.post('/Rescan_checkitem_track', function (req, res) {
     });
 });
 
+app.post('/Insert_PICK_CHECK_LOG_NEW', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+        insert into TSDC_PICK_CHECK_LOG_NEW
+        select '${fromdata.CONTAINER_ID}',null,null,getdate(),'${fromdata.USER_NAME}','${fromdata.shipment_id}','${fromdata.TABLE_CHECK}','${fromdata.WARNING}' 
+     
+        `;
+
+
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
 app.post('/Get_ONLINE_ORDER_SHIPPING', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
@@ -5631,6 +5905,1396 @@ app.post('/UPDATE_TrackingAndRTS', function (req, res) {
      `;
 
 
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/Moniter_TrackingOrderInternal_Summary', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_date = fromdata.dateTo ? `and ORDER_DATE between '${fromdata.dateFrom}' AND '${fromdata.dateTo}' ` : '';
+        const condition_Processdate = fromdata.PCdateTo ? `and PROCESS_DATE between '${fromdata.PCdateFrom}' AND '${fromdata.PCdateTo}' ` : '';
+        const condition_company = fromdata.company ? ` AND COMPANY = '${fromdata.company}' ` : '';
+        //+ this.input.dateFrom +"' AND DATEADD(DAY, 1,'"+this.input.dateTo+"')"
+        var query = `        
+        SELECT  [ORDER_DATE]
+            ,[COMPANY]
+            ,[WORK_TYPE]
+            ,[ORDER_ALL]
+            ,[ORDER_WAIT_PROCESS_MANHT]
+            ,[ORDER_WAIT_PROCESS_SHORT]
+            ,[ORDER_WAIT_PLAN]
+            ,[ORDER_WAIT_CLOSEPICK]
+            ,[ORDER_WAIT_CHECK]
+            ,[ORDER_WAIT_RTS]
+            ,[ORDER_WAIT_OB]
+            ,[ORDER_WAIT_COURIER]
+            ,[ORDER_COURIER_RECEIVE]
+            ,[ORDER_CANCEL]
+            ,[PROCESS_DATE]
+        FROM [10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_BY_COMPANY]
+        where ORDER_DATE is not null
+        ${condition_date || ''}
+        ${condition_Processdate || ''}
+        ${condition_company || ''}
+        ORDER BY PROCESS_DATE,ORDER_DATE,COMPANY,WORK_TYPE DESC
+
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/Moniter_TrackingOrderInternal_Detail', function (req, res) {
+    var fromdata = req.body;
+
+    const queryMap = {
+        ORDER_WAIT_PROCESS_MANHT: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_PROCESS]",
+            select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ORDER_COUNT,WORK_TRACKING AS STATUS",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TRACKING"
+        },
+	ORDER_WAIT_PROCESS_SHORT: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_PROCESS]",
+            select: "COMPANY, SHOPID_OOH as SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ORDER_COUNT,WORK_TRACKING AS STATUS",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TRACKING"
+        },
+
+        ORDER_WAIT_PLAN: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_PLAN]",
+              select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, MANHT_DATE,ORDER_NO,WORK_TYPE AS PERIOD",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TYPE"
+        },
+        ORDER_WAIT_CLOSEPICK: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_CLOSE_PICK]",
+            select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ZONE_PICK,ORDER_NO,CONTAINER_ID,WORK_TYPE AS PERIOD",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TYPE"
+        },
+        ORDER_WAIT_CHECK: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_CHECK]",
+            select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ZONE_PICK,ORDER_NO,CONTAINER_ID,WORK_TYPE AS PERIOD",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TYPE"
+        },
+		 ORDER_WAIT_RTS: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_RTS]",
+            select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ORDER_COUNT,WORK_TYPE AS PERIOD",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TYPE"
+        },
+
+		ORDER_WAIT_OUTBOUND: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_OUTBOUND]",
+            select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE,TRANSPORT, ORDER_COUNT,WORK_TYPE AS PERIOD",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TYPE"
+        },
+		ORDER_WAIT_COURIER: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_COURIER_REC]",
+            select: "TRANSPORT,COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ORDER_COUNT,WORK_TYPE AS PERIOD",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TYPE"
+        },
+		ORDER_COURIER_RECEIVE: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_COURIER_REC]",
+             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE,TRANSPORT, ORDER_COUNT,WORK_TYPE AS PERIOD",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_TYPE"
+        },
+		ORDER_CANCEL: {
+            table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_ORDER_CANCEL]",
+             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE,ORDER_NO,WORK_PERIOD AS PERIOD",
+            whereCompany: "COMPANY",
+            whereDate: "ORDER_DATE",
+			whereWorktype: "WORK_PERIOD"
+        }
+        
+    };
+
+    const config = queryMap[fromdata.type];
+    if (!config) {
+        return res.json({ status: "error", message: "Invalid type" });
+    }
+
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_date = fromdata.date
+            ? ` AND ${config.whereDate} = '${fromdata.date}' `
+            : '';
+
+        const condition_company = fromdata.company
+            ? ` AND ${config.whereCompany} = '${fromdata.company}' `
+            : '';
+
+        const condition_worktype = fromdata.worktype
+            ? ` AND ${config.whereWorktype} = '${fromdata.worktype}' `
+            : '';    
+
+        var query = `
+            SELECT ${config.select}
+            FROM ${config.table}
+            WHERE 1 = 1
+            ${condition_date}
+            ${condition_company}
+            ${condition_worktype}
+
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+////////////////// Tsuruha
+app.get('/tsuruha_get_channel', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+        select distinct channel,work_period from [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER order by channel,work_period 
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.get('/tsuruha_get_lastprocess', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+        select top 1 * from  [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER_LOG_PROCESS
+        order by TSRH_PROCESS_DATE desc
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+
+app.get('/tsuruha_process_job_TSRH_A5', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+        EXEC [10.26.1.11].[TSDC_Conveyor].dbo.[TSDC_PROCESS_JOB_TSRH_A5]
+       `;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/tsuruha_get_orderdetail', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_channel = fromdata.channel
+        ? ` AND Channel = '${fromdata.channel}' `
+        : '';
+
+        const condition_period = fromdata.period
+        ? ` AND work_period = '${fromdata.period}' `
+        : '';
+
+        const condition_date = fromdata.date
+        ? ` H.Manht_process_date  = '${fromdata.date}'`
+        : ` H.Manht_process_date between '${fromdata.datef}' and '${fromdata.datet}'`;
+
+
+        var query = `        
+        
+        select  H.ORDER_DATE,H.CHANNEL,H.ORDER_NUMBER,H.TSRH_AMT,D.ITEM,D.ITEM_NAME,D.ITEM_BARCODE,D.TOTAL_QTY,D.TSRH_SKU_AMT ,H.TSRH_INVNO,H.TRACKING_NO,RTS_STATUS,H.WORK_PERIOD,H.Manht_process_date
+        ,M.TSRH_VOIDNO,M.INV_DATE,M.VOID_DATE,M.VOID_AMT
+        from [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER H
+        inner join [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_DETAIL D
+        on H.order_number = D.order_number
+        OUTER APPLY (
+            SELECT TOP 1 TSRH_VOIDNO,INV_DATE,VOID_DATE,VOID_AMT
+            FROM [10.26.1.11].[TSDC_Conveyor].dbo.TSURUHA_INVOICE_MAPPING M
+            WHERE M.ORDER_NUMBER = H.order_number
+            and M.TSRH_INVNO = H.TSRH_INVNO
+            ORDER BY M.UPDATE_VOIDNO_DATE DESC   
+        ) M
+        where ${condition_date}
+        ${condition_channel} ${condition_period}
+        order by H.order_number,D.Item
+
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/tsuruha_get_orderdetail_invhistory', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_date = fromdata.date
+        ? ` H.Manht_process_date  = '${fromdata.date}'`
+        : ` H.Manht_process_date between '${fromdata.datef}' and '${fromdata.datet}'`;
+
+        const condition_channel = fromdata.channel
+        ? ` AND Channel = '${fromdata.channel}' `
+        : '';
+
+        const condition_period = fromdata.period
+        ? ` AND work_period = '${fromdata.period}' `
+        : '';
+
+        var query = `        
+        
+        select  H.ORDER_NUMBER,H.ORDER_DATE,H.CHANNEL,M.TSRH_INVNO,M.CREATE_DATE,M.TSRH_VOIDNO,M.UPDATE_VOIDNO_DATE,M.REMARK,H.TRACKING_NO,RTS_STATUS,H.WORK_PERIOD,H.Manht_process_date
+        ,m.INV_DATE,m.VOID_DATE,m.VOID_AMT
+        from [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER H
+        left join [10.26.1.11].[TSDC_Conveyor].dbo.TSURUHA_INVOICE_MAPPING m
+        on m.ORDER_NUMBER = h.order_number
+        where ${condition_date}
+        ${condition_channel} ${condition_period}
+        order by H.order_number,M.CREATE_DATE
+
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/tsuruha_check_order', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `       
+        SELECT  H.ORDER_DATE,H.CHANNEL,H.ORDER_NUMBER,H.TSRH_AMT,H.TSRH_INVNO,H.TRACKING_NO,RTS_STATUS,H.WORK_PERIOD
+        ,H.Manht_process_date, m.TSRH_VOIDNO,m.INV_DATE,m.VOID_DATE
+        FROM [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER h
+        OUTER APPLY (
+            SELECT TOP 1 TSRH_VOIDNO,INV_DATE,VOID_DATE
+            FROM [10.26.1.11].[TSDC_Conveyor].dbo.TSURUHA_INVOICE_MAPPING m
+            WHERE m.ORDER_NUMBER = h.order_number
+            and m.TSRH_INVNO = h.TSRH_INVNO
+            ORDER BY m.UPDATE_VOIDNO_DATE DESC   
+        ) m
+        where h.order_number  = '${fromdata.orderno}'
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/tsuruha_check_invoice', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `       
+
+        select * from [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER
+        where TSRH_INVNO  = '${fromdata.invno}'
+        and ORDER_NUMBER != '${fromdata.orderno}'
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/tsuruha_update_invoice', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const remark = fromdata.remark
+        ? ` ,REMARK = '${fromdata.remark}' `
+        : '';
+
+        var query = `  
+
+        update [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER
+        set TSRH_INVNO = '${fromdata.invno}'
+        ,update_date = getdate()
+        ,TSRH_VOIDNO = CASE 
+                WHEN TSRH_INVNO <> '${fromdata.invno}' THEN ''
+                ELSE TSRH_VOIDNO
+             END
+        where order_number ='${fromdata.orderno}'
+
+        update [10.26.1.11].[TSDC_Conveyor].dbo.TSURUHA_INVOICE_MAPPING
+        set update_date = getdate()
+        ${remark}
+        where order_number ='${fromdata.orderno}'
+        and TSRH_INVNO = '${fromdata.old_invno}'
+
+     `;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/tsuruha_cancel_invoice', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+
+        update [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER
+        set TSRH_INVNO = '${fromdata.invno}'
+        ,update_date = getdate()
+        ,TSRH_VOIDNO = CASE 
+                WHEN TSRH_INVNO <> '${fromdata.invno}' THEN ''
+                ELSE TSRH_VOIDNO
+             END
+        where order_number ='${fromdata.orderno}'
+
+        delete [10.26.1.11].[TSDC_Conveyor].dbo.TSURUHA_INVOICE_MAPPING
+        where order_number ='${fromdata.orderno}'
+        and TSRH_INVNO = '${fromdata.old_invno}'
+
+     `;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/tsuruha_history_invoice', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const inv_date = fromdata.invdate
+        ? ` ,'${fromdata.invdate}' `
+        : '';
+
+        var query = `  
+
+        INSERT INTO [10.26.1.11].[TSDC_Conveyor].dbo.[TSURUHA_INVOICE_MAPPING]
+        ([ORDER_NUMBER]
+        ,[TSRH_INVNO]
+        ,[REMARK]
+        ,[CREATE_DATE]
+        ,[UPDATE_DATE]
+        ,[UPDATE_BY]
+        ,[INV_DATE]
+        )
+  VALUES
+        ('${fromdata.orderno}'
+        ,'${fromdata.invno}'
+        ,NULL
+        ,getdate()
+        ,NULL
+        ,NULL
+        ${inv_date})
+   
+     `;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/tsuruha_get_history_invoice', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `       
+
+        select a.*,b.CHANNEL,b.RTS_STATUS,b.TRACKING_NO from [10.26.1.11].[TSDC_Conveyor].dbo.TSURUHA_INVOICE_MAPPING a
+        left join [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER b 
+        on a.ORDER_NUMBER = b.ORDER_NUMBER
+        where a.ORDER_NUMBER  = '${fromdata.orderno}'
+        and a.TSRH_INVNO = '${fromdata.invno}'
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/tsuruha_check_void', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `       
+
+        select * from [10.26.1.11].[TSDC_Conveyor].dbo.TSURUHA_INVOICE_MAPPING
+        where TSRH_VOIDNO  = '${fromdata.voidno}'
+        and TSRH_INVNO != '${fromdata.invno}'
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/tsuruha_update_void', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const void_date = fromdata.voiddate
+        ? ` ,VOID_DATE = '${fromdata.voiddate}' `
+        : '';
+
+        const remark = fromdata.remark
+        ? ` ,REMARK = '${fromdata.remark}' `
+        : '';
+
+        const void_amt = fromdata.void_amt
+        ? ` ,VOID_AMT = ${fromdata.void_amt} `
+        : '';
+
+        var query = `  
+
+        update [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER
+        set TSRH_VOIDNO = '${fromdata.voidno}'
+        where order_number ='${fromdata.orderno}'
+        and TSRH_INVNO = '${fromdata.invno}'
+
+        update [10.26.1.11].[TSDC_Conveyor].dbo.TSURUHA_INVOICE_MAPPING
+        set UPDATE_VOIDNO_DATE = getdate()
+        ,TSRH_VOIDNO = '${fromdata.voidno}'
+        ${void_date}
+        ${remark}
+        ${void_amt}
+        where order_number ='${fromdata.orderno}'
+        and TSRH_INVNO = '${fromdata.invno}'
+   
+     `;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+//////////////////////report packinglist//////////////////
+app.post('/packinglist_header', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_checkdate = fromdata.date
+        ? ` AND FORMAT(CHECK_DATE,'yyyy-MM-dd') = '${fromdata.date}' `
+        : '';
+
+        const condition_order = fromdata.orderno
+        ? ` AND A.SHIPMENT_ID like '%${fromdata.orderno}%' `
+        : '';
+
+        const condition_PO = fromdata.orderno
+        ? ` AND PO_NO like '%${fromdata.orderno}%' `
+        : '';
+
+        var query = `        
+        
+        select * from
+        (
+                     SELECT 
+                        A.SHIPMENT_ID,
+                        A.SELLER_NO,
+                        SUM(QTY_PICK) AS SUM_QTY_PICK,
+                        SUM(QTY_Check) AS SUM_QTY_CHECK
+                    FROM  TSDC_PICK_CHECK_NEW A
+                    where  EXISTS (
+                        SELECT 1 
+                        FROM TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW B
+                        WHERE B.PO_NO = A.SHIPMENT_ID
+                    ) AND (A.SHIPMENT_ID like 'ATH%')
+                    ${condition_checkdate} ${condition_order}
+                    group by  A.SHIPMENT_ID,
+                        A.SELLER_NO
+        ) as pick_check 
+        Left join  
+        (
+        select H.PO_NO,
+                   COUNT(H.REF_INDEX) COUNT_BOX,
+                   sum(H.QTY) as SUM_QTY_CloseBOX,
+                   CASE 
+                        WHEN C.SHIPMENT_ID IS NOT NULL THEN 'true'
+                        ELSE 'false'
+                    END AS STATUS_CONFIRM,
+                    CONVERT(VARCHAR(10), C.CONFIRM_DATE, 103) + ' ' +
+                        LEFT(CONVERT(VARCHAR(8), C.CONFIRM_DATE, 108), 5) 
+                    AS CONFIRM_DATE,
+                    C.USER_CONFIRM
+            from  TSDC_PICK_CHECK_BOX_CONTROL_NEW H
+            LEFT JOIN 
+                   TSDC_COMFIRM_PACKINGLIST C
+                    ON H.PO_NO = C.SHIPMENT_ID
+                    and H.REF_INDEX = C.REF_INDEX
+        
+            where VAS_NAME_10 != 'C'
+             AND (H.PO_NO like 'ATH%')
+             ${condition_PO}
+            group by H.PO_NO 
+            ,H.SELLER_NO
+            ,C.SHIPMENT_ID
+            ,C.CONFIRM_DATE
+            ,C.USER_CONFIRM
+        ) as BOX_CONTROL
+        on pick_check.SHIPMENT_ID = BOX_CONTROL.PO_NO
+        order by pick_check.SHIPMENT_ID
+
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/packinglist_detail', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+        
+        SELECT 
+            ROW_NUMBER() OVER (
+                ORDER BY 
+                    TRY_CAST(B.BOX_NO_ORDER AS INT), 
+                    A.ITEM_ID, 
+                    A.SHIPMENT_ID
+            ) AS NO,
+            A.SHIPMENT_ID, 
+            H.REF_INDEX,
+            TRY_CAST(B.BOX_NO_ORDER AS INT) AS BOX_NO_ORDER_INT,
+            B.ITEM_ID, 
+            B.ITEM_ID_BARCODE, 
+            A.ITEM_DESC, 
+            B.QTY,
+            B.BOX_SIZE,
+            B.TABLE_CHECK,
+            B.USER_CHECK
+            FROM 
+            TSDC_PICK_CHECK_NEW A
+            JOIN TSDC_PICK_CHECK_BOX_CONTROL_NEW H
+                ON A.SHIPMENT_ID = H.PO_NO
+            JOIN 
+                [TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW] B 
+                ON  H.PO_NO = B.PO_NO 
+                AND H.REF_INDEX = B.REF_INDEX
+                AND A.ITEM_ID = B.ITEM_ID
+            WHERE A.SHIPMENT_ID = '${fromdata.SHIPMENT_ID}'
+            and VAS_NAME_10 != 'C'
+            ORDER BY BOX_NO_ORDER_INT,ITEM_ID;
+
+        
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/confirm_packinglist_header', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const user_confirm = fromdata.userid
+        ? `${fromdata.userid} `
+        : '';
+
+        var query = `  
+
+        INSERT INTO [dbo].[TSDC_ATMA_ORDER_HD]
+                ([FTCustomer_id]
+                ,[FTShop_id]
+                ,[FTOrdernumber]
+                ,[FTCarton_id]
+                ,[FTAlternate_carton_id]
+                ,[FTSource_site]
+                ,[FTDestination_site]
+                ,[FTDelivery_note_number]
+                ,[FTPurchaseOrderNumber]
+                ,[FTBusiness_location]
+                ,[FTRead_point]
+                ,[FNAudit_type]
+                ,[FDCarton_createdate]
+                ,[FNTotal_Item]
+                ,[FNTotal_qty]
+                ,[FTProcess_type]
+                ,[FDCreatedate]
+                ,[FDLastupdate]
+                ,[FNSta_sync]
+                ,[FNSta_upload]
+                ,[FTSta_sync_desc]
+                ,[FTSta_upload_desc])
+        select     
+                'ATH'
+                ,SELLER_NO
+                ,PO_NO
+                ,REF_INDEX
+                ,''
+                ,'5272'
+                ,'TH23'
+                ,PO_NO
+                ,PO_NO
+                ,'Tsdc Store'
+                ,''
+                ,'0'
+                ,CREATE_DATE
+                ,(select COUNT(ITEM_ID) from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW D
+                    where PO_NO = '${fromdata.SHIPMENT_ID}'
+                    and H.REF_INDEX = D.REF_INDEX
+                    and VAS_NAME_10 != 'C'
+                ) as Total_item
+                ,QTY
+                ,'Audit'
+                ,getdate()
+                ,''
+                ,'0'
+                ,'0'
+                ,''
+                ,''
+                
+        from TSDC_PICK_CHECK_BOX_CONTROL_NEW H
+        where PO_NO = '${fromdata.SHIPMENT_ID}'
+        and VAS_NAME_10 != 'C'
+
+        INSERT INTO [dbo].[TSDC_COMFIRM_PACKINGLIST]
+                ([SHIPMENT_ID]
+                ,[SELLER_NO]
+                ,[REF_INDEX]
+                ,[TOTAL_ITEM]
+                ,[QTY]
+                ,[CONFIRM_DATE]
+                ,[USER_CONFIRM])
+        select 
+                PO_NO
+                ,[SELLER_NO]
+                ,[REF_INDEX]
+                ,(select COUNT(ITEM_ID) from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW D
+                    where PO_NO = '${fromdata.SHIPMENT_ID}'
+                    and H.REF_INDEX = D.REF_INDEX
+                    and VAS_NAME_10 != 'C'
+                ) as Total_item
+                ,[QTY]
+                ,getdate()
+                ,'${user_confirm}'
+
+        from TSDC_PICK_CHECK_BOX_CONTROL_NEW H
+        where PO_NO = '${fromdata.SHIPMENT_ID}'
+        and VAS_NAME_10 != 'C'
+   
+     `;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/confirm_packinglist_detail', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `  
+
+        INSERT INTO [dbo].[TSDC_ATMA_ORDER_ITEM]
+                ([FTCustomer_id]
+                ,[FTShop_id]
+                ,[FTOrdernumber]
+                ,[FTCarton_id]
+                ,[FNSeq]
+                ,[FTProduct_type]
+                ,[FTProduct_value]
+                ,[FNQty]
+                ,[FDCreatedate]
+                ,[FDLastupdate])
+        select 
+                'ATH'
+                ,H.SELLER_NO
+                ,H.PO_NO
+                ,H.REF_INDEX
+                ,ROW_NUMBER() OVER (PARTITION BY D.REF_INDEX  ORDER BY D.REF_INDEX,D.ITEM_ID ) as SEQ
+                ,'GTIN'
+                ,D.ITEM_ID_BARCODE
+                ,D.QTY
+                ,getdate()
+                ,''
+
+                from TSDC_PICK_CHECK_BOX_CONTROL_NEW H
+                inner join TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW D
+                on H.REF_INDEX = D.REF_INDEX
+                where H.PO_NO = '${fromdata.SHIPMENT_ID}'
+                and H.PO_NO = D.PO_NO
+                and VAS_NAME_10 != 'C'
+                order by REF_INDEX
+
+     `;
+
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+/////////////////
+
+app.post('/Get_MANHT_PICK_PAPER', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+        
+        select LAUNCH_NUM,REFERENCE_ID,sum(QUANTITY) as Total_QTY,TYPE_PICK,TYPE_PICK_DESC,STATUS_PRINT,format ( getdate() ,'dd-MM-yyyy HH:mm:ss') as GETDATEDATE
+        from [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER
+        where  LAUNCH_NUM = '${fromdata.waveno}'
+        group by LAUNCH_NUM,REFERENCE_ID,TYPE_PICK,TYPE_PICK_DESC,STATUS_PRINT
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/Get_ITEM_LOCATION_MANHT_PICK_PAPER', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_TYPE_PICK = fromdata.type
+        ? ` AND TYPE_PICK =  '${fromdata.type}' `
+        : '';
+
+        var query = `        
+        
+        select LAUNCH_NUM,ITEM,sum(QUANTITY) as Total_QTY,FROM_LOC
+        from [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER
+        where  LAUNCH_NUM = '${fromdata.waveno}' ${condition_TYPE_PICK}
+        group by LAUNCH_NUM,ITEM,FROM_LOC
+        order by  FROM_LOC,ITEM
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/Update_MANHT_PICK_PAPER', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_TYPE_PICK = fromdata.type
+        ? ` AND TYPE_PICK =  '${fromdata.type}' `
+        : '';
+        
+        var query = `        
+        
+        update [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER
+        set STATUS_PRINT = 'Y'
+        ,PROCRESS_DATE = getdate()
+        where  LAUNCH_NUM = '${fromdata.waveno}' ${condition_TYPE_PICK}
+         
+
+       `;
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+
+app.post('/Get_OrderCountConfirmMan_PICK_PAPER', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `        
+        
+            select top 1 c.order_count as order_count_confirm ,count(distinct REFERENCE_ID) order_count
+            from [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER_CONFIRM_PRINT C
+            inner join [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER P
+            on C.LAUNCH_NUM = P.LAUNCH_NUM
+            where C.LAUNCH_NUM = '${fromdata.waveno}'
+            group by C.order_count
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null'
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+
+////////
+app.get('/Get_PendingPrint_WaveOrderList', function (req, res) {
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+                SELECT
+                P.LAUNCH_NUM,
+                COUNT(DISTINCT P.REFERENCE_ID)                                        AS ORDER_COUNT,
+                SUM(P.quantity)                                                      AS TOTAL_QTY,
+                COUNT(DISTINCT CASE WHEN P.STATUS_PRINT = 'Y' THEN P.REFERENCE_ID END) AS PRINTED_COUNT,
+                COUNT(DISTINCT CASE WHEN P.STATUS_PRINT = 'N' THEN P.REFERENCE_ID END) AS UNPRINT_COUNT
+            FROM [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER P
+            GROUP BY P.LAUNCH_NUM
+            HAVING COUNT(DISTINCT CASE WHEN P.STATUS_PRINT = 'N' THEN P.REFERENCE_ID END) > 0
+            ORDER BY P.LAUNCH_NUM DESC
+        `;
+
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (data.length === 0) {
+                    dataout = { status: 'null' };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/Cancel_PendingPrint_WaveOrder', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        const condition_TYPE_PICK = fromdata.type
+        ? ` AND TYPE_PICK =  '${fromdata.type}' `
+        : '';
+        
+        var query = `        
+        
+        update [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER
+        set STATUS_PRINT = 'Y'
+        ,PROCRESS_DATE = getdate()
+        where  LAUNCH_NUM = '${fromdata.waveno}' ${condition_TYPE_PICK}
+        and STATUS_PRINT = 'N'
+         
+
+       `;
         return pool.request().query(query, function (err_query) {
             if (err_query) {
                 dataout = {
