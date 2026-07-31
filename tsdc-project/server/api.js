@@ -30,7 +30,7 @@ function DateNow(nDateTime) {
 }
 
 app.get('/serverdate', (req, res) => {
-    const currentDateTime = DateNow();  
+    const currentDateTime = DateNow();
     res.json({ date: currentDateTime });
 });
 
@@ -741,8 +741,11 @@ app.post('/CheckOrder_Cancel', function (req, res) {
         var query = `
         
      
-        select * from [10.26.1.11].[TSDC_Conveyor].dbo.ONLINE_ORDER_CANCEL
-        where ORDER_NUMBER_OOC = ( select distinct shipment_id from TSDC_CONTAINER_MAPORDER
+        select c.ORDER_NUMBER_OOC as shipment_id ,SHIPPING_NAME,TCHANNEL,c.SHOPID_OOC as SELLER_NO,c.customerid_ooc as COMPANY,(FORMAT(PO_DATE,'dd-MM-yyyy'))  as ORDER_DATE from [10.26.1.11].[TSDC_Conveyor].dbo.ONLINE_ORDER_CANCEL c
+        left join TSDC_INTERFACE_ORDER_HEADER  i
+        on ORDER_NUMBER_OOC =  i.PO_NO
+             and c.SHOPID_OOC = i.SHIP_NO 
+      where ORDER_NUMBER_OOC = ( select distinct shipment_id from TSDC_CONTAINER_MAPORDER
                      WHERE  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
 
        `;
@@ -1992,8 +1995,8 @@ app.post('/tracking_running', function (req, res) {
     //sql.close();
     new sql.ConnectionPool(db).connect().then(pool => {
 
-        const trackingValue = fromdata.TRACKING ? `'${fromdata.TRACKING}'` : `''` ;
-        const Status = fromdata.VAS_NAME_10 ? `'${fromdata.VAS_NAME_10}'` : `''` ;
+        const trackingValue = fromdata.TRACKING ? `'${fromdata.TRACKING}'` : `''`;
+        const Status = fromdata.VAS_NAME_10 ? `'${fromdata.VAS_NAME_10}'` : `''`;
 
         var query = `  
 
@@ -3403,38 +3406,38 @@ app.post('/updateBoxTracking', function (req, res) {
                 };
                 res.json(dataout);
             } else {
-                var query =
+                var query2 =
                     `
                     select BOX_SIZE,REF_INDEX,PO_NO,SELLER_NO,QTY,BOX_NO_ORDER,TABLE_CHECK,CUST_NAME,BILL_NO_REF
                     from TSDC_PICK_CHECK_BOX_CONTROL_NEW 
                     where REF_INDEX = '${fromdata.REF_INDEX}'
                      `;
-                     return pool.request().query(query, function (err_query, recordset) {
-                        if (err_query) {
+                return pool.request().query(query2, function (err_query2, recordset) {
+                    if (err_query2) {
+                        dataout = {
+                            status: 'error',
+                            data: err_query2,
+                            query: query2,
+                        };
+                        res.json(dataout);
+                    } else {
+                        var data = recordset.recordset;
+                        if (recordset.recordset.length === 0) {
                             dataout = {
-                                status: 'error',
-                                data: err_query,
+                                status: 'null',
                                 query: query,
                             };
                             res.json(dataout);
                         } else {
-                            var data = recordset.recordset;
-                            if (recordset.recordset.length === 0) {
-                                dataout = {
-                                    status: 'null',
-                                    query: query,
-                                };
-                                res.json(dataout);
-                            } else {
-                                dataout = {
-                                    status: 'success',
-                                    data: data,
-                                    
-                                };
-                                res.json(dataout);
-                            }
+                            dataout = {
+                                status: 'success',
+                                data: data,
+
+                            };
+                            res.json(dataout);
                         }
-                    });
+                    }
+                });
             }
             sql.close();
         });
@@ -3473,12 +3476,42 @@ app.post('/pickcheck_print_ordercancel', function (req, res) {
                 };
                 res.json(dataout);
             } else {
-                dataout = {
-                    status: 'success'
-                };
-                res.json(dataout); sql.close();
-            }
+                var query2 =
+                    `
+                select top 1 *
+                from TSDC_PICK_CHECK_PRINTCANCEL
+                where shipment_id = '${fromdata.shipment_id}'
+                and table_check = '${fromdata.TABLE_CHECK}'
+                order by print_date desc
+                 `;
+                return pool.request().query(query2, function (err_query2, recordset) {
+                    if (err_query2) {
+                        dataout = {
+                            status: 'error',
+                            data: err_query2,
+                            query: query2,
+                        };
+                        res.json(dataout);
+                    } else {
+                        var data = recordset.recordset;
+                        if (recordset.recordset.length === 0) {
+                            dataout = {
+                                status: 'null',
+                                query: query,
+                            };
+                            res.json(dataout);
+                        } else {
+                            dataout = {
+                                status: 'success',
+                                data: data,
 
+                            };
+                            res.json(dataout);
+                        }
+                    }
+                });
+            }
+            sql.close();
         });
     });
 });
@@ -3527,15 +3560,15 @@ app.post('/get_report_printcancel', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const condition_zone = fromdata.zone
-        ? ` AND zone = '${fromdata.zone}' `
-        : '';
+            ? ` AND zone = '${fromdata.zone}' `
+            : '';
 
         const condition_tablecheck = fromdata.tablecheck
-        ? ` AND table_check = '${fromdata.tablecheck}' `
-        : '';
+            ? ` AND table_check = '${fromdata.tablecheck}' `
+            : '';
 
         const fromDateTime = `${fromdata.printDate} ${fromdata.timeFrom}:00`;
-        const toDateTime   = `${fromdata.printDate} ${fromdata.timeTo}:59`;
+        const toDateTime = `${fromdata.printDate} ${fromdata.timeTo}:59`;
 
         var query = `        
         select  CONVERT(VARCHAR(10), print_date, 103) + ' ' +
@@ -3732,8 +3765,7 @@ app.post('/check_Tracking_confirm_outbound2', function (req, res) {
                     query: query
                 };
                 res.json(dataout);
-            } else 
-            {
+            } else {
                 var data = recordset.recordset;
                 if (recordset.recordset.length === 0) {
                     var query2 = `
@@ -3767,9 +3799,8 @@ app.post('/check_Tracking_confirm_outbound2', function (req, res) {
 
                         }
                         sql.close();
-                    });     
-                }else 
-                {
+                    });
+                } else {
                     dataout = {
                         status: 'warning_PO',
                         data: data,
@@ -4225,71 +4256,6 @@ app.post('/deleteTracking_outbount', function (req, res) {
     });
 });
 
-app.post('/report_pallet_outbound', function (req, res) {
-    var fromdata = req.body;
-    new sql.ConnectionPool(db).connect().then(pool => {
-        var query = `
-        SELECT
-            ROW_NUMBER() OVER (ORDER BY CREATE_DATE ASC) AS ID,
-            PALLET_NO,
-            BILL_NO,
-            ORDER_NO,
-            SHIP_PROVIDER_OOD,
-            FORMAT(CREATE_DATE, 'yyyy-MM-dd HH:mm:ss') AS scandate,
-            PIN_ID,
-            STATUS_DELIVERY
-        FROM TSDC_CONFIRM_OUTBOUND
-        WHERE PALLET_NO = '${fromdata.Pallet_NO}'
-        AND CONVERT(date, CREATE_DATE) = '${fromdata.report_date}'
-        ORDER BY CREATE_DATE ASC
-        `;
-        return pool.request().query(query, function (err_query, recordset) {
-            if (err_query) {
-                dataout = { status: 'error', member: err_query, query: query };
-                res.json(dataout);
-            } else {
-                var data = recordset.recordset;
-                if (data.length === 0) {
-                    dataout = { status: 'null' };
-                } else {
-                    dataout = { status: 'success', data: data };
-                }
-                res.json(dataout);
-                sql.close();
-            }
-        });
-    });
-});
-
-app.post('/delete_report_pallet_outbound', function (req, res) {
-    var fromdata = req.body;
-    new sql.ConnectionPool(db).connect().then(pool => {
-        var query = `
-        DELETE TSDC_CONFIRM_OUTBOUND
-        WHERE PALLET_NO = '${fromdata.Pallet_NO}'
-        AND BILL_NO = '${fromdata.BILL_NO}'
-        AND CONVERT(date, CREATE_DATE) = '${fromdata.report_date}'
-        AND (STATUS_DELIVERY IS NULL OR STATUS_DELIVERY != 'S')
-
-        DELETE [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_CONFIRM_OUTBOUND
-        WHERE PALLET_NO = '${fromdata.Pallet_NO}'
-        AND BILL_NO = '${fromdata.BILL_NO}'
-        AND CONVERT(date, CREATE_DATE) = '${fromdata.report_date}'
-        AND (STATUS_DELIVERY IS NULL OR STATUS_DELIVERY != 'S')
-        `;
-        return pool.request().query(query, function (err_query, recordset) {
-            if (err_query) {
-                dataout = { status: 'error', data: err_query, query: query };
-                res.json(dataout);
-            } else {
-                dataout = { status: 'success' };
-                res.json(dataout);
-                sql.close();
-            }
-        });
-    });
-});
-
 app.post('/interface_Tracking_confirm_outbound', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
@@ -4418,7 +4384,7 @@ app.post('/CheckWork_ug', function (req, res) {
             } else {
                 var data = recordset.recordset;
                 if (recordset.recordset.length === 0) {
-                    
+
                     var query2 = `        
 
                     select distinct TSDC_PICK_CHECK_NEW.CONTAINER_ID ,TSDC_PICK_CHECK_NEW.SELLER_NO,'${fromdata.USER_NAME}' as USER_NAME,TSDC_PICK_CHECK_NEW.ORDER_TYPE,TSDC_PICK_CHECK_NEW.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
@@ -4950,59 +4916,68 @@ app.post('/Moniter_InterfaceErrorManH', function (req, res) {
 
         var query = `        
 
-        (
-            SELECT 
+        SELECT 
                 ERROR_MSG,
                 COMPANY,
-                FORMAT(DATE_TIME_STAMP,'dd-MM-yyyy HH:mm:ss') AS DATE_TIME_STAMP,
-                REFERENCE_ID01 AS SHIPMENT_ID,INTERFACE_PROCESS
-            FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR
-            WHERE INTERFACE_PROCESS = 'Shipping'
-              AND WAREHOUSE IS NOT NULL
-              AND REFERENCE_ID01 NOT IN (
-                    SELECT shipment_id 
-                    FROM [10.26.1.83].ILS.dbo.SHIPMENT_HEADER
-              )
-              AND CAST(DATE_TIME_STAMP AS DATE) = CAST(GETDATE() AS DATE)
-        )
-        UNION ALL
-        (
-            SELECT 
-                'TITEM = ' + IE.REFERENCE_ID06 + ' : ' + ERROR_MSG,
-                COMPANY,
-                FORMAT(DATE_TIME_STAMP,'dd-MM-yyyy HH:mm:ss') AS DATE_TIME_STAMP,
-                REFERENCE_ID01 AS SHIPMENT_ID,INTERFACE_PROCESS
-            FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR IE
-            WHERE IE.interface_process = 'Receiving'
-              AND (IE.REFERENCE_ID01 IS NULL OR IE.REFERENCE_ID01 = '')
-              AND CAST(DATE_TIME_STAMP AS DATE) = CAST(GETDATE() AS DATE)
-              AND NOT EXISTS (
-                    SELECT 1
-                    FROM [10.26.1.83].ILS.dbo.RECEIPT_DETAIL RD
-                    WHERE RD.item = IE.REFERENCE_ID06
-                      AND RD.ERP_ORDER_LINE_NUM = IE.REFERENCE_ID07
-                      AND CAST(RD.DATE_TIME_STAMP AS DATE) = CAST(IE.DATE_TIME_STAMP AS DATE)
-              )
-        )
-        UNION ALL
-        (
-            SELECT 
-                ERROR_MSG,
-                COMPANY,
-                FORMAT(DATE_TIME_STAMP,'dd-MM-yyyy HH:mm:ss') AS DATE_TIME_STAMP,
-                REFERENCE_ID01 AS SHIPMENT_ID,INTERFACE_PROCESS
-            FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR IE
-            WHERE IE.interface_process = 'Receiving'
-              AND IE.REFERENCE_ID01 IS NOT NULL 
-              AND  IE.REFERENCE_ID01 != ''
-              AND CAST(DATE_TIME_STAMP AS DATE) = CAST(GETDATE() AS DATE)
-              AND NOT EXISTS (
-                    SELECT 1
-                    FROM [10.26.1.83].ILS.dbo.RECEIPT_HEADER RH
-                    WHERE RH.RECEIPT_ID = IE.REFERENCE_ID01
-              )
-        )
-        ORDER BY DATE_TIME_STAMP DESC;
+                FORMAT(DT_LOCAL,'dd-MM-yyyy HH:mm:ss') AS DATE_TIME_STAMP,
+                SHIPMENT_ID,
+                INTERFACE_PROCESS
+            FROM (
+                SELECT 
+                    ERROR_MSG,
+                    COMPANY,
+                    DATEADD(HOUR, 7, DATE_TIME_STAMP) AS DT_LOCAL,
+                    REFERENCE_ID01 AS SHIPMENT_ID,
+                    INTERFACE_PROCESS
+                FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR
+                WHERE INTERFACE_PROCESS = 'Shipping'
+                AND WAREHOUSE IS NOT NULL
+                AND REFERENCE_ID01 NOT IN (
+                        SELECT shipment_id 
+                        FROM [10.26.1.83].ILS.dbo.SHIPMENT_HEADER
+                )
+                AND DATEADD(HOUR, 7, DATE_TIME_STAMP) >= DATEADD(DAY, -1, CAST(DATEADD(HOUR, 7, GETDATE()) AS DATE))
+
+                UNION ALL
+
+                SELECT 
+                    'TITEM = ' + IE.REFERENCE_ID06 + ' : ' + ERROR_MSG,
+                    COMPANY,
+                    DATEADD(HOUR, 7, DATE_TIME_STAMP) AS DT_LOCAL,
+                    REFERENCE_ID01 AS SHIPMENT_ID,
+                    INTERFACE_PROCESS
+                FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR IE
+                WHERE IE.interface_process = 'Receiving'
+                AND (IE.REFERENCE_ID01 IS NULL OR IE.REFERENCE_ID01 = '')
+                AND DATEADD(HOUR, 7, IE.DATE_TIME_STAMP) >= DATEADD(DAY, -1, CAST(DATEADD(HOUR, 7, GETDATE()) AS DATE))
+                AND NOT EXISTS (
+                        SELECT 1
+                        FROM [10.26.1.83].ILS.dbo.RECEIPT_DETAIL RD
+                        WHERE RD.item = IE.REFERENCE_ID06
+                        AND RD.ERP_ORDER_LINE_NUM = IE.REFERENCE_ID07
+                        AND CAST(RD.DATE_TIME_STAMP AS DATE) = CAST(IE.DATE_TIME_STAMP AS DATE)
+                )
+
+                UNION ALL
+
+                SELECT 
+                    ERROR_MSG,
+                    COMPANY,
+                    DATEADD(HOUR, 7, DATE_TIME_STAMP) AS DT_LOCAL,
+                    REFERENCE_ID01 AS SHIPMENT_ID,
+                    INTERFACE_PROCESS
+                FROM [10.26.1.83].ILS.dbo.INTERFACE_ERROR IE
+                WHERE IE.interface_process = 'Receiving'
+                AND IE.REFERENCE_ID01 IS NOT NULL 
+                AND IE.REFERENCE_ID01 != ''
+                AND DATEADD(HOUR, 7, IE.DATE_TIME_STAMP) >= DATEADD(DAY, -1, CAST(DATEADD(HOUR, 7, GETDATE()) AS DATE))
+                AND NOT EXISTS (
+                        SELECT 1
+                        FROM [10.26.1.83].ILS.dbo.RECEIPT_HEADER RH
+                        WHERE RH.RECEIPT_ID = IE.REFERENCE_ID01
+                )
+            ) AS T
+            ORDER BY DT_LOCAL DESC;
         
        `;
         return pool.request().query(query, function (err_query, recordset) {
@@ -5049,7 +5024,7 @@ app.post('/update_statusRTS', function (req, res) {
             where FTOrdernumber = '${element.FTOrdernumber}';
             `
         });
-        
+
         return pool.request().query(query, function (err_query) {
             if (err_query) {
                 dataout = {
@@ -5179,7 +5154,7 @@ app.post('/CheckWorktrack', function (req, res) {
             } else {
                 var data = recordset.recordset;
                 if (recordset.recordset.length === 0) {
-                    
+
                     var query2 = `        
 
                     select distinct PICK_CHECK.CONTAINER_ID ,PICK_CHECK.SELLER_NO,'${fromdata.USER_NAME}' as USER_NAME,PICK_CHECK.ORDER_TYPE,PICK_CHECK.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
@@ -5396,7 +5371,7 @@ app.post('/matchItemInContrack', async function (req, res) {
     } catch (err) {
         res.json({ status: 'error', data: err });
     } finally {
-        if (pool) await pool.close(); 
+        if (pool) await pool.close();
     }
 });
 
@@ -5996,74 +5971,74 @@ app.post('/Moniter_TrackingOrderInternal_Detail', function (req, res) {
             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ORDER_COUNT,WORK_TRACKING AS STATUS",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TRACKING"
+            whereWorktype: "WORK_TRACKING"
         },
-	ORDER_WAIT_PROCESS_SHORT: {
+        ORDER_WAIT_PROCESS_SHORT: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_PROCESS]",
             select: "COMPANY, SHOPID_OOH as SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ORDER_COUNT,WORK_TRACKING AS STATUS",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TRACKING"
+            whereWorktype: "WORK_TRACKING"
         },
 
         ORDER_WAIT_PLAN: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_PLAN]",
-              select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, MANHT_DATE,ORDER_NO,WORK_TYPE AS PERIOD",
+            select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, MANHT_DATE,ORDER_NO,WORK_TYPE AS PERIOD",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TYPE"
+            whereWorktype: "WORK_TYPE"
         },
         ORDER_WAIT_CLOSEPICK: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_CLOSE_PICK]",
             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ZONE_PICK,ORDER_NO,CONTAINER_ID,WORK_TYPE AS PERIOD",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TYPE"
+            whereWorktype: "WORK_TYPE"
         },
         ORDER_WAIT_CHECK: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_CHECK]",
             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ZONE_PICK,ORDER_NO,CONTAINER_ID,WORK_TYPE AS PERIOD",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TYPE"
+            whereWorktype: "WORK_TYPE"
         },
-		 ORDER_WAIT_RTS: {
+        ORDER_WAIT_RTS: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_RTS]",
             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ORDER_COUNT,WORK_TYPE AS PERIOD",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TYPE"
+            whereWorktype: "WORK_TYPE"
         },
 
-		ORDER_WAIT_OUTBOUND: {
+        ORDER_WAIT_OUTBOUND: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_OUTBOUND]",
             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE,TRANSPORT, ORDER_COUNT,WORK_TYPE AS PERIOD",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TYPE"
+            whereWorktype: "WORK_TYPE"
         },
-		ORDER_WAIT_COURIER: {
+        ORDER_WAIT_COURIER: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_WAIT_COURIER_REC]",
             select: "TRANSPORT,COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE, ORDER_COUNT,WORK_TYPE AS PERIOD",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TYPE"
+            whereWorktype: "WORK_TYPE"
         },
-		ORDER_COURIER_RECEIVE: {
+        ORDER_COURIER_RECEIVE: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_COURIER_REC]",
-             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE,TRANSPORT, ORDER_COUNT,WORK_TYPE AS PERIOD",
+            select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE,TRANSPORT, ORDER_COUNT,WORK_TYPE AS PERIOD",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_TYPE"
+            whereWorktype: "WORK_TYPE"
         },
-		ORDER_CANCEL: {
+        ORDER_CANCEL: {
             table: "[10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_ORDER_TRACKING_INTERNAL_ORDER_CANCEL]",
-             select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE,ORDER_NO,WORK_PERIOD AS PERIOD",
+            select: "COMPANY, SHOPID_OOH AS SHOP_ID,SHOP_NAME, CONVERT(VARCHAR(10), ORDER_DATE, 105) AS ORDER_DATE,ORDER_NO,WORK_PERIOD AS PERIOD",
             whereCompany: "COMPANY",
             whereDate: "ORDER_DATE",
-			whereWorktype: "WORK_PERIOD"
+            whereWorktype: "WORK_PERIOD"
         }
-        
+
     };
 
     const config = queryMap[fromdata.type];
@@ -6083,7 +6058,7 @@ app.post('/Moniter_TrackingOrderInternal_Detail', function (req, res) {
 
         const condition_worktype = fromdata.worktype
             ? ` AND ${config.whereWorktype} = '${fromdata.worktype}' `
-            : '';    
+            : '';
 
         var query = `
             SELECT ${config.select}
@@ -6236,16 +6211,16 @@ app.post('/tsuruha_get_orderdetail', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const condition_channel = fromdata.channel
-        ? ` AND Channel = '${fromdata.channel}' `
-        : '';
+            ? ` AND Channel = '${fromdata.channel}' `
+            : '';
 
         const condition_period = fromdata.period
-        ? ` AND work_period = '${fromdata.period}' `
-        : '';
+            ? ` AND work_period = '${fromdata.period}' `
+            : '';
 
         const condition_date = fromdata.date
-        ? ` H.Manht_process_date  = '${fromdata.date}'`
-        : ` H.Manht_process_date between '${fromdata.datef}' and '${fromdata.datet}'`;
+            ? ` H.Manht_process_date  = '${fromdata.date}'`
+            : ` H.Manht_process_date between '${fromdata.datef}' and '${fromdata.datet}'`;
 
 
         var query = `        
@@ -6302,16 +6277,16 @@ app.post('/tsuruha_get_orderdetail_invhistory', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const condition_date = fromdata.date
-        ? ` H.Manht_process_date  = '${fromdata.date}'`
-        : ` H.Manht_process_date between '${fromdata.datef}' and '${fromdata.datet}'`;
+            ? ` H.Manht_process_date  = '${fromdata.date}'`
+            : ` H.Manht_process_date between '${fromdata.datef}' and '${fromdata.datet}'`;
 
         const condition_channel = fromdata.channel
-        ? ` AND Channel = '${fromdata.channel}' `
-        : '';
+            ? ` AND Channel = '${fromdata.channel}' `
+            : '';
 
         const condition_period = fromdata.period
-        ? ` AND work_period = '${fromdata.period}' `
-        : '';
+            ? ` AND work_period = '${fromdata.period}' `
+            : '';
 
         var query = `        
         
@@ -6446,8 +6421,8 @@ app.post('/tsuruha_update_invoice', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const remark = fromdata.remark
-        ? ` ,REMARK = '${fromdata.remark}' `
-        : '';
+            ? ` ,REMARK = '${fromdata.remark}' `
+            : '';
 
         var query = `  
 
@@ -6538,8 +6513,8 @@ app.post('/tsuruha_history_invoice', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const inv_date = fromdata.invdate
-        ? ` ,'${fromdata.invdate}' `
-        : '';
+            ? ` ,'${fromdata.invdate}' `
+            : '';
 
         var query = `  
 
@@ -6672,16 +6647,16 @@ app.post('/tsuruha_update_void', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const void_date = fromdata.voiddate
-        ? ` ,VOID_DATE = '${fromdata.voiddate}' `
-        : '';
+            ? ` ,VOID_DATE = '${fromdata.voiddate}' `
+            : '';
 
         const remark = fromdata.remark
-        ? ` ,REMARK = '${fromdata.remark}' `
-        : '';
+            ? ` ,REMARK = '${fromdata.remark}' `
+            : '';
 
         const void_amt = fromdata.void_amt
-        ? ` ,VOID_AMT = ${fromdata.void_amt} `
-        : '';
+            ? ` ,VOID_AMT = ${fromdata.void_amt} `
+            : '';
 
         var query = `  
 
@@ -6728,16 +6703,16 @@ app.post('/packinglist_header', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const condition_checkdate = fromdata.date
-        ? ` AND FORMAT(CHECK_DATE,'yyyy-MM-dd') = '${fromdata.date}' `
-        : '';
+            ? ` AND FORMAT(CHECK_DATE,'yyyy-MM-dd') = '${fromdata.date}' `
+            : '';
 
         const condition_order = fromdata.orderno
-        ? ` AND A.SHIPMENT_ID like '%${fromdata.orderno}%' `
-        : '';
+            ? ` AND A.SHIPMENT_ID like '%${fromdata.orderno}%' `
+            : '';
 
         const condition_PO = fromdata.orderno
-        ? ` AND PO_NO like '%${fromdata.orderno}%' `
-        : '';
+            ? ` AND PO_NO like '%${fromdata.orderno}%' `
+            : '';
 
         var query = `        
         
@@ -6892,8 +6867,8 @@ app.post('/confirm_packinglist_header', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const user_confirm = fromdata.userid
-        ? `${fromdata.userid} `
-        : '';
+            ? `${fromdata.userid} `
+            : '';
 
         var query = `  
 
@@ -7110,8 +7085,8 @@ app.post('/Get_ITEM_LOCATION_MANHT_PICK_PAPER', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const condition_TYPE_PICK = fromdata.type
-        ? ` AND TYPE_PICK =  '${fromdata.type}' `
-        : '';
+            ? ` AND TYPE_PICK =  '${fromdata.type}' `
+            : '';
 
         var query = `        
         
@@ -7156,9 +7131,9 @@ app.post('/Update_MANHT_PICK_PAPER', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const condition_TYPE_PICK = fromdata.type
-        ? ` AND TYPE_PICK =  '${fromdata.type}' `
-        : '';
-        
+            ? ` AND TYPE_PICK =  '${fromdata.type}' `
+            : '';
+
         var query = `        
         
         update [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER
@@ -7282,9 +7257,9 @@ app.post('/Cancel_PendingPrint_WaveOrder', function (req, res) {
     new sql.ConnectionPool(db).connect().then(pool => {
 
         const condition_TYPE_PICK = fromdata.type
-        ? ` AND TYPE_PICK =  '${fromdata.type}' `
-        : '';
-        
+            ? ` AND TYPE_PICK =  '${fromdata.type}' `
+            : '';
+
         var query = `        
         
         update [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER
@@ -7314,6 +7289,104 @@ app.post('/Cancel_PendingPrint_WaveOrder', function (req, res) {
         });
     });
 });
+
+app.post('/report_pallet_outbound', function (req, res) {
+    var fromdata = req.body;
+    var fromdata = req.body;
+
+    const conditions = [];
+
+    if (fromdata.Tracking_No) {
+        conditions.push(`(t.BILL_NO like '%${fromdata.Tracking_No}%')`);
+    }
+
+    if (fromdata.Pallet_NO) {
+        conditions.push(`(t.PALLET_NO = '${fromdata.Pallet_NO}' AND CONVERT(date, t.scandate) = '${fromdata.report_date}')`);
+    }
+
+    // ถ้าไม่ส่งอะไรมาเลย ให้ return ว่างไปเลย ไม่ต้อง query ทั้งตาราง
+    const whereClause = conditions.length > 0 ? conditions.join(' OR ') : '1=0';
+
+    new sql.ConnectionPool(db).connect().then(pool => {
+        var query = `
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY t.scandate ASC) AS ID,
+            t.*
+        FROM (
+            SELECT
+                l.PALLET_NO, l.BILL_NO, l.ORDER_NO, l.SHIP_PROVIDER_OOD,
+                CONVERT(varchar,l.CREATE_DATE ,121) as scandate, l.PIN_ID,
+                CASE WHEN l.STATUS_DELIVERY = 'S' OR r.STATUS_DELIVERY = 'S' THEN 'S'
+                    ELSE l.STATUS_DELIVERY END AS STATUS_DELIVERY,
+                COALESCE(l.DELIVERY_NO, r.DELIVERY_NO) AS DELIVERY_NO,
+                COALESCE(l.DRIVER_NAME, r.DRIVER_NAME) AS DRIVER_NAME,
+                COALESCE(l.DRIVER_SIGNATURE, r.DRIVER_SIGNATURE) AS DRIVER_SIGNATURE
+            FROM TSDC_CONFIRM_OUTBOUND l
+            LEFT JOIN [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_CONFIRM_OUTBOUND r
+                ON l.BILL_NO = r.BILL_NO AND l.PALLET_NO = r.PALLET_NO
+                AND (l.BILL_NO = r.BILL_NO OR l.BILL_NO IS NULL)
+
+            UNION ALL
+
+            SELECT
+                r.PALLET_NO, r.BILL_NO, r.ORDER_NO, r.SHIP_PROVIDER_OOD,
+                CONVERT(varchar,r.CREATE_DATE ,121) as scandate, r.PIN_ID,
+                r.STATUS_DELIVERY,
+                r.DELIVERY_NO, r.DRIVER_NAME, r.DRIVER_SIGNATURE
+            FROM [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_CONFIRM_OUTBOUND r
+            WHERE NOT EXISTS (
+                SELECT 1 FROM TSDC_CONFIRM_OUTBOUND l
+                WHERE l.BILL_NO = r.BILL_NO AND l.PALLET_NO = r.PALLET_NO
+                and r.bill_no is not null
+            )
+        ) t
+        WHERE ${whereClause}  And t.PALLET_NO is not null
+        ORDER BY t.scandate ASC
+
+        `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = { status: 'error', member: err_query, query: query };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (data.length === 0) {
+                    dataout = { status: 'null' };
+                } else {
+                    dataout = { status: 'success', data: data };
+                }
+                res.json(dataout);
+                sql.close();
+            }
+        });
+    });
+});
+
+app.post('/delete_report_pallet_outbound', function (req, res) {
+    var fromdata = req.body;
+    new sql.ConnectionPool(db).connect().then(pool => {
+        var query = `
+        DELETE FROM TSDC_CONFIRM_OUTBOUND
+        WHERE PALLET_NO = '${fromdata.Pallet_NO}'
+        AND BILL_NO = '${fromdata.BILL_NO}'
+        AND CONVERT(date, CREATE_DATE) = '${fromdata.report_date}'
+        AND ISNULL(STATUS_DELIVERY, '') != 'S'
+
+        EXEC('DELETE FROM [TSDC_CONVEYOR].[DBO].TSDC_CONFIRM_OUTBOUND WHERE PALLET_NO = ''${fromdata.Pallet_NO}'' AND BILL_NO = ''${fromdata.BILL_NO}'' AND CONVERT(date, CREATE_DATE) = ''${fromdata.report_date}'' AND ISNULL(STATUS_DELIVERY, '''') != ''S''') AT [10.26.1.11]
+        `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = { status: 'error', data: err_query, query: query };
+                res.json(dataout);
+            } else {
+                dataout = { status: 'success' };
+                res.json(dataout);
+                sql.close();
+            }
+        });
+    });
+});
+
 
 
 module.exports = app;
