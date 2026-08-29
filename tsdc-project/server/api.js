@@ -7387,8 +7387,623 @@ app.post('/delete_report_pallet_outbound', function (req, res) {
     });
 });
 
+//////////////////// print tracking group sku ////////////////////
 
+app.post('/Get_TrackingGroupSku', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
 
+    var GROUP_PICK = (fromdata.GROUP_PICK || '').trim().replace(/'/g, "''");
+
+    if (GROUP_PICK === '') {
+        dataout = {
+            status: 'error',
+            message: 'GROUP_PICK ต้องถูกระบุ'
+        };
+        return res.json(dataout);
+    }
+
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+
+        select COMPANY
+              ,GROUP_PICK
+              ,SHIPMENT_ID
+              ,CONTAINER_ID
+              ,SELLER_NO
+              ,TRANSPORT_CODE
+              ,TRACKING
+              ,FILE_PACKING
+              ,STATUS_PRINT
+              ,TRACKING_DOC_P
+              ,PALLET_NO
+              ,PRINT_STATUS
+              ,CONVERT(VARCHAR(23), PRINT_DATE, 121) as PRINT_DATE
+              ,TABLE_CHECK
+              --// 3 คอลัมน์สำหรับสแกนไอเทมก่อนพิมพ์ + สรุปจำนวนชิ้น
+              --// ค่าว่าง/null ได้ ระหว่างที่ job ต้นทางยังเติมไม่ครบ หน้าเว็บจะข้ามขั้นสแกนไปเอง
+              --// ไม่มีคอลัมน์ "จำนวนต่อ order" แยก เพราะ 1 แถว = 1 order เป็นเลขตัวเดียวกับ QTY
+              ,ITEM_ID
+              ,ITEM_ID_BARCODE
+              ,QTY
+        from TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+        where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
+        order by TRANSPORT_CODE,TRACKING
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    message: err_query.message,
+                    data: err_query,
+                    query: query,
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (recordset.recordset.length === 0) {
+                    dataout = {
+                        status: 'null',
+                        data: []
+                    };
+                    res.json(dataout);
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                    };
+                    res.json(dataout);
+                }
+            }
+        });
+    });
+});
+
+app.post('/Update_PrintStatus_TrackingGroupSku', function (req, res) {
+    var fromdata = req.body;
+    var Datenow = DateNow();
+    //sql.close();
+
+    var GROUP_PICK     = (fromdata.GROUP_PICK || '').trim().replace(/'/g, "''");
+    var TRANSPORT_CODE = (fromdata.TRANSPORT_CODE || '').trim();
+    var ROWS           = Array.isArray(fromdata.ROWS) ? fromdata.ROWS : [];
+
+    //// where ต่อ 1 record = SHIPMENT_ID + TRACKING
+    //// ใบ Cancel ไม่มี TRACKING จะส่ง '' มา — ใช้ SHIPMENT_ID ตัวเดียว (1 ต่อ 1 อยู่แล้ว)
+    var seen = {};
+    var conditions = [];
+
+    ROWS.forEach(function (r) {
+        var shipment = ((r && r.SHIPMENT_ID) || '').toString().trim();
+        var tracking = ((r && r.TRACKING) || '').toString().trim();
+        if (shipment === '' && tracking === '') { return; }
+
+        var key = shipment + '|' + tracking;
+        if (seen[key]) { return; }
+        seen[key] = true;
+
+        var parts = [];
+        if (shipment !== '') {
+            parts.push(`LTRIM(RTRIM(SHIPMENT_ID)) = '${shipment.replace(/'/g, "''")}'`);
+        }
+        if (tracking !== '') {
+            parts.push(`LTRIM(RTRIM(TRACKING)) = '${tracking.replace(/'/g, "''")}'`);
+        }
+        conditions.push('(' + parts.join(' and ') + ')');
+    });
+
+    if (GROUP_PICK === '' || conditions.length === 0) {
+        dataout = {
+            status: 'error',
+            message: 'GROUP_PICK และ ROWS ต้องถูกระบุ'
+        };
+        return res.json(dataout);
+    }
+
+    //// frontend ส่ง '(ไม่ระบุ)' มาแทน TRANSPORT_CODE ที่เป็นค่าว่าง
+    const condition_transport = (TRANSPORT_CODE === '' || TRANSPORT_CODE === '(ไม่ระบุ)')
+        ? ` and ISNULL(LTRIM(RTRIM(TRANSPORT_CODE)),'') = '' `
+        : ` and LTRIM(RTRIM(TRANSPORT_CODE)) = '${TRANSPORT_CODE.replace(/'/g, "''")}' `;
+
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+
+        update TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+        set PRINT_STATUS = 'Y'
+        ,PRINT_DATE = GETDATE()
+        where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
+        and ( ${conditions.join(' or ')} )
+        ${condition_transport}
+
+     `;
+        return pool.request().query(query, function (err_query) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    message: err_query.message,
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                dataout = {
+                    status: 'success',
+                    query: query
+                };
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/tracking_running_groupsku', function (req, res) {
+    var fromdata = req.body;
+
+    var esc = function (v) { return (v === null || v === undefined ? '' : v).toString().trim().replace(/'/g, "''"); };
+    var num = function (v) { var n = Number(v); return isFinite(n) ? n : 0; };
+
+    var GROUP_PICK    = esc(fromdata.GROUP_PICK);
+    var SHIPMENT_ID   = esc(fromdata.shipment_id || fromdata.SHIPMENT_ID);
+    var SELLER_NO     = esc(fromdata.SELLER_NO);
+    var CONTAINER_ID  = esc(fromdata.CONTAINER_ID);
+    //// ข้อมูลบางแถวไม่มี TABLE_CHECK — ใช้โต๊ะกลาง P999 แทน จะได้ยัง running ได้
+    var TABLE_CHECK   = esc(fromdata.TABLE_CHECK) || 'P999';
+    var TRACKING      = esc(fromdata.TRACKING);
+    var BOX_SIZE      = esc(fromdata.BOX_SIZE);
+    var USER_CHECK    = esc(fromdata.PIN_CODE || fromdata.USER_CHECK) || TABLE_CHECK;
+    var SHIPPING_NAME = esc(fromdata.SHIPPING_NAME);
+
+    var WEIGHT = num(fromdata.CARTON_BOX_WEIGHT);
+    var WIDTH  = num(fromdata.CARTON_BOX_W);
+    var HIGH   = num(fromdata.CARTON_BOX_H);
+    var DEEP   = num(fromdata.CARTON_BOX_L);
+
+    if (GROUP_PICK === '' || SHIPMENT_ID === '') {
+        dataout = {
+            status: 'error',
+            message: 'GROUP_PICK และ shipment_id ต้องถูกระบุ'
+        };
+        return res.json(dataout);
+    }
+
+    var condition_tracking = TRACKING === ''
+        ? ''
+        : ` and LTRIM(RTRIM(TRACKING)) = '${TRACKING}' `;
+
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+
+            declare @TABLE_RUNNING numeric(18)
+            declare @BOX_NO_ORDER numeric(18)
+            ---- ยาวพอสำหรับ TABLE_CHECK เกิน 3 ตัว เช่น 'P999' (4+6+4 = 14)
+            ---- ของเดิมประกาศ varchar(13) ทำให้ตัวท้ายโดนตัดทิ้งเงียบ ๆ แล้ว REF_INDEX ซ้ำกันทั้งวัน
+            declare @REF_INDEX  varchar(20)
+            declare @YY char(2)
+            declare @MM char(2)
+            declare @DD char(2)
+            declare @lockResult int
+
+            set @YY = (select right(YEAR(getdate()),2))
+            set @MM = (select FORMAT(getdate(),'MM'))
+            set @DD = (select FORMAT(getdate(),'dd'))
+
+            ---- ทั้งก้อนต้องอยู่ใน transaction เดียว — อ่าน MAX แล้ว insert ต้องแยกจากคนอื่นไม่ได้
+            ---- ไม่งั้น 2 คำขอที่มาพร้อมกันจะอ่าน MAX ได้ค่าเดียวกัน แล้วชน PK ตอน insert
+            BEGIN TRY
+            BEGIN TRANSACTION
+
+            ---- ล็อกเฉพาะ "ชื่อคิวของโต๊ะนี้" ไม่ได้ล็อกแถวในตารางเลย
+            ---- โต๊ะอื่น (P998, P997, ...) คนละชื่อทรัพยากร จึงวิ่งขนานกันได้ตามปกติ
+            ---- ห้ามใช้ UPDLOCK/HOLDLOCK บนตาราง เพราะ where ครอบ column ด้วย LTRIM/CAST
+            ---- ทำให้ seek ไม่ได้ ต้อง scan ทั้งตาราง แล้วจะไปล็อกงานของเครื่องอื่นด้วย
+            exec @lockResult = sp_getapplock
+                  @Resource   = 'tracking_running_groupsku_${TABLE_CHECK}',
+                  @LockMode   = 'Exclusive',
+                  @LockOwner  = 'Transaction',
+                  @LockTimeout = 15000
+
+            if @lockResult < 0
+            begin
+                ROLLBACK TRANSACTION;
+                THROW 51000, 'คิวสร้างเลข running ของโต๊ะนี้ไม่ว่าง กรุณาลองใหม่อีกครั้ง', 1;
+            end
+
+            ---- กรองงานของวันนี้ด้วย CREATE_DATE ไม่ใช่ SUBSTRING(REF_INDEX,4,6)
+            ---- สูตรเดิมสมมติว่า TABLE_CHECK ยาว 3 ตัว ตำแหน่ง 4-9 ถึงจะเป็น YYMMDD
+            ---- พอเจอ 'P999' (4 ตัว) จะได้ '926080' -> convert เป็น date ไม่ได้ ระเบิดตั้งแต่ใบที่ 2
+            ----
+            ---- เขียนแบบ SARGable (ไม่ครอบ column ด้วย function) เพื่อให้ใช้ index seek ได้
+            ---- ค่าที่ส่งมาถูก trim ตั้งแต่ฝั่ง angular แล้ว และ esc() ตัดซ้ำอีกชั้น
+            ---- ช่วงวันที่ใช้ >= วันนี้ และ < พรุ่งนี้ แทน CAST(CREATE_DATE AS date)
+            set @TABLE_RUNNING = (SELECT CASE WHEN (SELECT MAX(TABLE_RUNNING) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE TABLE_CHECK = '${TABLE_CHECK}' AND CREATE_DATE >= CAST(getdate() AS date) AND CREATE_DATE < DATEADD(day, 1, CAST(getdate() AS date))) is NULL THEN 1
+                                ELSE (SELECT MAX(TABLE_RUNNING) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE TABLE_CHECK = '${TABLE_CHECK}' AND CREATE_DATE >= CAST(getdate() AS date) AND CREATE_DATE < DATEADD(day, 1, CAST(getdate() AS date)) )+1
+                                END TABLE_RUNNING )
+
+            set @BOX_NO_ORDER = 1
+
+            SET @REF_INDEX      = (SELECT  LTRIM(RTRIM('${TABLE_CHECK}'))+@YY+@MM+@DD
+                                + case WHEN @TABLE_RUNNING is NULL THEN '0001'
+                                    when len(@TABLE_RUNNING) = 1 then '000'+ CONVERT(nvarchar,@TABLE_RUNNING)
+                                    when len(@TABLE_RUNNING) = 2 then '00'+ CONVERT(nvarchar,@TABLE_RUNNING)
+                                    when len(@TABLE_RUNNING) = 3 then '0'+ CONVERT(nvarchar,@TABLE_RUNNING)
+                                    when len(@TABLE_RUNNING) = 4 then  CONVERT(nvarchar,@TABLE_RUNNING)
+                                end REF_INDEX )
+
+            ---- 1) DETAIL: หน้ารายงานไม่ได้สแกนไอเทม จึงดึงรายการจริงจาก TSDC_PICK_CHECK_NEW_TRACKING
+            insert into TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+                ( REF_INDEX
+                ,CONTAINERID
+                ,PO_NO
+                ,SELLER_NO
+                ,BOX_NO_ORDER
+                ,ITEM_ID
+                ,QTY
+                ,USER_CHECK
+                ,TABLE_CHECK
+                ,ITEM_ID_BARCODE
+                ,Tracking
+                ,BOX_SIZE
+                )
+            select @REF_INDEX
+                ,'${CONTAINER_ID}'
+                ,'${SHIPMENT_ID}'
+                ,'${SELLER_NO}'
+                ,@BOX_NO_ORDER
+                ,ITEM_ID
+                ,SUM(ISNULL(QTY_PICK,0))
+                ,'${USER_CHECK}'
+                ,LTRIM(RTRIM('${TABLE_CHECK}'))
+                ,MAX(ITEM_ID_BARCODE)
+                ,'${TRACKING}'
+                ,'${BOX_SIZE}'
+            from TSDC_PICK_CHECK_NEW_TRACKING
+            where LTRIM(RTRIM(SHIPMENT_ID)) = '${SHIPMENT_ID}'
+            and LTRIM(RTRIM(SELLER_NO)) = '${SELLER_NO}'
+            group by ITEM_ID
+
+            ---- 2) BOX_CONTROL: รวม QTY จากแถว DETAIL ที่เพิ่ง insert ไป
+            insert into TSDC_PICK_CHECK_BOX_CONTROL_NEW
+                ( REF_INDEX
+                ,CONTAINERID
+                ,PO_NO
+                ,SELLER_NO
+                ,QTY
+                ,BOX_NO_ORDER
+                ,TABLE_CHECK
+                ,TABLE_RUNNING
+                ,USER_CHECK
+                ,BOX_SIZE
+                ,WEIGHT
+                ,WIDTH
+                ,HIGH
+                ,DEEP
+                ,TRANSPORT
+                ,TRACKING
+                ,SORTCODE
+                ,SORTINGLINECODE
+                ,STORENAME
+                ,CUST_NAME
+                ,CUST_ADDRESS
+                ,CUST_TEL
+                ,PICKUP_DATE
+                ,PRINT_DATE
+                ,CREATE_DATE
+                ,REPRINT_DATE
+                ,CODTYPE
+                ,CODTOTAL
+                ,VAS_NAME_01
+                ,VAS_NAME_02
+                ,VAS_NAME_03
+                ,VAS_NAME_04
+                ,VAS_NAME_05
+                ,VAS_NAME_06
+                ,VAS_NAME_07
+                ,VAS_NAME_08
+                ,VAS_NAME_09
+                ,VAS_NAME_10
+                )
+            select @REF_INDEX
+                ,'${CONTAINER_ID}'
+                ,'${SHIPMENT_ID}'
+                ,'${SELLER_NO}'
+                ,sum(QTY) AS QTY
+                ,@BOX_NO_ORDER
+                ,LTRIM(RTRIM('${TABLE_CHECK}'))
+                ,@TABLE_RUNNING
+                ,'${USER_CHECK}'
+                ,'${BOX_SIZE}'
+                ,${WEIGHT}
+                ,${WIDTH}
+                ,${HIGH}
+                ,${DEEP}
+                ,''
+                ,'${TRACKING}'
+                ,''
+                ,''
+                ,''
+                ,'${SHIPPING_NAME}'
+                ,''
+                ,''
+                ,getdate()
+                ,getdate()
+                ,getdate()
+                ,getdate()
+                ,'N'
+                ,0
+                ,'' ,'' ,'' ,'' ,'' ,'' ,'' ,'' ,'' ,''
+            from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+            where REF_INDEX = @REF_INDEX
+
+            ---- 3) เก็บเลข running กลับไปที่ TRACKING_DOC_P ของ group sku
+            update TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+            set TRACKING_DOC_P = @REF_INDEX
+            where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
+            and LTRIM(RTRIM(SHIPMENT_ID)) = '${SHIPMENT_ID}'
+            ${condition_tracking}
+
+            COMMIT TRANSACTION
+            END TRY
+            BEGIN CATCH
+                IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                THROW;
+            END CATCH
+
+            select @REF_INDEX as REF_INDEX
+                ,@BOX_NO_ORDER as BOX_NO_ORDER
+                ,@TABLE_RUNNING as TABLE_RUNNING
+                ,'${SHIPMENT_ID}' as PO_NO
+                ,'${SELLER_NO}' as SELLER_NO
+                ,(select ISNULL(sum(QTY),0) from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW where REF_INDEX = @REF_INDEX) as QTY
+
+     `;
+
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    message: err_query.message,
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                if (!data || data.length === 0) {
+                    dataout = {
+                        status: 'null',
+                        query: query
+                    };
+                } else if (Number(data[0].QTY) === 0) {
+                    //// ไม่พบไอเทมของ shipment นี้ใน TSDC_PICK_CHECK_NEW_TRACKING
+                    //// ไม่มีแถว DETAIL ให้รวม เลข running จึงไม่ควรถูกใช้ต่อ
+                    dataout = {
+                        status: 'null',
+                        message: 'ไม่พบรายการไอเทมของ shipment นี้',
+                        data: data,
+                        query: query
+                    };
+                } else {
+                    dataout = {
+                        status: 'success',
+                        data: data,
+                        query: query
+                    };
+                }
+                res.json(dataout);
+            }
+            sql.close();
+        });
+    });
+});
+
+app.post('/insertTracking_confirmOutbound_groupsku', function (req, res) {
+    var fromdata = req.body;
+
+    var esc = function (v) { return (v === null || v === undefined ? '' : v).toString().trim().replace(/'/g, "''"); };
+
+    var GROUP_PICK     = esc(fromdata.GROUP_PICK);
+    var TRANSPORT_CODE = esc(fromdata.TRANSPORT_CODE);
+    var PIN_ID         = esc(fromdata.PIN_ID);
+    var INTERNAL_ID    = esc(fromdata.INTERNAL_ID);
+    var SHIP_PROVIDER  = esc(fromdata.SHIP_PROVIDER_OOD) || TRANSPORT_CODE;
+    var ROWS           = Array.isArray(fromdata.ROWS) ? fromdata.ROWS : [];
+
+    //// ตัด tracking ว่าง/ซ้ำออกก่อน แล้วทำเป็น table constructor ให้ insert ทีเดียวจบ
+    var seen = {};
+    var values = [];
+    ROWS.forEach(function (r) {
+        var tracking = esc(r && r.TRACKING);
+        if (tracking === '' || seen[tracking]) { return; }
+        seen[tracking] = true;
+        values.push(`('${tracking}')`);
+    });
+
+    if (GROUP_PICK === '' || TRANSPORT_CODE === '' || values.length === 0) {
+        dataout = {
+            status: 'error',
+            message: 'GROUP_PICK, TRANSPORT_CODE และ ROWS (ต้องมี TRACKING) ต้องถูกระบุ'
+        };
+        return res.json(dataout);
+    }
+
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var query = `
+
+            declare @PALLET_NO varchar(20)
+            declare @RUNNING int
+            declare @INSERTED int
+            declare @YY char(2)
+            declare @MM char(2)
+            declare @DD char(2)
+            declare @lockResult int
+
+            set @YY = (select right(YEAR(getdate()),2))
+            set @MM = (select FORMAT(getdate(),'MM'))
+            set @DD = (select FORMAT(getdate(),'dd'))
+
+            BEGIN TRY
+            BEGIN TRANSACTION
+
+            ---- เลขพาเลทเป็น running รวมทั้งระบบต่อวัน (ไม่ได้แยกตามโต๊ะ) ชื่อล็อกจึงเป็นตัวเดียว
+            ---- ถือครองสั้นมาก และจะขอเลขใหม่เฉพาะตอนที่ group+transport นี้ยังไม่มีพาเลท
+            exec @lockResult = sp_getapplock
+                  @Resource   = 'pallet_running_groupsku',
+                  @LockMode   = 'Exclusive',
+                  @LockOwner  = 'Transaction',
+                  @LockTimeout = 15000
+
+            if @lockResult < 0
+            begin
+                ROLLBACK TRANSACTION;
+                THROW 51001, 'คิวสร้างเลข Pallet ไม่ว่าง กรุณาลองใหม่อีกครั้ง', 1;
+            end
+
+            ---- 1 GROUP_PICK + TRANSPORT_CODE ใช้เลขพาเลทเดียว — กดพิมพ์ซ้ำก็ได้เลขเดิม
+            set @PALLET_NO = (select top 1 LTRIM(RTRIM(PALLET_NO))
+                              from TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+                              where GROUP_PICK = '${GROUP_PICK}'
+                              and TRANSPORT_CODE = '${TRANSPORT_CODE}'
+                              and ISNULL(LTRIM(RTRIM(PALLET_NO)),'') <> '')
+
+            if @PALLET_NO is null
+            begin
+                ---- FA + YY + MM + DD + running 4 หลัก (รวม 12 ตัว)
+                ---- กรอง LEN + ต้องเป็นตัวเลขล้วน กัน pallet ที่คนพิมพ์มือรูปแบบอื่นมาปนแล้ว cast พัง
+                set @RUNNING = (select ISNULL(MAX(CAST(RIGHT(LTRIM(RTRIM(PALLET_NO)),4) AS int)),0)+1
+                                from TSDC_CONFIRM_OUTBOUND
+                                where LTRIM(RTRIM(PALLET_NO)) like 'FA'+@YY+@MM+@DD+'%'
+                                and LEN(LTRIM(RTRIM(PALLET_NO))) = 12
+                                and RIGHT(LTRIM(RTRIM(PALLET_NO)),4) not like '%[^0-9]%')
+
+                set @PALLET_NO = 'FA'+@YY+@MM+@DD+ RIGHT('000'+CONVERT(varchar(4),@RUNNING),4)
+            end
+
+            ---- เก็บเลขพาเลทกลับไปที่แถวที่พิมพ์สำเร็จ
+            update TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+            set PALLET_NO = @PALLET_NO
+            where GROUP_PICK = '${GROUP_PICK}'
+            and TRANSPORT_CODE = '${TRANSPORT_CODE}'
+            and LTRIM(RTRIM(TRACKING)) in (select TRACK_CODE from (values ${values.join(',')}) v(TRACK_CODE))
+
+            ---- insert ทีเดียวหลาย tracking — ข้ามตัวที่เคย confirm ไปแล้ว กันกดพิมพ์ซ้ำแล้วได้แถวซ้ำ
+            insert into TSDC_CONFIRM_OUTBOUND
+                ( [BILL_NO]
+                ,PALLET_NO
+                ,[QTY_BOX]
+                ,[CREATE_DATE]
+                ,[PIN_ID]
+                ,[INTERNAL_ID]
+                ,USER_CONFIRM_DELIVERY
+                ,DATE_DELIVERY
+                ,STATUS_DELIVERY
+                ,[STATUS]
+                ,SHIP_PROVIDER_OOD
+                ,ORDER_NO
+                ,TCHANNEL
+                )
+            select v.TRACK_CODE
+                ,@PALLET_NO
+                ,'1'
+                ,GETDATE()
+                ,'${PIN_ID}'
+                ,'${INTERNAL_ID}'
+                ,null
+                ,''
+                ,'N'
+                ,'N'
+                ,'${SHIP_PROVIDER}'
+                ---- TOP 1 กันกรณี tracking เดียวผูกได้หลาย order/partner
+                ---- ถ้าไม่ใส่ scalar subquery จะ error 'Subquery returned more than 1 value'
+                ---- แล้ว rollback ทั้ง transaction ทิ้ง (พาเลทไม่ถูกสร้าง พิมพ์ไม่ได้เลย)
+                ,(select distinct top 1 ORDER_NUMBER_OOD from ONLINE_ORDER_DETAIL where TRACK_CODE_OOD = v.TRACK_CODE)
+                ,(Select distinct top 1 B.PARTNERNAME from ONLINE_ORDER_DETAIL A, ONLINE_CUSTOMER_PARTNER B
+                  Where A.SHOPID_OOD = B.SHOPID and A.TRACK_CODE_OOD = v.TRACK_CODE)
+            from (values ${values.join(',')}) v(TRACK_CODE)
+            ---- กันซ้ำเฉพาะ "พาเลทเดียวกัน" ไม่ใช่ทั้งตาราง
+            ---- tracking หนึ่งอาจเคยถูก confirm มาก่อนจากหน้า outbound-scantracking หรือพาเลทอื่น
+            ---- ถ้าเช็คแค่ BILL_NO อย่างเดียวจะโดนกรองทิ้งหมด แล้วพาเลทใหม่ไม่มีข้อมูลเลย
+            ---- (เทียบกับ /update_Tracking_confirm_outbound2 ที่ key ด้วย bill_no + pallet_no)
+            where not exists (select 1 from TSDC_CONFIRM_OUTBOUND c
+                              where LTRIM(RTRIM(c.BILL_NO)) = v.TRACK_CODE
+                              and LTRIM(RTRIM(c.PALLET_NO)) = @PALLET_NO)
+
+            set @INSERTED = @@ROWCOUNT
+
+            COMMIT TRANSACTION
+            END TRY
+            BEGIN CATCH
+                IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                THROW;
+            END CATCH
+
+            select @PALLET_NO as PALLET_NO
+                ,'${GROUP_PICK}' as GROUP_PICK
+                ,'${TRANSPORT_CODE}' as TRANSPORT_CODE
+                ,@INSERTED as INSERTED
+                ---- 1 shipment = 1 กล่อง ยอดรวมทั้งพาเลทจึงนับ SHIPMENT_ID แบบไม่ซ้ำ
+                ---- (นับจาก TSDC_CONFIRM_OUTBOUND ไม่ได้ เพราะที่นั่นเก็บ BILL_NO = TRACKING)
+                ,(select count(distinct LTRIM(RTRIM(SHIPMENT_ID)))
+                  from TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+                  where LTRIM(RTRIM(PALLET_NO)) = @PALLET_NO) as QTY_BOX
+
+     `;
+
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    message: err_query.message,
+                    member: err_query,
+                    query: query
+                };
+                return res.json(dataout);
+            }
+
+            var data = recordset.recordset;
+            if (!data || data.length === 0) {
+                dataout = { status: 'null', query: query };
+                return res.json(dataout);
+            }
+
+            var PALLET_NO = (data[0].PALLET_NO || '').toString().trim().replace(/'/g, "''");
+
+            var query_remote = `
+
+                insert into [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_CONFIRM_OUTBOUND
+                select A.* from TSDC_CONFIRM_OUTBOUND A
+                where LTRIM(RTRIM(A.PALLET_NO)) = '${PALLET_NO}'
+                and not exists (select 1 from [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_CONFIRM_OUTBOUND B
+                                where LTRIM(RTRIM(B.BILL_NO)) = LTRIM(RTRIM(A.BILL_NO))
+                                and LTRIM(RTRIM(B.PALLET_NO)) = LTRIM(RTRIM(A.PALLET_NO)))
+
+           `;
+
+            return pool.request().query(query_remote, function (err_remote) {
+                data[0].REMOTE_ERROR = err_remote ? (err_remote.message || 'sync ไป 10.26.1.11 ไม่สำเร็จ') : '';
+
+                if (err_remote) {
+                    console.log('confirmOutbound_groupsku remote sync failed:', err_remote.message);
+                }
+
+                dataout = {
+                    status: 'success',
+                    data: data,
+                    query: query,
+                    query_remote: query_remote
+                };
+                res.json(dataout);
+                sql.close();
+            });
+        });
+    });
+});
 
 
 app.post('/insert_video_hd', function (req, res) {
@@ -7533,5 +8148,6 @@ app.post('/insert_video_hd', function (req, res) {
         res.json({ status: 'error', message: err.message });
     });
 });
+
 
 module.exports = app;
