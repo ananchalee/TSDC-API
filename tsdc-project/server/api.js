@@ -7389,4 +7389,149 @@ app.post('/delete_report_pallet_outbound', function (req, res) {
 
 
 
+
+
+app.post('/insert_video_hd', function (req, res) {
+    var fromdata = req.body || {};
+    var list = fromdata.VIDEO_LIST || [];
+
+    if (!list.length) {
+        return res.json({ status: 'error', message: 'VIDEO_LIST ว่าง ไม่มีไฟล์ให้บันทึก' });
+    }
+
+    // ใช้ parameter ไม่ต่อ string เพราะ FTPath เป็น path ของ Windows และชื่อไฟล์มาจากภายนอก
+    //
+    // upsert ยึด FTVideo_name เป็นกุญแจ (ชื่อไฟล์มี tablecheck+order+วัน+เวลา จึงไม่ซ้ำกันเอง)
+    //   เริ่มอัด     : segment แรก sta 2 -> INSERT
+    //   ตัด segment : ไฟล์ที่ปิดแล้ว sta 0 (UPDATE) + ไฟล์ใหม่ sta 2 (INSERT) มาในคำขอเดียวกัน
+    //   อัดจบ       : ทุก segment เป็น 0 ตัวที่ปิดไปแล้วเป็น UPDATE ซ้ำ ไม่มีผลเสีย
+    // FDStartdate / FDCreatedate ไม่ถูกแตะตอน UPDATE เพราะเป็นเวลาที่ไฟล์นั้นเริ่มถูกเขียน
+    // FDEnddate ว่าง = ไฟล์ยังเขียนไม่จบ ปล่อยคอลัมน์ไว้ตามเดิม
+    var query = `
+        DECLARE @updated int = 0, @inserted int = 0, @id bigint = NULL;
+
+        UPDATE [TSDC_VIDEO_HD]
+        SET [FDEnddate]    = CASE WHEN @FDEnddate = '' THEN [FDEnddate]
+                                  ELSE CONVERT(datetime, @FDEnddate, 120) END
+          , [FNStaUpload]  = @FNStaUpload
+          , [FTStaDesc]    = @FTStaDesc
+          , [FCFile_size]  = @FCFile_size
+          , [FTVideo_name] = @FTVideo_name
+          , [FTPath]       = @FTPath
+          -- ข้อมูลพวกนี้รู้ทีหลังได้ เช่น tracking ที่เพิ่งถูกเลือกหลังจากเริ่มอัดไปแล้ว
+          -- ถ้าไม่เขียนทับ แถวที่ insert ตอนเริ่มอัดจะค้างเป็นค่าว่างตลอดไป
+          , [FTTracking_id]  = CASE WHEN @FTTracking_id  = '' THEN [FTTracking_id]  ELSE @FTTracking_id  END
+          , [FTContainer_id] = CASE WHEN @FTContainer_id = '' THEN [FTContainer_id] ELSE @FTContainer_id END
+          , [FTZone]         = CASE WHEN @FTZone         = '' THEN [FTZone]         ELSE @FTZone         END
+          , [FDLastupdate] = GETDATE()
+        WHERE [FTVideo_name] = @FTVideo_name_key;
+
+        SET @updated = @@ROWCOUNT;
+
+        -- คืน FNVideo_id ให้หน้าเว็บเอาไปตั้งเป็นส่วนหน้าของชื่อไฟล์ (660-P52-...)
+        -- id เป็น IDENTITY จึงเพิ่งมีตัวตนตอน INSERT ส่วนไฟล์ถูก ffmpeg สร้างไปก่อนแล้ว
+        -- หน้าเว็บจึงต้องรู้ id ก่อน แล้วค่อยสั่ง agent เปลี่ยนชื่อไฟล์ตามทีหลัง
+        -- อ่านด้วย @FTVideo_name (ชื่อใหม่) เพราะ UPDATE ข้างบนเขียนชื่อใหม่ลงไปแล้ว
+        IF @updated > 0
+        BEGIN
+            SELECT TOP 1 @id = [FNVideo_id]
+            FROM [TSDC_VIDEO_HD]
+            WHERE [FTVideo_name] = @FTVideo_name
+            ORDER BY [FNVideo_id] DESC;
+        END
+
+        IF @updated = 0
+        BEGIN
+            INSERT INTO [TSDC_VIDEO_HD]
+            ( [FTVideo_name], [FDStartdate], [FDEnddate], [FTTable_id], [FTZone]
+            , [FTContainer_id], [FTOrder_number], [FTTracking_id], [FTPin_code]
+            , [FDCreatedate], [FDLastupdate], [FNStaUpload], [FTStaDesc]
+            , [FTUser_create], [FDUser_datetime], [FTPath], [FTIp_address_local], [FCFile_size] )
+            VALUES
+            ( @FTVideo_name
+            , CONVERT(datetime, @FDStartdate, 120)
+            , CASE WHEN @FDEnddate = '' THEN NULL ELSE CONVERT(datetime, @FDEnddate, 120) END
+            , @FTTable_id, @FTZone
+            , @FTContainer_id, @FTOrder_number, @FTTracking_id, @FTPin_code
+            , GETDATE(), GETDATE(), @FNStaUpload, @FTStaDesc
+            , @FTUser_create, GETDATE(), @FTPath, @FTIp_address_local, @FCFile_size );
+
+            SET @inserted = @@ROWCOUNT;
+            SET @id = CONVERT(bigint, SCOPE_IDENTITY());
+        END
+
+        SELECT @updated AS UPDATED, @inserted AS INSERTED, @id AS VIDEO_ID;
+    `;
+
+    new sql.ConnectionPool(db).connect().then(pool => {
+
+        var inserted = 0;
+        var updated = 0;
+        var errors = [];
+        // [{ FTVideo_name, FNVideo_id }] ของทุกแถวที่แตะในคำขอนี้ จับคู่ด้วยชื่อไฟล์
+        var ids = [];
+
+        function insertAt(i) {
+            if (i >= list.length) {
+                sql.close();
+                return res.json({
+                    status: errors.length ? 'error' : 'success',
+                    inserted: inserted,
+                    updated: updated,
+                    message: errors.join(' | '),
+                    ids: ids
+                });
+            }
+
+            var f = list[i] || {};
+
+            // ถ้าไฟล์ถูกเปลี่ยนชื่อตอนอัดจบ ให้หาแถวด้วยชื่อเดิม แล้วเขียนชื่อใหม่ทับลงไป
+            var nameKey = String(f.FTVideo_name_old || f.FTVideo_name || '');
+
+            pool.request()
+                .input('FTVideo_name_key', sql.NVarChar, nameKey)
+                .input('FTVideo_name', sql.NVarChar, String(f.FTVideo_name || ''))
+                .input('FTPath', sql.NVarChar, String(f.FTPath || ''))
+                .input('FCFile_size', sql.NVarChar, String(f.FCFile_size == null ? 0 : f.FCFile_size))
+                // 4 ตัวนี้ต่างกันได้ในคำขอเดียว เช่นตอนตัด segment จะมีทั้งไฟล์ที่ปิดแล้ว (0) และไฟล์ใหม่ (2)
+                .input('FDStartdate', sql.NVarChar, String(f.FDStartdate || ''))
+                .input('FDEnddate', sql.NVarChar, String(f.FDEnddate || ''))
+                .input('FNStaUpload', sql.NVarChar, String(f.FNStaUpload == null ? 0 : f.FNStaUpload))
+                .input('FTStaDesc', sql.NVarChar, String(f.FTStaDesc || ''))
+                .input('FTTable_id', sql.NVarChar, String(fromdata.FTTable_id || ''))
+                .input('FTZone', sql.NVarChar, String(fromdata.FTZone || ''))
+                .input('FTContainer_id', sql.NVarChar, String(fromdata.FTContainer_id || ''))
+                .input('FTOrder_number', sql.NVarChar, String(fromdata.FTOrder_number || ''))
+                .input('FTTracking_id', sql.NVarChar, String(fromdata.FTTracking_id || ''))
+                .input('FTPin_code', sql.NVarChar, String(fromdata.FTPin_code || ''))
+                .input('FTUser_create', sql.NVarChar, String(fromdata.FTUser_create || ''))
+                .input('FTIp_address_local', sql.NVarChar, String(fromdata.FTIp_address_local || ''))
+                .query(query, function (err_query, recordset) {
+                    if (err_query) {
+                        console.log('insert_video_hd error:', err_query.message);
+                        errors.push(f.FTVideo_name + ': ' + err_query.message);
+                    } else {
+                        var rows = recordset && recordset.recordset ? recordset.recordset : [];
+                        if (rows.length && rows[0].UPDATED > 0) {
+                            updated++;
+                        } else {
+                            inserted++;
+                        }
+                        if (rows.length && rows[0].VIDEO_ID != null) {
+                            // bigint ถูก driver คืนมาเป็น string เพื่อกันความแม่นยำหาย แปลงเป็นตัวเลขให้ JSON สะอาด
+                            ids.push({ FTVideo_name: String(f.FTVideo_name || ''), FNVideo_id: Number(rows[0].VIDEO_ID) });
+                        }
+                    }
+                    insertAt(i + 1);
+                });
+        }
+
+        insertAt(0);
+
+    }).catch(err => {
+        console.log('insert_video_hd connect error:', err.message);
+        res.json({ status: 'error', message: err.message });
+    });
+});
+
 module.exports = app;
