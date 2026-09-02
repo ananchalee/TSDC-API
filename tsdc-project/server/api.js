@@ -10,8 +10,110 @@ app.use(bodyParser.json());
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    // หน้าเว็บอยู่ port 80 แต่ API อยู่ 1661 = คนละ origin ทุก POST จึงมี OPTIONS
+    // นำหน้าเสมอ เมื่อไม่บอก max-age เบราว์เซอร์จะ preflight ใหม่ทุก 5 วินาที
+    // ทำให้ 9 calls ต่อการยิง 1 ครั้งกลายเป็น 18 รอบ
+    res.header("Access-Control-Max-Age", "600");
     next();
 });
+
+/* =====================================================================
+   connection pool ตัวเดียวใช้ร่วมกันทั้งไฟล์
+   ---------------------------------------------------------------------
+   เดิมทุก endpoint เขียน getPool() ไว้ในตัว
+   handler แปลว่าเปิด connection ใหม่ + login เข้า SQL ใหม่ทุก request
+   และไม่เคยปิด ทำให้ค่า pool ใน connect.js (max 100, min 0) ไม่เคยถูกใช้เลย
+
+   วัดจริงเมื่อ 1 ก.ย. 2026 ด้วย query เดียวกัน 20 ครั้ง:
+       เปิด pool ใหม่ทุกครั้ง   med = 38 ms
+       ใช้ pool เดียวร่วมกัน    med =  3 ms
+   ขณะที่ตัว query เองใช้เวลาแค่ 0.1 ms (จาก sys.dm_exec_query_stats)
+   เวลาที่เหลือทั้งหมดคือค่า login เข้า SQL ล้วนๆ
+   ยิง container 1 ใบเรียก API 9 ตัว = login 9 ครั้ง = ~342 ms
+
+   pool จะถูกสร้างครั้งเดียวตอน request แรก ถ้าหลุดจะสร้างใหม่ให้อัตโนมัติ
+   ===================================================================== */
+var dbShared = null;
+var _poolPromise = null;
+
+function getPool() {
+    if (_poolPromise) return _poolPromise;
+
+    if (!dbShared) {
+        // คัดลอก config จาก connect.js แล้วปรับเฉพาะส่วน pool
+        // min 5 เพื่อคาไว้ไม่ให้ต้อง login ใหม่ตอนงานเงียบ
+        // idle 5 นาที กัน connection ถูกทิ้งระหว่างพักเบรก
+        dbShared = Object.assign({}, db, {
+            pool: { max: 50, min: 5, idleTimeoutMillis: 300000 }
+        });
+    }
+
+    var p = new sql.ConnectionPool(dbShared);
+    p.on('error', function (err) {
+        console.error('[sql pool] error:', err && err.message);
+        _poolPromise = null;          // ให้ request ถัดไปสร้าง pool ใหม่
+    });
+
+    _poolPromise = p.connect().catch(function (err) {
+        _poolPromise = null;          // ต่อไม่ติด อย่า cache ความล้มเหลวไว้
+        throw err;
+    });
+    return _poolPromise;
+}
+
+/* =====================================================================
+   ผูกค่าเข้า query แบบ parameter แทนการต่อ string
+   ---------------------------------------------------------------------
+   ทำไมต้องมี: เดิม query ต่อค่าลงไปตรงๆ เช่น  WHERE CONTAINER_ID = '0000...'
+   container คนละใบ = query text คนละอัน = SQL ต้องคอมไพล์ plan ใหม่ทุกใบ
+   วัดเมื่อ 1 ก.ย. 2026 พบ plan cache บวมถึง 3.2 GB จาก adhoc plan 114,881 อัน
+   ที่ใช้ครั้งเดียวทิ้ง 98,300 อัน ทำให้ทุก endpoint เสียเวลา 150-400 ms
+   ไปกับการคิดแผน ไม่ใช่การค้นข้อมูล (สร้าง index แล้วไม่ช่วยเลยเพราะเหตุนี้)
+
+   สำคัญ: ต้องระบุความยาวของ VarChar ให้คงที่เสมอ
+   ถ้าปล่อยให้ mssql เดาความยาวจากค่าที่ส่งมา ค่าที่ยาวไม่เท่ากันจะได้
+   declaration ต่างกัน (@p varchar(20) vs varchar(25)) กลายเป็นคนละ query
+   text อีก แล้วจะไม่ได้ประโยชน์อะไรเลย
+   ===================================================================== */
+var PARAM_LEN = 255;
+
+function bindParams(request, params) {
+    for (var key in params) {
+        if (!Object.prototype.hasOwnProperty.call(params, key)) continue;
+        var v = params[key];
+        if (v === undefined || v === null) {
+            request.input(key, sql.VarChar(PARAM_LEN), null);
+        } else if (typeof v === 'number') {
+            request.input(key, sql.Int, v);
+        } else {
+            request.input(key, sql.VarChar(PARAM_LEN), String(v));
+        }
+    }
+    return request;
+}
+
+/* ดึงค่า TRACKING ออกจากชิ้นส่วน SQL ที่ frontend ส่งมา
+   frontend ประกอบ SQL เองแล้วส่งข้ามมาเป็น string เช่น
+       conditiontracking     = "and a.TRACKING ='TH123456'"
+       condition_nontracking = "and TRACKING !='TH123456'"
+   เราแกะเอาเฉพาะค่าออกมาแล้วผูกเป็น parameter แทน จะได้ไม่ต้องแก้ frontend
+   พร้อมกัน (deploy API ก่อนได้เลย) และปิดช่อง SQL injection ไปในตัว
+   ระยะยาวควรแก้ frontend ให้ส่งแค่ค่า TRACKING เปล่าๆ แล้วลบฟังก์ชันนี้ทิ้ง */
+function trackingValueOf(fragment, fallback) {
+    if (fragment !== undefined && fragment !== null && String(fragment).trim() !== '') {
+        var m = String(fragment).match(/'([^']*)'/);
+        if (m) return m[1];
+    }
+    return (fallback === undefined || fallback === null || String(fallback).trim() === '')
+        ? null : String(fallback);
+}
+
+/* ใช้กรองด้วย TRACKING หรือไม่ - ยึดตามว่า frontend ส่ง fragment มาหรือเปล่า
+   เพื่อให้พฤติกรรมเหมือนเดิมเป๊ะ (บางเส้นทาง frontend เคลียร์ fragment ทิ้ง
+   ทั้งที่ this.input.TRACKING ยังมีค่าอยู่) */
+function usesTracking(fragment) {
+    return fragment !== undefined && fragment !== null && String(fragment).trim() !== '';
+}
 
 //////////////// DATE TIME NOW ///////////////////
 function DateNow(nDateTime) {
@@ -81,7 +183,7 @@ app.post('/checkpathfile_labeltrack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `      
         
@@ -128,7 +230,7 @@ app.post('/login', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     var query;
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
         query = `
         SELECT 
             INTERNAL_ID,USER_ID,CATEGORY,SUB_CATEGORY,FIRSTNAME,LASTNAME,WORKER_ID
@@ -172,7 +274,7 @@ app.post('/LOAD_USERTABLECHECK', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `      
         
@@ -186,14 +288,14 @@ app.post('/LOAD_USERTABLECHECK', function (req, res) {
      from TSDC_USER_TABLECHECK
      where datetime_stamp = 
        ( select max_date = max(datetime_stamp) from TSDC_USER_TABLECHECK
-          where TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+          where TABLE_CHECK = @TABLE_CHECK
           and WORKING_TYPE != 'Pack'
           group by TABLE_CHECK)
-      and  TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+      and  TABLE_CHECK = @TABLE_CHECK
       and WORKING_TYPE != 'Pack'
        group by TABLE_CHECK,PIN_CODE,USER_NAME,WORKER_NAME,WORKER_SURNAME   
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), { TABLE_CHECK: fromdata.TABLE_CHECK }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -225,7 +327,7 @@ app.post('/insert_user_tablecheck', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         
@@ -259,14 +361,14 @@ app.post('/insert_user_tablecheck', function (req, res) {
      from TSDC_USER_TABLECHECK
      where datetime_stamp = 
        ( select max_date = max(datetime_stamp) from TSDC_USER_TABLECHECK
-          where TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+          where TABLE_CHECK = @TABLE_CHECK
           group by TABLE_CHECK)
-      and  TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+      and  TABLE_CHECK = @TABLE_CHECK
        group by TABLE_CHECK,PIN_CODE,USER_NAME,WORKER_NAME,WORKER_SURNAME
 
     `;
 
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), { TABLE_CHECK: fromdata.TABLE_CHECK }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -298,7 +400,7 @@ app.get('/get_userpincode', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         
@@ -339,10 +441,21 @@ app.post('/insert_user_tablecheck2', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         
+			   -- คนเดิม โต๊ะเดิม วันเดียวกัน ยังไม่ checkout = ไม่ต้องบันทึกซ้ำ
+        -- เดิมบันทึกใหม่ทุกครั้งที่สแกนกล่อง วันหนึ่งได้ 16,000 แถวจากคนจริงแค่ 176 ชุด
+        -- ต้องครอบด้วย IF NOT EXISTS ไม่ใช่เอา AND NOT EXISTS ไปต่อท้าย where
+        -- เพราะแบบต่อท้าย SQL ยังวิ่งไปถาม linked server 10.26.1.11 อยู่ดี (วัดแล้ว 8.3ms เท่าเดิม)
+        if not exists ( select 1 from TSDC_USER_TABLECHECK u
+                        where u.TABLE_CHECK = LTRIM(RTRIM(@TABLE_CHECK))
+                          and u.PIN_CODE = @PIN_CODE
+                          and u.WORKING_TYPE = @WORKING_TYPE
+                          and u.CHECKOUT_DATE is null
+                          and CONVERT(date,u.CHECKIN_DATE) = CONVERT(date,getdate()) )
+        begin
 			   insert into TSDC_USER_TABLECHECK
                (  [TABLE_CHECK]
                 ,[USER_NAME]
@@ -354,37 +467,44 @@ app.post('/insert_user_tablecheck2', function (req, res) {
                 ,WORKING_TYPE
                 ,CHECKIN_DATE
                 ,CHECKOUT_DATE)
-                select 
-                 LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))
-                  ,t.USER_NAME 
+                select
+                 LTRIM(RTRIM(@TABLE_CHECK))
+                  ,t.USER_NAME
                   ,t.WORKER_NAME
                   ,t.WORKER_SURNAME
                   ,t.WORKER_COMPANY
-                  ,'${fromdata.PIN_CODE}'
-                  ,getdate() 
-                  ,'${fromdata.WORKING_TYPE}'
-                  ,getdate() 
+                  ,@PIN_CODE
+                  ,getdate()
+                  ,@WORKING_TYPE
+                  ,getdate()
                   ,NULL
                  FROM [10.26.1.11].[TSDC_CONVEYOR].[DBO].[USER_PINCODE] t
-                  where PIN_CODE = '${fromdata.PIN_CODE}'
-      
-           
+                  where PIN_CODE = @PIN_CODE
+        end
+
      `;
 
         query += `
-     
-              
+
+
         select TABLE_CHECK,PIN_CODE,USER_NAME,WORKER_NAME,WORKER_SURNAME,CONVERT(VARCHAR(8),CONVERT(DATETIME, CHECKIN_DATE , 0), 108) as CHECKIN_DATE
         from TSDC_USER_TABLECHECK
-        where CONVERT(date,CHECKIN_DATE) = CONVERT(date,GETDATE()) 
-         and  TABLE_CHECK = '${fromdata.TABLE_CHECK}'
-         and WORKING_TYPE = '${fromdata.WORKING_TYPE}'
+        where CONVERT(date,CHECKIN_DATE) = CONVERT(date,GETDATE())
+         and  TABLE_CHECK = @TABLE_CHECK
+         and WORKING_TYPE = @WORKING_TYPE
          and CHECKOUT_DATE is null
          order by CHECKIN_DATE
 
     `;
 
-        return pool.request().query(query, function (err_query, recordset) {
+        // ตัวนี้ยิงข้าม linked server ไป 10.26.1.11 การคอมไพล์ distributed plan
+        // แพงกว่า query ปกติมาก (ต้องไปถาม metadata เครื่องปลายทาง) จึงสำคัญ
+        // เป็นพิเศษที่ต้อง parameterize ให้ plan ถูก reuse
+        return bindParams(pool.request(), {
+            TABLE_CHECK: fromdata.TABLE_CHECK,
+            PIN_CODE: fromdata.PIN_CODE,
+            WORKING_TYPE: fromdata.WORKING_TYPE
+        }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -417,7 +537,7 @@ app.post('/load_checkinPack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
      
@@ -425,12 +545,12 @@ app.post('/load_checkinPack', function (req, res) {
         select TABLE_CHECK,PIN_CODE,USER_NAME,WORKER_NAME,WORKER_SURNAME,CONVERT(VARCHAR(8),CONVERT(DATETIME, CHECKIN_DATE , 0), 108) as CHECKIN_DATE
         from TSDC_USER_TABLECHECK
         where CONVERT(date,CHECKIN_DATE) = CONVERT(date,GETDATE()) 
-         and  TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+         and  TABLE_CHECK = @TABLE_CHECK
          and WORKING_TYPE = 'Pack'
          and CHECKOUT_DATE is null
          order by CHECKIN_DATE  
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), { TABLE_CHECK: fromdata.TABLE_CHECK }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -462,7 +582,7 @@ app.post('/load_historyPack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
      
@@ -471,11 +591,11 @@ app.post('/load_historyPack', function (req, res) {
         ,CONVERT(VARCHAR(8),CONVERT(DATETIME, CHECKOUT_DATE , 0), 108) as CHECKOUT_DATE
         from TSDC_USER_TABLECHECK
         where CONVERT(date,CHECKIN_DATE) = CONVERT(date,GETDATE()) 
-         and  TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+         and  TABLE_CHECK = @TABLE_CHECK
          and WORKING_TYPE = 'Pack'
          order by CHECKIN_DATE  
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), { TABLE_CHECK: fromdata.TABLE_CHECK }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -507,7 +627,7 @@ app.post('/check_historyPack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
      
@@ -553,7 +673,7 @@ app.post('/User_checkout', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
 
@@ -592,7 +712,7 @@ app.post('/CheckWork_V2', function (req, res) {
     var Datenow = DateNow();
     console.log("CheckWork_V2:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         
@@ -645,17 +765,19 @@ app.post('/Checkorder_block', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         
         select top 1 FNBlock_type,FTBlock_title,FTBlock_desc,hd.FTUser_update,dt.FDLastupdate from TCNM_BLOCK_ORDER_HD hd,TCNM_BLOCK_ORDER_DT dt
         where hd.FTBlock_id = dt.FTBlock_id
-        and FTOrdernumber = '${fromdata.shipment_id}'
+        and FTOrdernumber = @shipment_id
         order by dt.FDLastupdate desc
-               
+
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), {
+            shipment_id: fromdata.shipment_id
+        }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -689,7 +811,7 @@ app.post('/CheckWork', function (req, res) {
     var Datenow = DateNow();
     console.log("CheckWork :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         
@@ -736,20 +858,23 @@ app.post('/CheckOrder_Cancel', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         
      
-        select c.ORDER_NUMBER_OOC as shipment_id ,SHIPPING_NAME,TCHANNEL,c.SHOPID_OOC as SELLER_NO,c.customerid_ooc as COMPANY,(FORMAT(PO_DATE,'dd-MM-yyyy'))  as ORDER_DATE from [10.26.1.11].[TSDC_Conveyor].dbo.ONLINE_ORDER_CANCEL c
+        select c.ORDER_NUMBER_OOC as shipment_id ,SHIPPING_NAME,TCHANNEL,c.SHOPID_OOC as SELLER_NO,c.customerid_ooc as COMPANY,(FORMAT(PO_DATE,'dd-MM-yyyy'))  as ORDER_DATE
+        from ONLINE_ORDER_CANCEL c
         left join TSDC_INTERFACE_ORDER_HEADER  i
         on ORDER_NUMBER_OOC =  i.PO_NO
-             and c.SHOPID_OOC = i.SHIP_NO 
-      where ORDER_NUMBER_OOC = ( select distinct shipment_id from TSDC_CONTAINER_MAPORDER
-                     WHERE  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
+             and c.SHOPID_OOC = i.SHIP_NO
+      where ORDER_NUMBER_OOC IN ( select distinct shipment_id from TSDC_CONTAINER_MAPORDER
+                     WHERE  CONTAINER_ID = @CONTAINER_ID)
 
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), {
+            CONTAINER_ID: fromdata.CONTAINER_ID
+        }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -783,7 +908,7 @@ app.post('/CheckCon', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -849,7 +974,7 @@ app.post('/CheckConOnline', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -943,7 +1068,7 @@ app.post('/CheckConOffline', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         select *  from (
@@ -996,7 +1121,7 @@ app.post('/CheckConSorter', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
      
@@ -1051,7 +1176,7 @@ app.post('/summaryCon', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
     
@@ -1124,7 +1249,7 @@ app.post('/summaryConSorter', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
      
@@ -1179,7 +1304,7 @@ app.post('/matchItemInCon', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
        
@@ -1229,7 +1354,7 @@ app.post('/matchItemInConSORTER', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
        
@@ -1276,7 +1401,7 @@ app.post('/checkEqualCon', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -1330,7 +1455,7 @@ app.post('/checkEqualConSorter', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -1381,7 +1506,7 @@ app.post('/updateConQtyCheck', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
 
@@ -1436,7 +1561,7 @@ app.post('/updateCoverSheet', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
   
@@ -1478,7 +1603,7 @@ app.post('/updateConQtyCheck_SORTER', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
 
@@ -1533,7 +1658,7 @@ app.post('/updateConQtyCheck_SORTER_fullcarton', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
 
@@ -1591,7 +1716,7 @@ app.post('/updateConQtyCheck_fullcarton', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
 
@@ -1648,20 +1773,27 @@ app.post('/updateConQtyCheck_fullcarton', function (req, res) {
 app.post('/BOX_CONTROL_DETAIL', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
-        var query = `        
+        var query = `
 
         select * from  TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
         where REF_INDEX is null
-        and TABLE_CHECK = '${fromdata.TABLE_CHECK}'
-        and PO_NO = '${fromdata.shipment_id}'
-        AND SELLER_NO = '${fromdata.SELLER_NO}'
-        and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'     
-        ${fromdata.conditiontracking || ''}
+        and TABLE_CHECK = @TABLE_CHECK
+        and PO_NO = @shipment_id
+        AND SELLER_NO = @SELLER_NO
+        and ITEM_ID_BARCODE = @ITEM_ID_BARCODE
+        ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), byTracking
+            ? { TABLE_CHECK: fromdata.TABLE_CHECK, shipment_id: fromdata.shipment_id,
+                SELLER_NO: fromdata.SELLER_NO, ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { TABLE_CHECK: fromdata.TABLE_CHECK, shipment_id: fromdata.shipment_id,
+                SELLER_NO: fromdata.SELLER_NO, ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE }
+        ).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -1724,18 +1856,26 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
 
                 } else {
                     var query = `
-                    update TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW 
+                    update TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
                     set QTY = QTY+1
                     from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
                     where   REF_INDEX is null
-                    and TABLE_CHECK = '${fromdata.TABLE_CHECK}'
-                    and PO_NO = '${fromdata.shipment_id}'
-                    AND SELLER_NO = '${fromdata.SELLER_NO}'
-                    and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}' 
-                    and QTY < '${fromdata.check_QTY_PICK}' 
-                    ${fromdata.conditiontracking || ''}
+                    and TABLE_CHECK = @TABLE_CHECK
+                    and PO_NO = @shipment_id
+                    AND SELLER_NO = @SELLER_NO
+                    and ITEM_ID_BARCODE = @ITEM_ID_BARCODE
+                    and QTY < @check_QTY_PICK
+                    ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
                      `;
-                    return pool.request().query(query, function (err_query) {
+                    return bindParams(pool.request(), byTracking
+                        ? { TABLE_CHECK: fromdata.TABLE_CHECK, shipment_id: fromdata.shipment_id,
+                            SELLER_NO: fromdata.SELLER_NO, ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE,
+                            check_QTY_PICK: fromdata.check_QTY_PICK,
+                            TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+                        : { TABLE_CHECK: fromdata.TABLE_CHECK, shipment_id: fromdata.shipment_id,
+                            SELLER_NO: fromdata.SELLER_NO, ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE,
+                            check_QTY_PICK: fromdata.check_QTY_PICK }
+                    ).query(query, function (err_query) {
                         if (err_query) {
                             dataout = {
                                 status: 'error',
@@ -1762,7 +1902,7 @@ app.post('/BOX_CONTROL_DETAIL_FULLCARTON', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -1866,17 +2006,17 @@ app.post('/check_master_box', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
         select *
         from [10.26.1.11].[TSDC_Conveyor].[dbo].[TSDC_MASTER_CARTON_BOX_SIZE]
         --from TSDC_MASTER_CARTON_BOX_SIZE
-        where CARTON_NAME = '${fromdata.BOX_SIZE}'
+        where CARTON_NAME = @BOX_SIZE
         
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), { BOX_SIZE: fromdata.BOX_SIZE }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -1907,7 +2047,7 @@ app.post('/check_master_box', function (req, res) {
 app.get('/tsdc_pick_vas', function (req, res) {
     console.log("tsdc_pick_vas :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -1945,22 +2085,27 @@ app.get('/tsdc_pick_vas', function (req, res) {
 app.post('/tracksum_qty', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     console.log("tracksum_qty :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
-        var query = `        
+        var query = `
 
         select sum(qty) as TRACKSUM_QTY,Tracking
         from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
         where   REF_INDEX is null
-        and PO_NO = '${fromdata.shipment_id}'
-        AND SELLER_NO = '${fromdata.SELLER_NO}'
-        ${fromdata.conditiontracking || ''}
+        and PO_NO = @shipment_id
+        AND SELLER_NO = @SELLER_NO
+        ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
         group by Tracking
-        
+
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO }
+        ).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -1993,7 +2138,7 @@ app.post('/tracking_running', function (req, res) {
     //var Datenow = DateNow();
     console.log('tracking_running');
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const trackingValue = fromdata.TRACKING ? `'${fromdata.TRACKING}'` : `''`;
         const Status = fromdata.VAS_NAME_10 ? `'${fromdata.VAS_NAME_10}'` : `''`;
@@ -2145,17 +2290,21 @@ app.post('/tracking_running', function (req, res) {
                         ,BOX_NO_ORDER
                         ,BILL_NO_REF
                 from  TSDC_PICK_CHECK_BOX_CONTROL_NEW
-                where TABLE_CHECK = '${fromdata.TABLE_CHECK}'
-                and PO_NO = '${fromdata.shipment_id}'
-                AND SELLER_NO = '${fromdata.SELLER_NO}'
+                where TABLE_CHECK = @TABLE_CHECK
+                and PO_NO = @shipment_id
+                AND SELLER_NO = @SELLER_NO
                     and REF_INDEX = (select max(REF_INDEX) as REF_INDEX
                                 from  TSDC_PICK_CHECK_BOX_CONTROL_NEW
-                                where TABLE_CHECK = '${fromdata.TABLE_CHECK}'
-                                and PO_NO = '${fromdata.shipment_id}'
-                                AND SELLER_NO = '${fromdata.SELLER_NO}')
-                
+                                where TABLE_CHECK = @TABLE_CHECK
+                                and PO_NO = @shipment_id
+                                AND SELLER_NO = @SELLER_NO)
+
                `;
-                return pool.request().query(query2, function (err_query, recordset) {
+                return bindParams(pool.request(), {
+                    TABLE_CHECK: fromdata.TABLE_CHECK,
+                    shipment_id: fromdata.shipment_id,
+                    SELLER_NO: fromdata.SELLER_NO
+                }).query(query2, function (err_query, recordset) {
                     if (err_query) {
                         dataout = {
                             status: 'error',
@@ -2193,24 +2342,27 @@ app.post('/tracking_running', function (req, res) {
 app.post('/loadTracking', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
         select *,(select    max(BOX_NO_ORDER)  MaxBox_NO
         from TSDC_PICK_CHECK_BOX_CONTROL_NEW
-        where PO_NO  = '${fromdata.shipment_id}'
-        AND SELLER_NO = '${fromdata.SELLER_NO}') as MaxBox_NO
+        where PO_NO  = @shipment_id
+        AND SELLER_NO = @SELLER_NO) as MaxBox_NO
          from TSDC_PICK_CHECK_BOX_CONTROL_NEW a
-        where po_no = '${fromdata.shipment_id}'
-        and SELLER_NO =  '${fromdata.SELLER_NO}' ${fromdata.conditiontracking || ''}
-        order by CREATE_DATE 
-               
+        where po_no = @shipment_id
+        and SELLER_NO =  @SELLER_NO ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
+        order by CREATE_DATE
 
-            
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO }
+        ).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -2244,7 +2396,7 @@ app.post('/summary_ITEM_LACK', function (req, res) {
     var Datenow = DateNow();
     console.log("summary_ITEM_LACK :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -2305,7 +2457,7 @@ app.post('/CheckCon_Orderconfirm', function (req, res) {
     var Datenow = DateNow();
     console.log("CheckCon_Orderconfirm :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -2387,7 +2539,7 @@ app.post('/Rescan_checkitem', function (req, res) {
     var Datenow = DateNow();
     console.log('Rescan_checkitem');
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         update TSDC_PICK_CHECK_NEW
@@ -2446,7 +2598,7 @@ app.post('/checkstatusUpdateConfirmOrder', function (req, res) {
     var fromdata = req.body;
     console.log("checkstatusUpdateConfirmOrder:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -2490,7 +2642,7 @@ app.post('/UpdateConfirmOrder', function (req, res) {
     var Datenow = DateNow();
     console.log('UpdateConfirmOrder');
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         UPDATE  TSDC_PICK_CHECK_NEW
@@ -2588,7 +2740,7 @@ app.post('/Rescancheckitem_all', function (req, res) {
     var Datenow = DateNow();
     console.log('Rescancheckitem_all');
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         UPDATE  TSDC_PICK_CHECK_NEW
@@ -2624,7 +2776,7 @@ app.post('/UpdateCheckdate', function (req, res) {
     var Datenow = DateNow();
     console.log('UpdateCheckdate');
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         UPDATE  TSDC_PICK_CHECK_NEW
@@ -2664,7 +2816,7 @@ app.post('/ReprintTracking', function (req, res) {
     var Datenow = DateNow();
     console.log("ReprintTracking :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -2724,7 +2876,7 @@ app.post('/ReprintTrackingAll', function (req, res) {
     var Datenow = DateNow();
     console.log("ReprintTrackingAll :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -2775,7 +2927,7 @@ app.post('/UpdateCheckdateSorter', function (req, res) {
     var Datenow = DateNow();
     console.log('UpdateCheckdateSorter');
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         UPDATE  TSDC_PICK_CHECK_NEW
@@ -2814,7 +2966,7 @@ app.get('/outstanding_online', function (req, res) {
     var fromdata = req.body;
     console.log("outstanding_online:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -2859,7 +3011,7 @@ app.get('/outstanding_offline', function (req, res) {
     var fromdata = req.body;
     console.log("outstanding_offline:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -2905,7 +3057,7 @@ app.get('/outstanding_sorter', function (req, res) {
     var fromdata = req.body;
     console.log("outstanding_sorter:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -2950,7 +3102,7 @@ app.get('/outstanding_CfOrder', function (req, res) {
     var fromdata = req.body;
     console.log("outstanding_CfOrder:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -2996,7 +3148,7 @@ app.get('/percent_online', function (req, res) {
     var fromdata = req.body;
     console.log("percent_online:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -3051,7 +3203,7 @@ app.get('/percent_offline', function (req, res) {
     var fromdata = req.body;
     console.log("percent_offline:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -3105,7 +3257,7 @@ app.get('/percent_sorter', function (req, res) {
     var fromdata = req.body;
     console.log("percent_sorter:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -3159,7 +3311,7 @@ app.get('/percent_CForder', function (req, res) {
     var fromdata = req.body;
     console.log("percent_CForder:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -3213,7 +3365,7 @@ app.get('/Order_disappear', function (req, res) {
     var fromdata = req.body;
     console.log("Order_disappear:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -3257,7 +3409,7 @@ app.post('/Order_disappear_detail', function (req, res) {
     var fromdata = req.body;
     console.log("Order_disappear:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -3299,7 +3451,7 @@ app.post('/CheckTrack', function (req, res) {
     var fromdata = req.body;
     console.log("CheckTrack:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query =
             `
@@ -3372,7 +3524,7 @@ app.post('/updateBoxTracking', function (req, res) {
     var Datenow = DateNow();
     console.log('updateBoxTracking');
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         INSERT INTO LOG_EDITBOX_TRACKING
@@ -3448,7 +3600,7 @@ app.post('/pickcheck_print_ordercancel', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         INSERT INTO [TSDC_PICK_CHECK_PRINTCANCEL]
@@ -3520,7 +3672,7 @@ app.get('/get_table_printcancel', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
         select distinct table_check from TSDC_PICK_CHECK_printcancel order by table_check 
@@ -3557,7 +3709,7 @@ app.post('/get_report_printcancel', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const condition_zone = fromdata.zone
             ? ` AND zone = '${fromdata.zone}' `
@@ -3612,7 +3764,7 @@ app.post('/check_Pallet_confirm_outbound', function (req, res) {
     var Datenow = DateNow();
     console.log("check_Pallet_confirm_outbound");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = ` 
         select IDENTITY(INT,1,1) AS ID,
@@ -3665,7 +3817,7 @@ app.post('/check_Pallet_confirm_outbound11', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = ` 
         select top 1*
@@ -3707,7 +3859,7 @@ app.post('/check_Tracking_Order_Cancel', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = ` 
         select top 1*
@@ -3748,7 +3900,7 @@ app.post('/check_Tracking_confirm_outbound2', function (req, res) {
     var Datenow = DateNow();
     console.log("check_Tracking_confirm_outbound");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = ` 
         
@@ -3819,7 +3971,7 @@ app.post('/insertTracking_confirmOutbound', function (req, res) {
     var Datenow = DateNow();
     console.log("insertTracking_confirmOutbound:" + fromdata.item);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         insert into TSDC_CONFIRM_OUTBOUND 
@@ -3940,7 +4092,7 @@ app.post('/update_Tracking_confirm_outbound', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -4021,7 +4173,7 @@ app.post('/update_Tracking_confirm_outbound2', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -4128,7 +4280,7 @@ app.post('/update_Tracking_confirm_outbound2', function (req, res) {
 app.post('/DeleteAndBackup_Track_Outbound', function (req, res) {
     var fromdata = req.body;
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
         var query = `
         insert into [TSDC_CONFIRM_OUTBOUND_CancelLog]
         select 
@@ -4185,7 +4337,7 @@ app.post('/deleteTracking_outbount', function (req, res) {
     var fromdata = req.body;
     console.log("deleteTracking_outbount:");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         DELETE  TSDC_CONFIRM_OUTBOUND
@@ -4260,7 +4412,7 @@ app.post('/interface_Tracking_confirm_outbound', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         
@@ -4303,7 +4455,7 @@ app.post('/interface_Tracking_confirm_outbound2', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         delete [10.26.1.11].TSDC_Conveyor.dbo.TSDC_CONFIRM_OUTBOUND
@@ -4356,7 +4508,7 @@ app.post('/CheckWork_ug', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         
@@ -4438,7 +4590,7 @@ app.post('/CheckConOnline_ug', function (req, res) {
     var Datenow = DateNow();
     console.log("CheckConOnline :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -4494,7 +4646,7 @@ app.post('/matchItemInCon_ug', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
        
@@ -4543,7 +4695,7 @@ app.post('/checkEqualCon_ug', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -4596,7 +4748,7 @@ app.post('/BOX_CONTROL_DETAIL_ug', function (req, res) {
     var Datenow = DateNow();
     console.log("BOX_CONTROL :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -4786,7 +4938,7 @@ app.get('/get_transport', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -4825,7 +4977,7 @@ app.post('/Moniter_statusRTS', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -4866,7 +5018,7 @@ app.post('/Moniter_SumstatusRTS', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -4912,7 +5064,7 @@ app.post('/Moniter_InterfaceErrorManH', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
 
@@ -5012,7 +5164,7 @@ app.post('/update_statusRTS', function (req, res) {
     var Datenow = DateNow();
     console.log('update_statusRTS');
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
         var query = `
         `
         fromdata.forEach(function (element) {
@@ -5049,7 +5201,7 @@ app.post('/check_order_notclose', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
     select * from [V_WORK_INSTRUCTION_VIEW_ORDER_NOT_CLOSE] 
@@ -5087,14 +5239,16 @@ app.post('/check_order_closed', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
-    select * from [V_WORK_INSTRUCTION_VIEW_ORDER_CLOSED] 
-	where CONTAINER_ID = '${fromdata.CONTAINER_ID}'
-        
+    select * from V_WORK_INSTRUCTION_VIEW_ORDER_CLOSED_21
+	where CONTAINER_ID = @CONTAINER_ID
+
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), {
+            CONTAINER_ID: fromdata.CONTAINER_ID
+        }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5126,24 +5280,25 @@ app.post('/CheckWorktrack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
         
    
-        select distinct PICK_CHECK.CONTAINER_ID ,PICK_CHECK.SELLER_NO,'${fromdata.USER_NAME}' as USER_NAME,PICK_CHECK.ORDER_TYPE,PICK_CHECK.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
+        select distinct PICK_CHECK.CONTAINER_ID ,PICK_CHECK.SELLER_NO,@USER_NAME as USER_NAME,PICK_CHECK.ORDER_TYPE,PICK_CHECK.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
         from TSDC_PICK_CHECK_NEW_TRACKING as PICK_CHECK
 		  inner join TSDC_CONTAINER_MAPORDER  m on PICK_CHECK.CONTAINER_ID = m.CONTAINER_ID
-		left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on PICK_CHECK.SHIPMENT_ID = p.SHIPMENT_ID		
-        where  PICK_CHECK.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+		left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on PICK_CHECK.SHIPMENT_ID = p.SHIPMENT_ID
+        where  PICK_CHECK.CONTAINER_ID = @CONTAINER_ID
         and  PICK_CHECK.ORDER_TYPE != 'CANCEL'
         AND  PICK_CHECK.SELLER_NO = m.SELLER_NO
 		and PICK_CHECK.SHIPMENT_ID = m.SHIPMENT_ID
-       
-                       
 
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), {
+            CONTAINER_ID: fromdata.CONTAINER_ID,
+            USER_NAME: fromdata.USER_NAME
+        }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5157,16 +5312,19 @@ app.post('/CheckWorktrack', function (req, res) {
 
                     var query2 = `        
 
-                    select distinct PICK_CHECK.CONTAINER_ID ,PICK_CHECK.SELLER_NO,'${fromdata.USER_NAME}' as USER_NAME,PICK_CHECK.ORDER_TYPE,PICK_CHECK.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
+                    select distinct PICK_CHECK.CONTAINER_ID ,PICK_CHECK.SELLER_NO,@USER_NAME as USER_NAME,PICK_CHECK.ORDER_TYPE,PICK_CHECK.SHIPMENT_ID,p.COMPANY,(FORMAT(p.ORDER_DATE,'dd/MM/yyyy')) ORDER_DATE
                     from TSDC_PICK_CHECK_NEW_TRACKING as  PICK_CHECK
                      inner join TSDC_CONTAINER_MAPORDER  m on PICK_CHECK.CONTAINER_ID = m.CONTAINER_ID
-                    left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on PICK_CHECK.SHIPMENT_ID = p.SHIPMENT_ID		
-                   where  PICK_CHECK.CONTAINER_ID = '${fromdata.CONTAINER_ID}'
+                    left join TSDC_PROCESS_ORDER_HEADER_TRANFER21 p on PICK_CHECK.SHIPMENT_ID = p.SHIPMENT_ID
+                   where  PICK_CHECK.CONTAINER_ID = @CONTAINER_ID
                    AND  PICK_CHECK.SELLER_NO = m.SELLER_NO
                    and PICK_CHECK.SHIPMENT_ID = m.SHIPMENT_ID
-                    
+
                    `;
-                    return pool.request().query(query2, function (err_query, recordset) {
+                    return bindParams(pool.request(), {
+                        CONTAINER_ID: fromdata.CONTAINER_ID,
+                        USER_NAME: fromdata.USER_NAME
+                    }).query(query2, function (err_query, recordset) {
                         if (err_query) {
                             dataout = {
                                 status: 'error',
@@ -5206,9 +5364,10 @@ app.post('/CheckWorktrack', function (req, res) {
 app.post('/CheckConOnlinetrack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     console.log("CheckConOnlinetrack :");
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -5221,8 +5380,8 @@ app.post('/CheckConOnlinetrack', function (req, res) {
                ,customer_id as 'Owner'
                ,status_print as 'Print_Tracking'
                  FROM   TSDC_PICK_CHECK_NEW_TRACKING A,TSDC_CONTROL_PRINT_ONLINE_TRACKING B
-                 WHERE SHIPMENT_ID = '${fromdata.shipment_id}'
-                 and SELLER_NO = '${fromdata.SELLER_NO}' ${fromdata.conditiontracking || ''}
+                 WHERE SHIPMENT_ID = @shipment_id
+                 and SELLER_NO = @SELLER_NO ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
                  and a.SELLER_NO = b.SELLER_id
                  and a.ORDER_TYPE != 'CANCEL'
                  group by  shipment_id,SELLER_NO
@@ -5230,10 +5389,14 @@ app.post('/CheckConOnlinetrack', function (req, res) {
                 ,customer_id,status_print ) as a,
             (select  SHIPPING_NAME,PO_NO,SHIP_NO,TCHANNEL from TSDC_INTERFACE_ORDER_HEADER) as c
                 where  a.SHIPMENT_ID = c.PO_NO
-                and a.SELLER_NO = c.SHIP_NO 
+                and a.SELLER_NO = c.SHIP_NO
 
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO }
+        ).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5264,8 +5427,9 @@ app.post('/CheckConOnlinetrack', function (req, res) {
 app.post('/summaryContrack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
     
@@ -5286,29 +5450,31 @@ app.post('/summaryContrack', function (req, res) {
    END AS STATUS_CHECK
    , case when (select    max(BOX_NO_ORDER)  MaxBox_NO
         from TSDC_PICK_CHECK_BOX_CONTROL_NEW a
-        where PO_NO  = '${fromdata.shipment_id}'
-        AND SELLER_NO = '${fromdata.SELLER_NO}' ${fromdata.conditiontracking || ''}
+        where PO_NO  = @shipment_id
+        AND SELLER_NO = @SELLER_NO ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
        ) IS NULL then 0
    else (select    max(BOX_NO_ORDER)  MaxBox_NO
         from TSDC_PICK_CHECK_BOX_CONTROL_NEW a
-        where PO_NO = '${fromdata.shipment_id}'
-        AND SELLER_NO = '${fromdata.SELLER_NO}' ${fromdata.conditiontracking || ''}
+        where PO_NO = @shipment_id
+        AND SELLER_NO = @SELLER_NO ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
        )
    end MaxBox_NO ,a.TRACKING,b.REF_INDEX
-   
+
         FROM TSDC_PICK_CHECK_NEW_TRACKING a
         left join TSDC_PICK_CHECK_BOX_CONTROL_NEW b on a.TRACKING = b.TRACKING
         and a.SHIPMENT_ID = b.PO_NO
-        where SHIPMENT_ID  = '${fromdata.shipment_id}'
-        AND a.SELLER_NO = '${fromdata.SELLER_NO}'${fromdata.conditiontracking || ''}
+        where SHIPMENT_ID  = @shipment_id
+        AND a.SELLER_NO = @SELLER_NO ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
         group by shipment_ID ,a.SELLER_NO, ITEM_ID  ,a.TRACKING  ,QTY_REQUESTED,ITEM_ID_BARCODE
         ,QTY_PICK ,BRAND,ITEM_DESC,UOM_PICK,ORDER_TYPE,b.REF_INDEX
         order by STATUS_CHECK , QTY_CHECK
-         
-      
-        
+
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO }
+        ).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5342,7 +5508,9 @@ app.post('/matchItemInContrack', async function (req, res) {
     let pool;
 
     try {
-        pool = await new sql.ConnectionPool(db).connect();
+        pool = await getPool();
+
+        const byTracking = usesTracking(fromdata.conditiontracking);
 
         const query = `
             SELECT SHIPMENT_ID, ITEM_ID, ITEM_DESC, SELLER_NO,
@@ -5353,14 +5521,19 @@ app.post('/matchItemInContrack', async function (req, res) {
             WHERE SHIPMENT_ID = @shipment_id
             AND SELLER_NO = @SELLER_NO
             AND ITEM_ID_BARCODE = @ITEM_ID_BARCODE
-            ${fromdata.conditiontracking || ''}
+            ${byTracking ? "AND a.TRACKING = @TRACKING" : ""}
         `;
 
-        const result = await pool.request()
-            .input('shipment_id', sql.VarChar, fromdata.shipment_id)
-            .input('SELLER_NO', sql.VarChar, fromdata.SELLER_NO)
-            .input('ITEM_ID_BARCODE', sql.VarChar, fromdata.ITEM_ID_BARCODE)
-            .query(query);
+        // เดิมใช้ sql.VarChar เฉยๆ mssql จะเดาความยาวจากค่าที่ส่งมา
+        // ทำให้บาร์โค้ดยาวไม่เท่ากันได้ declaration คนละแบบ = คนละ query text
+        // = ยังคอมไพล์ plan ใหม่อยู่ดี จึงต้องตรึงความยาวไว้
+        const result = await bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE }
+        ).query(query);
 
         if (result.recordset.length === 0) {
             return res.json({ status: 'notfound' });
@@ -5370,32 +5543,38 @@ app.post('/matchItemInContrack', async function (req, res) {
 
     } catch (err) {
         res.json({ status: 'error', data: err });
-    } finally {
-        if (pool) await pool.close();
     }
+    // เดิมมี pool.close() ตรงนี้ ตอนนี้ pool ใช้ร่วมกันทั้งไฟล์แล้ว
+    // ถ้าปิดจะทำให้ทุก endpoint ที่เหลือใช้งานไม่ได้
 });
 
 
 app.post('/checktracking_Inshipment', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    // ตัวนี้ใช้ condition_nontracking ซึ่งเป็นเงื่อนไข "ไม่เท่ากับ" (TRACKING != ค่า)
+    var byTracking = usesTracking(fromdata.condition_nontracking);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
-       
-        select TRACKING,sum(QTY_PICK) QTY_PICK ,sum(QTY_CHECK) QTY_CHECK  
+
+        select TRACKING,sum(QTY_PICK) QTY_PICK ,sum(QTY_CHECK) QTY_CHECK
         FROM   TSDC_PICK_CHECK_NEW_TRACKING  a
-         WHERE  SHIPMENT_ID = '${fromdata.shipment_id}'
-         and SELLER_NO = '${fromdata.SELLER_NO}' ${fromdata.condition_nontracking || ''}
+         WHERE  SHIPMENT_ID = @shipment_id
+         and SELLER_NO = @SELLER_NO ${byTracking ? "and TRACKING != @TRACKING" : ""}
          and TRACKING is not null
          and TRACKING != ''
          and ORDER_TYPE != 'CANCEL'
-         group by SHIPMENT_ID,SELLER_NO,TRACKING 
+         group by SHIPMENT_ID,SELLER_NO,TRACKING
          HAVING  SUM(QTY_CHECK) > 0 AND  SUM(QTY_PICK) != SUM(QTY_CHECK);
 
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                TRACKING: trackingValueOf(fromdata.condition_nontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO }
+        ).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5425,12 +5604,13 @@ app.post('/checktracking_Inshipment', function (req, res) {
 app.post('/checkEqualContrack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
-        var query = `        
+        var query = `
 
-        SELECT  top 1 
+        SELECT  top 1
         ITEM_ID,
         QTY_PICK,
         TRACKING,
@@ -5439,17 +5619,23 @@ app.post('/checkEqualContrack', function (req, res) {
             when sum(QTY_CHECK) > QTY_PICK then 'equal'
             else 'not_equal'
             end) as QTY_equal
-       
+
         FROM   TSDC_PICK_CHECK_NEW_TRACKING  a
-        where SHIPMENT_ID = '${fromdata.shipment_id}'
-        and SELLER_NO = '${fromdata.SELLER_NO}'
-        AND  ITEM_ID_BARCODE =  '${fromdata.ITEM_ID_BARCODE}'
-        ${fromdata.conditiontracking || ''}
+        where SHIPMENT_ID = @shipment_id
+        and SELLER_NO = @SELLER_NO
+        AND  ITEM_ID_BARCODE =  @ITEM_ID_BARCODE
+        ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
 
        group by  ITEM_ID,QTY_PICK,SHIPMENT_ID,SELLER_NO,TRACKING
-        
+
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE }
+        ).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5481,42 +5667,51 @@ app.post('/checkEqualContrack', function (req, res) {
 app.post('/updateConQtyChecktrack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
-        var query = `  
+        // โครงสร้างเงื่อนไขคงเดิมทุกอย่าง เปลี่ยนแค่วิธีส่งค่า
+        // (คงเครื่องหมาย = ของ subquery ไว้ตามเดิม ไม่เปลี่ยนเป็น IN
+        //  เพราะนี่เป็น UPDATE การเปลี่ยนจะทำให้จำนวนแถวที่ถูกแก้ต่างไปจากเดิม)
+        var query = `
 
-        
         UPDATE  TSDC_PICK_CHECK_NEW_TRACKING
-        SET		QTY_CHECK = QTY_CHECK + 1 
-        ,   USER_CHECK = '${fromdata.USER_NAME}'
-        , END_DATE_TIME = getdate() , 
+        SET		QTY_CHECK = QTY_CHECK + 1
+        ,   USER_CHECK = @USER_NAME
+        , END_DATE_TIME = getdate() ,
         START_DATE_TIME = (case when QTY_CHECK = 0 then GETDATE() else START_DATE_TIME end),
-        TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+        TABLE_CHECK = @TABLE_CHECK
         from TSDC_PICK_CHECK_NEW_TRACKING a
-        where   SHIPMENT_ID = (select SHIPMENT_ID from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
-        and SELLER_NO =  (select SELLER_NO from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = '${fromdata.CONTAINER_ID}')
-            AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
-            ${fromdata.conditiontracking || ''}
+        where   SHIPMENT_ID = (select SHIPMENT_ID from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = @CONTAINER_ID)
+        and SELLER_NO =  (select SELLER_NO from  TSDC_CONTAINER_MAPORDER where  CONTAINER_ID = @CONTAINER_ID)
+            AND  ITEM_ID_BARCODE = @ITEM_ID_BARCODE
+            ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
             and QTY_CHECK < QTY_PICK
-   
+
      `;
 
 
         query += `
 
      insert into [TSDC_PICK_CHECK_LOG_NEW]
-     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),'${fromdata.USER_NAME}' as USER_NAME ,SHIPMENT_ID ,'${fromdata.TABLE_CHECK}' as TABLE_CHECK,null from (
-  
+     select CONTAINER_ID,ITEM_ID,QTY_CHECK,GETDATE(),@USER_NAME as USER_NAME ,SHIPMENT_ID ,@TABLE_CHECK as TABLE_CHECK,null from (
+
   select CONTAINER_ID,ITEM_ID,'1' as QTY_CHECK ,GETDATE() as DATE_TIME_STAMP,SHIPMENT_ID ,TABLE_CHECK from TSDC_PICK_CHECK_NEW_TRACKING
-  where   CONTAINER_ID = '${fromdata.CONTAINER_ID}'
-      AND  ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}'
-  
+  where   CONTAINER_ID = @CONTAINER_ID
+      AND  ITEM_ID_BARCODE = @ITEM_ID_BARCODE
+
      ) as a
-    
+
 `;
 
-        return pool.request().query(query, function (err_query) {
+        return bindParams(pool.request(), byTracking
+            ? { USER_NAME: fromdata.USER_NAME, TABLE_CHECK: fromdata.TABLE_CHECK,
+                CONTAINER_ID: fromdata.CONTAINER_ID, ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { USER_NAME: fromdata.USER_NAME, TABLE_CHECK: fromdata.TABLE_CHECK,
+                CONTAINER_ID: fromdata.CONTAINER_ID, ITEM_ID_BARCODE: fromdata.ITEM_ID_BARCODE }
+        ).query(query, function (err_query) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5539,24 +5734,29 @@ app.post('/updateConQtyChecktrack', function (req, res) {
 app.post('/UpdateChecktrackdate', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
-        var query = `  
-        UPDATE  TSDC_PICK_CHECK_NEW_TRACKING 
+        var query = `
+        UPDATE  TSDC_PICK_CHECK_NEW_TRACKING
         SET 	CHECK_DATE = GETDATE()
         from TSDC_PICK_CHECK_NEW_TRACKING a
-        WHERE	
-                 SHIPMENT_ID = '${fromdata.shipment_id}'
-				 and SELLER_NO = '${fromdata.SELLER_NO}'
+        WHERE
+                 SHIPMENT_ID = @shipment_id
+				 and SELLER_NO = @SELLER_NO
                  and CHECK_DATE is null
-                 ${fromdata.conditiontracking || ''}
-     
+                 ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
+
         `;
 
 
 
-        return pool.request().query(query, function (err_query) {
+        return bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO }
+        ).query(query, function (err_query) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5579,8 +5779,9 @@ app.post('/UpdateChecktrackdate', function (req, res) {
 app.post('/checkpathfile_labeltracking', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
+    var byTracking = usesTracking(fromdata.conditiontracking);
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `      
         
@@ -5589,12 +5790,16 @@ app.post('/checkpathfile_labeltracking', function (req, res) {
         and FILE_PACKING is not null
         and TRACKING != ''
         and TRACKING is not null
-        and SHIPMENT_ID = '${fromdata.shipment_id}'
-        and SELLER_NO = '${fromdata.SELLER_NO}'
-        ${fromdata.conditiontracking || ''}
-                           
+        and SHIPMENT_ID = @shipment_id
+        and SELLER_NO = @SELLER_NO
+        ${byTracking ? "and a.TRACKING = @TRACKING" : ""}
+
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), byTracking
+            ? { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO,
+                TRACKING: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING) }
+            : { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO }
+        ).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5626,7 +5831,7 @@ app.post('/updateCoverSheettrack', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
   
@@ -5668,7 +5873,7 @@ app.post('/summary_ITEM_LACK_Track', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -5728,7 +5933,7 @@ app.post('/Rescan_checkitem_track', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         update TSDC_PICK_CHECK_NEW_TRACKING
@@ -5794,7 +5999,7 @@ app.post('/Insert_PICK_CHECK_LOG_NEW', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
         insert into TSDC_PICK_CHECK_LOG_NEW
@@ -5828,14 +6033,14 @@ app.post('/Get_ONLINE_ORDER_SHIPPING', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `      
         
         select  *,CONVERT(VARCHAR(16), CAST(RTS_DATE_OOS AS DATETIME), 120) AS RTS_DATE  from [10.26.1.11].[TSDC_CONVEYOR].[DBO].ONLINE_ORDER_SHIPPING
-        where  order_number_oos = '${fromdata.shipment_id}'
+        where  order_number_oos = @shipment_id
        `;
-        return pool.request().query(query, function (err_query, recordset) {
+        return bindParams(pool.request(), { shipment_id: fromdata.shipment_id }).query(query, function (err_query, recordset) {
             if (err_query) {
                 dataout = {
                     status: 'error',
@@ -5867,7 +6072,7 @@ app.post('/UPDATE_TrackingAndRTS', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
   
@@ -5904,7 +6109,7 @@ app.post('/Moniter_TrackingOrderInternal_Summary', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const condition_date = fromdata.dateTo ? `and ORDER_DATE between '${fromdata.dateFrom}' AND '${fromdata.dateTo}' ` : '';
         const condition_Processdate = fromdata.PCdateTo ? `and PROCESS_DATE between '${fromdata.PCdateFrom}' AND '${fromdata.PCdateTo}' ` : '';
@@ -6046,7 +6251,7 @@ app.post('/Moniter_TrackingOrderInternal_Detail', function (req, res) {
         return res.json({ status: "error", message: "Invalid type" });
     }
 
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const condition_date = fromdata.date
             ? ` AND ${config.whereDate} = '${fromdata.date}' `
@@ -6102,7 +6307,7 @@ app.get('/tsuruha_get_channel', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
         select distinct channel,work_period from [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER order by channel,work_period 
@@ -6139,7 +6344,7 @@ app.get('/tsuruha_get_lastprocess', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
         select top 1 * from  [10.26.1.11].[TSDC_Conveyor].dbo.TSDC_CONTROL_PICK_TSURUHA_HEADER_LOG_PROCESS
@@ -6178,7 +6383,7 @@ app.get('/tsuruha_process_job_TSRH_A5', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
         EXEC [10.26.1.11].[TSDC_Conveyor].dbo.[TSDC_PROCESS_JOB_TSRH_A5]
@@ -6208,7 +6413,7 @@ app.post('/tsuruha_get_orderdetail', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const condition_channel = fromdata.channel
             ? ` AND Channel = '${fromdata.channel}' `
@@ -6274,7 +6479,7 @@ app.post('/tsuruha_get_orderdetail_invhistory', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const condition_date = fromdata.date
             ? ` H.Manht_process_date  = '${fromdata.date}'`
@@ -6332,7 +6537,7 @@ app.post('/tsuruha_check_order', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `       
         SELECT  H.ORDER_DATE,H.CHANNEL,H.ORDER_NUMBER,H.TSRH_AMT,H.TSRH_INVNO,H.TRACKING_NO,RTS_STATUS,H.WORK_PERIOD
@@ -6378,7 +6583,7 @@ app.post('/tsuruha_check_invoice', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `       
 
@@ -6418,7 +6623,7 @@ app.post('/tsuruha_update_invoice', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const remark = fromdata.remark
             ? ` ,REMARK = '${fromdata.remark}' `
@@ -6467,7 +6672,7 @@ app.post('/tsuruha_cancel_invoice', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
 
@@ -6510,7 +6715,7 @@ app.post('/tsuruha_history_invoice', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const inv_date = fromdata.invdate
             ? ` ,'${fromdata.invdate}' `
@@ -6562,7 +6767,7 @@ app.post('/tsuruha_get_history_invoice', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `       
 
@@ -6604,7 +6809,7 @@ app.post('/tsuruha_check_void', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `       
 
@@ -6644,7 +6849,7 @@ app.post('/tsuruha_update_void', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const void_date = fromdata.voiddate
             ? ` ,VOID_DATE = '${fromdata.voiddate}' `
@@ -6700,7 +6905,7 @@ app.post('/packinglist_header', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const condition_checkdate = fromdata.date
             ? ` AND FORMAT(CHECK_DATE,'yyyy-MM-dd') = '${fromdata.date}' `
@@ -6797,7 +7002,7 @@ app.post('/packinglist_detail', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
         
@@ -6864,7 +7069,7 @@ app.post('/confirm_packinglist_header', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const user_confirm = fromdata.userid
             ? `${fromdata.userid} `
@@ -6978,7 +7183,7 @@ app.post('/confirm_packinglist_detail', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `  
 
@@ -7041,7 +7246,7 @@ app.post('/Get_MANHT_PICK_PAPER', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
         
@@ -7082,7 +7287,7 @@ app.post('/Get_ITEM_LOCATION_MANHT_PICK_PAPER', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const condition_TYPE_PICK = fromdata.type
             ? ` AND TYPE_PICK =  '${fromdata.type}' `
@@ -7128,11 +7333,13 @@ app.post('/Update_MANHT_PICK_PAPER', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
-        const condition_TYPE_PICK = fromdata.type
-            ? ` AND TYPE_PICK =  '${fromdata.type}' `
-            : '';
+        // typeDesc = อัพเดตทั้งประเภทในครั้งเดียว (หน้า Report Print Wave Order)
+        // type     = แบบเดิม ทีละ TYPE_PICK คงไว้ให้ของเดิมเรียกได้เหมือนเดิม
+        const condition_TYPE_PICK = fromdata.typeDesc
+            ? ` AND TYPE_PICK_DESC = '${fromdata.typeDesc}' `
+            : (fromdata.type ? ` AND TYPE_PICK =  '${fromdata.type}' ` : '');
 
         var query = `        
         
@@ -7168,7 +7375,7 @@ app.post('/Get_OrderCountConfirmMan_PICK_PAPER', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `        
         
@@ -7210,7 +7417,7 @@ app.post('/Get_OrderCountConfirmMan_PICK_PAPER', function (req, res) {
 
 ////////
 app.get('/Get_PendingPrint_WaveOrderList', function (req, res) {
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
                 SELECT
@@ -7254,7 +7461,7 @@ app.post('/Cancel_PendingPrint_WaveOrder', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
     //sql.close();
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         const condition_TYPE_PICK = fromdata.type
             ? ` AND TYPE_PICK =  '${fromdata.type}' `
@@ -7307,7 +7514,7 @@ app.post('/report_pallet_outbound', function (req, res) {
     // ถ้าไม่ส่งอะไรมาเลย ให้ return ว่างไปเลย ไม่ต้อง query ทั้งตาราง
     const whereClause = conditions.length > 0 ? conditions.join(' OR ') : '1=0';
 
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
         var query = `
         SELECT
             ROW_NUMBER() OVER (ORDER BY t.scandate ASC) AS ID,
@@ -7364,7 +7571,7 @@ app.post('/report_pallet_outbound', function (req, res) {
 
 app.post('/delete_report_pallet_outbound', function (req, res) {
     var fromdata = req.body;
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
         var query = `
         DELETE FROM TSDC_CONFIRM_OUTBOUND
         WHERE PALLET_NO = '${fromdata.Pallet_NO}'
@@ -7404,7 +7611,7 @@ app.post('/Get_TrackingGroupSku', function (req, res) {
         return res.json(dataout);
     }
 
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -7423,14 +7630,21 @@ app.post('/Get_TrackingGroupSku', function (req, res) {
               ,CONVERT(VARCHAR(23), PRINT_DATE, 121) as PRINT_DATE
               ,TABLE_CHECK
               --// 3 คอลัมน์สำหรับสแกนไอเทมก่อนพิมพ์ + สรุปจำนวนชิ้น
-              --// ค่าว่าง/null ได้ ระหว่างที่ job ต้นทางยังเติมไม่ครบ หน้าเว็บจะข้ามขั้นสแกนไปเอง
+              --// ITEM_ID_BARCODE ว่าง = หน้าเว็บสแกนตรวจไม่ได้ จะพิมพ์/ยืนยันไม่ได้ ต้องไปเติมข้อมูล
               --// ไม่มีคอลัมน์ "จำนวนต่อ order" แยก เพราะ 1 แถว = 1 order เป็นเลขตัวเดียวกับ QTY
               ,ITEM_ID
               ,ITEM_ID_BARCODE
               ,QTY
+              --// การยืนยันจำนวนตอนเบิกของ (หน้า /confirm-qty-groupsku)
+              --// CONFIRM_DATE เป็น null = ยังไม่ยืนยัน
+              ,USER_CONFIRM
+              ,CONVERT(VARCHAR(23), CONFIRM_DATE, 121) as CONFIRM_DATE
+              --// กลุ่มย่อยใน GROUP_PICK เดียวกัน แยกออเดอร์ที่ QTY ไม่เท่ากัน
+              --// หน้าพิมพ์ใช้แยกการ์ด/แยกรอบพิมพ์ ส่วนหน้ายืนยันจำนวนตอนเบิกไม่สนค่านี้
+              ,SUB_GROUP_PICK
         from TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
         where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
-        order by TRANSPORT_CODE,TRACKING
+        order by TRANSPORT_CODE,SUB_GROUP_PICK,TRACKING
 
        `;
         return pool.request().query(query, function (err_query, recordset) {
@@ -7458,6 +7672,95 @@ app.post('/Get_TrackingGroupSku', function (req, res) {
                     res.json(dataout);
                 }
             }
+        });
+    });
+});
+
+//// ยืนยันจำนวนชิ้นตอนเบิกของ — หน้า /confirm-qty-groupsku
+//// เขียน USER_CONFIRM (pincode คนเบิก) + CONFIRM_DATE ลง "ทุกแถว" ของ GROUP_PICK นั้น
+//// เพราะตอนเบิกยังไม่ได้แยกขนส่ง คนเบิกนับของทั้งกลุ่มรวดเดียว
+////
+//// กันยืนยันซ้ำที่ where: update เฉพาะแถวที่ CONFIRM_DATE ยังเป็น null
+//// ถ้าไม่โดนสักแถว = มีคนยืนยันไปก่อนแล้ว คืน status 'confirmed' พร้อมบอกว่าใคร/เมื่อไหร่
+//// เช็คในคำสั่งเดียวกับที่ update ไม่ได้ select มาดูก่อนแล้วค่อย update
+//// เพราะสองคนกดพร้อมกันจะผ่าน select ทั้งคู่แล้วเขียนทับกัน
+app.post('/Confirm_QtyGroupSku', function (req, res) {
+    var fromdata = req.body;
+
+    var GROUP_PICK   = (fromdata.GROUP_PICK || '').trim().replace(/'/g, "''");
+    var USER_CONFIRM = (fromdata.USER_CONFIRM || '').toString().trim().replace(/'/g, "''");
+
+    if (GROUP_PICK === '' || USER_CONFIRM === '') {
+        dataout = {
+            status: 'error',
+            message: 'GROUP_PICK และ USER_CONFIRM ต้องถูกระบุ'
+        };
+        return res.json(dataout);
+    }
+
+    getPool().then(pool => {
+
+        var query = `
+
+        declare @rows int;
+
+        update TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+           set USER_CONFIRM     = '${USER_CONFIRM}'
+              ,CONFIRM_DATE     = GETDATE()
+              --// ยืนยันจำนวนแล้ว = เปิดงานให้ขั้นถัดไปทำต่อ
+              --// เขียนพร้อมกันในคำสั่งเดียวกับ CONFIRM_DATE จะได้ไม่มีทางหลุดเป็นครึ่งๆ
+              --// (ถ้าแยกเป็น 2 คำสั่งแล้วตัวที่สองพัง จะเหลือแถวที่ยืนยันแล้วแต่สถานะไม่ตรง)
+              ,STATUS_CLOSE_MAN = 'N'
+         where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
+           and CONFIRM_DATE is null;
+
+        set @rows = @@ROWCOUNT;
+
+        select @rows as UPDATED_ROWS
+              ,(select top 1 USER_CONFIRM
+                  from TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+                 where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
+                   and CONFIRM_DATE is not null) as USER_CONFIRM
+              ,(select top 1 CONVERT(VARCHAR(23), CONFIRM_DATE, 121)
+                  from TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+                 where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
+                   and CONFIRM_DATE is not null) as CONFIRM_DATE
+
+       `;
+        return pool.request().query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    message: err_query.message,
+                    data: err_query,
+                    query: query,
+                };
+                return res.json(dataout);
+            }
+
+            var row = (recordset.recordset && recordset.recordset[0]) || {};
+
+            if (Number(row.UPDATED_ROWS) > 0) {
+                dataout = {
+                    status: 'success',
+                    rows: Number(row.UPDATED_ROWS),
+                    data: [{ USER_CONFIRM: row.USER_CONFIRM, CONFIRM_DATE: row.CONFIRM_DATE }]
+                };
+            } else if (row.CONFIRM_DATE) {
+                dataout = {
+                    status: 'confirmed',
+                    message: 'Group Pick นี้ถูกยืนยันไปแล้ว',
+                    data: [{ USER_CONFIRM: row.USER_CONFIRM, CONFIRM_DATE: row.CONFIRM_DATE }]
+                };
+            } else {
+                dataout = {
+                    status: 'null',
+                    message: 'ไม่พบ Group Pick นี้',
+                    data: []
+                };
+            }
+
+            res.json(dataout);
         });
     });
 });
@@ -7508,7 +7811,7 @@ app.post('/Update_PrintStatus_TrackingGroupSku', function (req, res) {
         ? ` and ISNULL(LTRIM(RTRIM(TRANSPORT_CODE)),'') = '' `
         : ` and LTRIM(RTRIM(TRANSPORT_CODE)) = '${TRANSPORT_CODE.replace(/'/g, "''")}' `;
 
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -7575,7 +7878,7 @@ app.post('/tracking_running_groupsku', function (req, res) {
         ? ''
         : ` and LTRIM(RTRIM(TRACKING)) = '${TRACKING}' `;
 
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -7832,7 +8135,7 @@ app.post('/insertTracking_confirmOutbound_groupsku', function (req, res) {
         return res.json(dataout);
     }
 
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var query = `
 
@@ -8078,7 +8381,7 @@ app.post('/insert_video_hd', function (req, res) {
         SELECT @updated AS UPDATED, @inserted AS INSERTED, @id AS VIDEO_ID;
     `;
 
-    new sql.ConnectionPool(db).connect().then(pool => {
+    getPool().then(pool => {
 
         var inserted = 0;
         var updated = 0;
