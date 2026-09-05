@@ -444,17 +444,16 @@ app.post('/insert_user_tablecheck2', function (req, res) {
     getPool().then(pool => {
 
         var query = `  
-        
-			   -- คนเดิม โต๊ะเดิม วันเดียวกัน ยังไม่ checkout = ไม่ต้องบันทึกซ้ำ
-        -- เดิมบันทึกใหม่ทุกครั้งที่สแกนกล่อง วันหนึ่งได้ 16,000 แถวจากคนจริงแค่ 176 ชุด
-        -- ต้องครอบด้วย IF NOT EXISTS ไม่ใช่เอา AND NOT EXISTS ไปต่อท้าย where
-        -- เพราะแบบต่อท้าย SQL ยังวิ่งไปถาม linked server 10.26.1.11 อยู่ดี (วัดแล้ว 8.3ms เท่าเดิม)
-        if not exists ( select 1 from TSDC_USER_TABLECHECK u
+                if not exists ( select 1 from TSDC_USER_TABLECHECK u
                         where u.TABLE_CHECK = LTRIM(RTRIM(@TABLE_CHECK))
+                          and u.WORKING_TYPE <> 'Pack'
                           and u.PIN_CODE = @PIN_CODE
-                          and u.WORKING_TYPE = @WORKING_TYPE
                           and u.CHECKOUT_DATE is null
-                          and CONVERT(date,u.CHECKIN_DATE) = CONVERT(date,getdate()) )
+                          and CONVERT(date,u.DATETIME_STAMP) = CONVERT(date,getdate())
+                          and u.DATETIME_STAMP = ( select max(x.DATETIME_STAMP)
+                                                   from TSDC_USER_TABLECHECK x
+                                                   where x.TABLE_CHECK = LTRIM(RTRIM(@TABLE_CHECK))
+                                                     and x.WORKING_TYPE <> 'Pack' ) )
         begin
 			   insert into TSDC_USER_TABLECHECK
                (  [TABLE_CHECK]
@@ -7642,6 +7641,8 @@ app.post('/Get_TrackingGroupSku', function (req, res) {
               --// กลุ่มย่อยใน GROUP_PICK เดียวกัน แยกออเดอร์ที่ QTY ไม่เท่ากัน
               --// หน้าพิมพ์ใช้แยกการ์ด/แยกรอบพิมพ์ ส่วนหน้ายืนยันจำนวนตอนเบิกไม่สนค่านี้
               ,SUB_GROUP_PICK
+              --// หน่วยนับ (ชิ้น / แพ็ก) — ใบปะหน้าพาเลทเอาไปต่อท้ายจำนวน
+              ,UOM
         from TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
         where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
         order by TRANSPORT_CODE,SUB_GROUP_PICK,TRACKING
