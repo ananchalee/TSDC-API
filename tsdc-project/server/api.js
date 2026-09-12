@@ -8326,8 +8326,46 @@ app.post('/insert_video_hd', function (req, res) {
     //   อัดจบ       : ทุก segment เป็น 0 ตัวที่ปิดไปแล้วเป็น UPDATE ซ้ำ ไม่มีผลเสีย
     // FDStartdate / FDCreatedate ไม่ถูกแตะตอน UPDATE เพราะเป็นเวลาที่ไฟล์นั้นเริ่มถูกเขียน
     // FDEnddate ว่าง = ไฟล์ยังเขียนไม่จบ ปล่อยคอลัมน์ไว้ตามเดิม
+    //
+    // ── หมายเหตุของ SQL ข้างล่าง (เก็บไว้ฝั่ง JS ไม่ใส่ในตัว query) ──────────
+    // คอมเมนต์ที่อยู่ใน SQL string ถูกส่งไป SQL Server ทุกครั้งที่เรียก
+    // endpoint นี้ถูกยิงทุก segment ของทุกออเดอร์ จึงไม่ควรแบกไปด้วย
+    // (วัดแล้ว: ย้ายออกทำให้ query เล็กลงจาก 6,046 เหลือ 2,848 ไบต์ = ลด 53%)
+    //
+    // 1) ร้าน/ลูกค้า
+    //    SELLER_NO ของไลน์แพ็คเก็บลง [FTShop_id] ตรงๆ (เป็นคอลัมน์เดียวกันโดยนิยาม)
+    //    แล้วเปิด TSDC_WMS_CUSTOMER_CHANNEL ต่อด้วยค่าเดียวกันเพื่อหา FTCustomer_id
+    //    ร้านเดียวอยู่ได้หลาย channel (เช่น SHOPEE กับ SHOPEE_TSDC) แต่ FTCustomer_id ตรงกัน
+    //    หยิบตัวที่ยัง active ก่อน แล้วล็อกลำดับด้วย FTChannel_id ให้ผลคงที่ทุกครั้ง
+    //
+    //    ต้องประทับลงแถววิดีโอตั้งแต่ตอนบันทึก จะ join เอาทีหลังไม่ได้ เพราะตารางกลาง
+    //    ที่ถือ SELLER_NO ถูกล้างเป็นรอบ (วัด 12 ก.ย. 2026: วิดีโอเก่า 639 แถว ย้อนได้แค่ 87)
+    //
+    //    หาไม่เจอใน channel ก็ยังเก็บรหัสร้านไว้ (seller ที่ใช้จริง 123 ตัว อยู่ในตารางนั้น 83)
+    //    ไม่งั้นวิดีโอของร้านที่ยังไม่ถูกลงทะเบียนจะค้นด้วยรหัสร้านไม่เจอเลย
+    //    เก็บเป็น NULL ไม่ใช่ '' เพื่อให้แถวที่ไม่รู้ร้านแยกจากแถวที่ร้านเป็นค่าว่างจริง
+    //
+    // 2) ตอน UPDATE ยอมเขียนทับ tracking / container / zone / ร้าน / ลูกค้า
+    //    ข้อมูลพวกนี้รู้ทีหลังได้ เช่น tracking ที่เพิ่งถูกเลือกหลังจากเริ่มอัดไปแล้ว
+    //    ถ้าไม่เขียนทับ แถวที่ insert ตอนเริ่มอัดจะค้างเป็นค่าว่างตลอดไป
+    //    แต่ถ้ารอบนี้ไม่ได้ส่งค่ามา (ว่าง/NULL) ต้องไม่ไปลบของเดิมทิ้ง
+    //
+    // 3) ทำไมต้อง SELECT @id กลับหลัง UPDATE
+    //    คืน FNVideo_id ให้หน้าเว็บเอาไปตั้งเป็นส่วนหน้าของชื่อไฟล์ (660-P52-...)
+    //    id เป็น IDENTITY จึงเพิ่งมีตัวตนตอน INSERT ส่วนไฟล์ถูก ffmpeg สร้างไปก่อนแล้ว
+    //    หน้าเว็บจึงต้องรู้ id ก่อน แล้วค่อยสั่ง agent เปลี่ยนชื่อไฟล์ตามทีหลัง
+    //    อ่านด้วย @FTVideo_name (ชื่อใหม่) เพราะ UPDATE ข้างบนเขียนชื่อใหม่ลงไปแล้ว
     var query = `
         DECLARE @updated int = 0, @inserted int = 0, @id bigint = NULL;
+        DECLARE @customer varchar(20) = NULL;
+
+        IF @FTSeller_no <> ''
+        BEGIN
+            SELECT TOP 1 @customer = [FTCustomer_id]
+            FROM [TSDC_WMS_CUSTOMER_CHANNEL] WITH (NOLOCK)
+            WHERE [FTShop_id] = @FTSeller_no
+            ORDER BY [FNIsActive] DESC, [FTChannel_id];
+        END
 
         UPDATE [TSDC_VIDEO_HD]
         SET [FDEnddate]    = CASE WHEN @FDEnddate = '' THEN [FDEnddate]
@@ -8337,20 +8375,16 @@ app.post('/insert_video_hd', function (req, res) {
           , [FCFile_size]  = @FCFile_size
           , [FTVideo_name] = @FTVideo_name
           , [FTPath]       = @FTPath
-          -- ข้อมูลพวกนี้รู้ทีหลังได้ เช่น tracking ที่เพิ่งถูกเลือกหลังจากเริ่มอัดไปแล้ว
-          -- ถ้าไม่เขียนทับ แถวที่ insert ตอนเริ่มอัดจะค้างเป็นค่าว่างตลอดไป
           , [FTTracking_id]  = CASE WHEN @FTTracking_id  = '' THEN [FTTracking_id]  ELSE @FTTracking_id  END
           , [FTContainer_id] = CASE WHEN @FTContainer_id = '' THEN [FTContainer_id] ELSE @FTContainer_id END
           , [FTZone]         = CASE WHEN @FTZone         = '' THEN [FTZone]         ELSE @FTZone         END
+          , [FTShop_id]      = CASE WHEN @FTSeller_no = '' THEN [FTShop_id] ELSE @FTSeller_no END
+          , [FTCustomer_id]  = CASE WHEN @customer IS NULL THEN [FTCustomer_id] ELSE @customer END
           , [FDLastupdate] = GETDATE()
         WHERE [FTVideo_name] = @FTVideo_name_key;
 
         SET @updated = @@ROWCOUNT;
 
-        -- คืน FNVideo_id ให้หน้าเว็บเอาไปตั้งเป็นส่วนหน้าของชื่อไฟล์ (660-P52-...)
-        -- id เป็น IDENTITY จึงเพิ่งมีตัวตนตอน INSERT ส่วนไฟล์ถูก ffmpeg สร้างไปก่อนแล้ว
-        -- หน้าเว็บจึงต้องรู้ id ก่อน แล้วค่อยสั่ง agent เปลี่ยนชื่อไฟล์ตามทีหลัง
-        -- อ่านด้วย @FTVideo_name (ชื่อใหม่) เพราะ UPDATE ข้างบนเขียนชื่อใหม่ลงไปแล้ว
         IF @updated > 0
         BEGIN
             SELECT TOP 1 @id = [FNVideo_id]
@@ -8365,7 +8399,8 @@ app.post('/insert_video_hd', function (req, res) {
             ( [FTVideo_name], [FDStartdate], [FDEnddate], [FTTable_id], [FTZone]
             , [FTContainer_id], [FTOrder_number], [FTTracking_id], [FTPin_code]
             , [FDCreatedate], [FDLastupdate], [FNStaUpload], [FTStaDesc]
-            , [FTUser_create], [FDUser_datetime], [FTPath], [FTIp_address_local], [FCFile_size] )
+            , [FTUser_create], [FDUser_datetime], [FTPath], [FTIp_address_local], [FCFile_size]
+            , [FTShop_id], [FTCustomer_id] )
             VALUES
             ( @FTVideo_name
             , CONVERT(datetime, @FDStartdate, 120)
@@ -8373,7 +8408,8 @@ app.post('/insert_video_hd', function (req, res) {
             , @FTTable_id, @FTZone
             , @FTContainer_id, @FTOrder_number, @FTTracking_id, @FTPin_code
             , GETDATE(), GETDATE(), @FNStaUpload, @FTStaDesc
-            , @FTUser_create, GETDATE(), @FTPath, @FTIp_address_local, @FCFile_size );
+            , @FTUser_create, GETDATE(), @FTPath, @FTIp_address_local, @FCFile_size
+            , NULLIF(@FTSeller_no, ''), @customer );
 
             SET @inserted = @@ROWCOUNT;
             SET @id = CONVERT(bigint, SCOPE_IDENTITY());
@@ -8425,6 +8461,7 @@ app.post('/insert_video_hd', function (req, res) {
                 .input('FTPin_code', sql.NVarChar, String(fromdata.FTPin_code || ''))
                 .input('FTUser_create', sql.NVarChar, String(fromdata.FTUser_create || ''))
                 .input('FTIp_address_local', sql.NVarChar, String(fromdata.FTIp_address_local || ''))
+                .input('FTSeller_no', sql.NVarChar, String(fromdata.FTSeller_no || ''))
                 .query(query, function (err_query, recordset) {
                     if (err_query) {
                         console.log('insert_video_hd error:', err_query.message);
@@ -8450,6 +8487,331 @@ app.post('/insert_video_hd', function (req, res) {
     }).catch(err => {
         console.log('insert_video_hd connect error:', err.message);
         res.json({ status: 'error', message: err.message });
+    });
+});
+
+
+/* =====================================================================
+   ค้นหาวิดีโอที่อัดไว้ + เปิดดู/ดาวน์โหลด
+   ---------------------------------------------------------------------
+   ไฟล์จริงอยู่บน share \\10.26.1.26\Dev\Video\ปี\เดือน\วัน\ ซึ่งเบราว์เซอร์
+   เปิด UNC เองไม่ได้ API จึงต้องเป็นคนอ่านไฟล์แล้วส่งเป็น HTTP ให้
+
+   ⚠️ สภาพข้อมูล ณ 12 ก.ย. 2026 (นับจากของจริง)
+       771 แถวในตาราง · 402 แถวอ้างว่ามีไฟล์บน server · เปิดได้จริง 15
+       ที่เหลือถูกลบไปแล้ว (ทั้งปี 2025 มี 332 แถว เหลือไฟล์ 5 ตัว)
+   ผลลัพธ์จึงต้องบอกสถานะไฟล์รายแถว ไม่ใช่เดาว่ามีไฟล์เพราะ FNStaUpload = 1
+   ===================================================================== */
+
+// สถานะไฟล์ที่หน้าเว็บเอาไปตัดสินใจว่าจะเปิดปุ่มดู/ดาวน์โหลดไหม
+//   ready     = ไฟล์อยู่บน server เปิดได้
+//   missing   = DB บอกว่ามีพาธ แต่ไฟล์ถูกลบไปแล้ว
+//   not_ready = ยังไม่เคยขึ้น server (FTPath_server ว่าง)
+//   recording = ยังอัดไม่จบ (FNStaUpload = 2)
+//   no_access = API เข้า share ไม่ได้ (สิทธิ์/เน็ตเวิร์ก) คนละเรื่องกับไฟล์หาย
+function videoFileStatusFromError(err) {
+    if (!err) return 'ready';
+    // ENOENT = ไฟล์ไม่มีจริง ส่วน EACCES/EPERM/ENETUNREACH คือ API เองเข้าไม่ถึง
+    // ต้องแยกกัน ไม่งั้นวันที่สิทธิ์ share หลุดจะรายงานว่า "ไฟล์หายทั้งหมด"
+    return err.code === 'ENOENT' ? 'missing' : 'no_access';
+}
+
+/* ---------------------------------------------------------------------
+   เช็คไฟล์บน share ให้ทุกแถว โดยยิงพร้อมกันครั้งละไม่เกิน STAT_CONCURRENCY
+
+   ⚠️ ห้ามกลับไปใช้ fs.statSync วนทีละแถว — วัดเมื่อ 12 ก.ย. 2026 บน share จริง:
+
+       200 ไฟล์ที่ "มีอยู่จริง"   เรียงทีละตัว  1,296 ms
+                                  พร้อมกัน 8 ตัว   306 ms
+       200 ไฟล์ที่ "ถูกลบไปแล้ว"  เรียงทีละตัว      6 ms
+
+   ไฟล์ที่หายเร็วมากเพราะไม่ต้องคุยกับ share จริง ตอนนี้ในตารางเป็นแบบนั้นเกือบหมด
+   (402 แถวมีพาธ เปิดได้จริง 15) หน้าเว็บเลยดูเร็วอยู่ พอ uploader เริ่มทำงาน
+   ไฟล์มีจริงขึ้นมา แบบเรียงทีละตัวจะช้าลงทันทีเป็นวินาที
+
+   เพิ่มเกิน 8 ไม่ได้อะไรแล้ว (8/16/32/64/200 ตัว ได้ 306/311/297/305/295 ms)
+   คือชนเพดานของ share ไม่ใช่เพดานของเรา จึงหยุดที่ 8 เพื่อไม่ถล่ม share
+   --------------------------------------------------------------------- */
+var STAT_CONCURRENCY = 8;
+
+function fillFileStatus(rows, done) {
+    var i = 0, finished = 0;
+
+    if (!rows.length) return done();
+
+    function runNext() {
+        if (i >= rows.length) return;
+        var r = rows[i++];
+        var p = String(r.FTPath_server || '').trim();
+
+        if (!p) {
+            r.FILE_STATUS = Number(r.FNStaUpload) === 2 ? 'recording' : 'not_ready';
+            r.CAN_PLAY = false;
+            return step();
+        }
+
+        fs.stat(p, function (err, st) {
+            r.FILE_STATUS = err ? videoFileStatusFromError(err)
+                                : (st.isFile() ? 'ready' : 'missing');
+            r.CAN_PLAY = (r.FILE_STATUS === 'ready');
+            step();
+        });
+    }
+
+    function step() {
+        if (++finished === rows.length) return done();
+        runNext();
+    }
+
+    for (var k = 0; k < Math.min(STAT_CONCURRENCY, rows.length); k++) runNext();
+}
+
+app.post('/search_video_hd', function (req, res) {
+    var f = req.body || {};
+
+    var order    = String(f.ORDER_NUMBER || '').trim();
+    var seller   = String(f.SELLER_NO    || '').trim();
+    var tracking = String(f.TRACKING_ID  || '').trim();
+
+    // ต้องระบุตัวชี้เฉพาะเจาะจงเสมอ — ตั้งใจไม่มีตัวกรอง "ช่วงวันที่" ให้ค้น
+    // เพราะค้นด้วยวันอย่างเดียวจะลากทั้งวันมา แล้วต้องไป stat ไฟล์บน share ทุกแถว
+    // ยิ่งวิดีโอเยอะขึ้นยิ่งหนัก และไม่ได้ตอบคำถามที่คนใช้งานจริงถาม
+    // (คนถามว่า "ออเดอร์นี้อัดไว้ไหม" ไม่ได้ถามว่า "วันนี้อัดอะไรไปบ้าง")
+    if (!order && !seller && !tracking) {
+        return res.json({
+            status: 'error',
+            message: 'กรุณาระบุเลขออเดอร์ รหัสร้าน หรือเลขพัสดุ อย่างน้อย 1 อย่าง',
+            data: []
+        });
+    }
+
+    var limit = parseInt(f.LIMIT, 10);
+    if (!(limit > 0) || limit > 500) limit = 200;
+
+    // ใช้ parameter ล้วน ค่าที่ค้นมาจากช่องกรอกของผู้ใช้โดยตรง
+    /* =====================================================================
+       หมายเหตุของ query ข้างล่าง — เก็บไว้ฝั่ง JS ไม่ใส่ในตัว SQL
+       เพราะคอมเมนต์ที่อยู่ใน SQL string ถูกส่งไป SQL Server ทุกครั้งที่เรียก
+       (วัดแล้ว: ถ้าใส่ไว้ข้างใน query จะโตจาก 2,500 เป็น 4,369 ไบต์ = คอมเมนต์ 43%)
+       ---------------------------------------------------------------------
+       1) OUTER APPLY เปิด TSDC_WMS_CUSTOMER_CHANNEL เอาชื่อร้าน
+          ชื่อร้านไม่ได้เก็บในแถววิดีโอ · FTShop_id ของแถววิดีโอคือ SELLER_NO
+          ซึ่งตรงกับ FTShop_id ของตาราง channel
+          ร้านเดียวมีได้หลาย channel จึงต้อง TOP 1 ไม่งั้นวิดีโอ 1 ไฟล์กลายเป็นหลายแถว
+
+       2) ใช้ LIKE 'x%' (ขึ้นต้นด้วย) ไม่ใช่ '%x%' ตั้งใจ
+          แบบหลัง SQL seek index ไม่ได้เลย ต้องอ่านทั้งตารางเสมอ
+          ยังไม่เจ็บตอนมี 771 แถว แต่จะเจ็บมากเมื่อโตเป็นหลักแสน
+          เลขออเดอร์กับเลขพัสดุเป็นรหัสที่คนจำจากตัวหน้าอยู่แล้ว ค้นแบบขึ้นต้นจึงพอ
+
+       3) FTShop_id เพิ่งเริ่มเก็บ 12 ก.ย. 2026 แถวก่อนหน้านั้นค้นด้วยรหัสร้านไม่เจอ
+
+       4) ⚠️ ห้ามเอา OPTION (RECOMPILE) ออก — ไม่งั้น index 2 ใน 3 ตัวไร้ผลทันที
+          WHERE เป็นแบบ (@x = '' OR คอลัมน์ ...) ซึ่งคำขอแต่ละแบบต้องการ index
+          คนละตัว แต่ SQL คอมไพล์ plan จากคำขอแรกที่เจอแล้วใช้ซ้ำกับทุกคำขอถัดไป
+
+          ดู plan จริงเมื่อ 12 ก.ย. 2026:
+            ไม่มี RECOMPILE  ค้นด้วยรหัสร้าน/เลขพัสดุ -> Index Scan ของ IX_..._Order
+                             (ไล่ index ผิดตัวทั้งหมด ไม่ได้ใช้ของตัวเองเลย)
+            มี RECOMPILE     ออเดอร์  -> Index Seek IX_TSDC_VIDEO_HD_Order
+                             รหัสร้าน -> Index Seek IX_TSDC_VIDEO_HD_Shop_Start
+                             เลขพัสดุ -> Index Seek IX_TSDC_VIDEO_HD_Tracking
+
+          ราคาที่จ่ายคือคอมไพล์ใหม่ทุกครั้ง ซึ่งรับได้เพราะเป็นหน้าค้นหาที่คนกดเอง
+          ไม่ใช่ทางที่ถูกยิงทุกกล่องแบบ chain ยิงของ
+          แถมยังไม่ไปเพิ่ม plan cache ที่เคยบวมถึง 158,472 plan / 3.2 GB
+       ===================================================================== */
+    var query = `
+        SELECT TOP (@limit)
+               v.[FNVideo_id], v.[FTVideo_name]
+             , v.[FTOrder_number], v.[FTContainer_id], v.[FTTracking_id]
+             , v.[FTTable_id], v.[FTZone], v.[FTPin_code]
+             , v.[FCFile_size], v.[FNStaUpload], v.[FTStaDesc]
+             , v.[FDStartdate], v.[FDEnddate], v.[FDCreatedate]
+             , v.[FTPath], v.[FTPath_server], v.[FTUser_create]
+             , v.[FTCustomer_id], v.[FTShop_id]
+             , c.[FTShop_name_th], c.[FTChannel_id]
+        FROM [TSDC_VIDEO_HD] v WITH (NOLOCK)
+        OUTER APPLY (
+            SELECT TOP 1 [FTShop_name_th], [FTChannel_id]
+            FROM [TSDC_WMS_CUSTOMER_CHANNEL] WITH (NOLOCK)
+            WHERE [FTShop_id] = NULLIF(v.[FTShop_id], '')
+            ORDER BY [FNIsActive] DESC, [FTChannel_id]
+        ) c
+        WHERE (@order    = '' OR v.[FTOrder_number] LIKE @order    + '%')
+          AND (@tracking = '' OR v.[FTTracking_id]  LIKE @tracking + '%')
+          AND (@seller   = '' OR v.[FTShop_id] = @seller)
+        ORDER BY v.[FDStartdate] DESC, v.[FNVideo_id] DESC
+        OPTION (RECOMPILE);
+    `;
+
+    getPool().then(pool => {
+        pool.request()
+            .input('limit', sql.Int, limit)
+            .input('order', sql.VarChar(70), order)
+            .input('seller', sql.VarChar(20), seller)
+            .input('tracking', sql.VarChar(70), tracking)
+            .query(query, function (err, rs) {
+                if (err) {
+                    console.log('search_video_hd error:', err.message);
+                    return res.json({ status: 'error', message: err.message, data: [] });
+                }
+
+                var rows = (rs && rs.recordset) ? rs.recordset : [];
+
+                // เช็คไฟล์บน share แบบขนาน — ดูคำอธิบายที่ fillFileStatus ว่าทำไมห้ามวน statSync
+                fillFileStatus(rows, function () {
+                    res.json({
+                        status: 'success',
+                        message: '',
+                        count: rows.length,
+                        // ถึงเพดานพอดี แปลว่าอาจมีมากกว่านี้ หน้าเว็บจะได้เตือนให้กรองให้แคบลง
+                        truncated: rows.length >= limit,
+                        data: rows
+                    });
+                });
+            });
+    }).catch(err => {
+        console.log('search_video_hd connect error:', err.message);
+        res.json({ status: 'error', message: err.message, data: [] });
+    });
+});
+
+
+/* ---------------------------------------------------------------------
+   รายชื่อร้านสำหรับ dropdown ของหน้าค้นหา
+
+   ดึงเฉพาะร้านที่ "มีวิดีโออยู่จริง" ไม่ใช่ทะเบียนร้านทั้งหมด
+   วัดเมื่อ 12 ก.ย. 2026: มีวิดีโอ 13 ร้าน · ทะเบียนทั้งหมด 143 ร้าน
+   ถ้าเอามาทั้งหมดจะมีตัวเลือกที่กดแล้วไม่เจออะไรเลย 130 ตัว
+
+   ชื่อร้านมาจาก channel table ซึ่งบางร้านไม่มีชื่อ (7 จาก 13 ณ วันที่วัด)
+   ฝั่งหน้าเว็บต้องเผื่อกรณีชื่อว่างแล้วแสดงแค่รหัส
+   --------------------------------------------------------------------- */
+app.get('/video_seller_options', function (req, res) {
+    var query = `
+        SELECT v.[FTShop_id]
+             , MAX(c.[FTShop_name_th]) AS [FTShop_name_th]
+             , COUNT(*) AS [CLIPS]
+        FROM [TSDC_VIDEO_HD] v WITH (NOLOCK)
+        OUTER APPLY (
+            SELECT TOP 1 [FTShop_name_th]
+            FROM [TSDC_WMS_CUSTOMER_CHANNEL] WITH (NOLOCK)
+            WHERE [FTShop_id] = v.[FTShop_id]
+            ORDER BY [FNIsActive] DESC, [FTChannel_id]
+        ) c
+        WHERE v.[FTShop_id] IS NOT NULL AND v.[FTShop_id] <> ''
+        GROUP BY v.[FTShop_id]
+        ORDER BY v.[FTShop_id];
+    `;
+
+    getPool().then(pool => {
+        pool.request().query(query, function (err, rs) {
+            if (err) {
+                console.log('video_seller_options error:', err.message);
+                return res.json({ status: 'error', message: err.message, data: [] });
+            }
+            var rows = (rs && rs.recordset) ? rs.recordset : [];
+            res.json({ status: 'success', message: '', count: rows.length, data: rows });
+        });
+    }).catch(err => {
+        console.log('video_seller_options connect error:', err.message);
+        res.json({ status: 'error', message: err.message, data: [] });
+    });
+});
+
+
+
+/* ---------------------------------------------------------------------
+   ส่งตัวไฟล์วิดีโอ
+     GET /video_hd_file/:id              เปิดดูในหน้าเว็บ (รองรับ Range = เลื่อนเวลาได้)
+     GET /video_hd_file/:id?download=1   บังคับให้เบราว์เซอร์เซฟลงเครื่อง
+
+   พาธเอามาจากแถวใน DB เท่านั้น ไม่เคยรับพาธจากผู้ใช้
+   --------------------------------------------------------------------- */
+app.get('/video_hd_file/:id', function (req, res) {
+    var id = parseInt(req.params.id, 10);
+    if (!(id > 0)) {
+        return res.status(400).json({ status: 'error', message: 'FNVideo_id ไม่ถูกต้อง' });
+    }
+
+    getPool().then(pool => {
+        pool.request()
+            .input('id', sql.Int, id)
+            .query(`SELECT TOP 1 [FTVideo_name], [FTPath_server], [FNStaUpload]
+                    FROM [TSDC_VIDEO_HD] WITH (NOLOCK)
+                    WHERE [FNVideo_id] = @id;`, function (err, rs) {
+
+                if (err) {
+                    console.log('video_hd_file error:', err.message);
+                    return res.status(500).json({ status: 'error', message: err.message });
+                }
+
+                var rows = (rs && rs.recordset) ? rs.recordset : [];
+                if (!rows.length) {
+                    return res.status(404).json({ status: 'error', message: 'ไม่พบวิดีโอ id นี้' });
+                }
+
+                var row = rows[0];
+                var filePath = String(row.FTPath_server || '').trim();
+                if (!filePath) {
+                    return res.status(404).json({
+                        status: 'error',
+                        message: 'วิดีโอนี้ยังไม่ถูกอัปโหลดขึ้น server'
+                    });
+                }
+
+                fs.stat(filePath, function (errStat, st) {
+                    if (errStat) {
+                        var notFound = errStat.code === 'ENOENT';
+                        return res.status(notFound ? 404 : 502).json({
+                            status: 'error',
+                            message: notFound
+                                ? 'ไฟล์ถูกลบไปจาก server แล้ว'
+                                : 'API เข้าถึงไฟล์บน share ไม่ได้: ' + errStat.code
+                        });
+                    }
+
+                    var total = st.size;
+                    var name = String(row.FTVideo_name || ('video-' + id + '.mp4'));
+
+                    res.setHeader('Content-Type', 'video/mp4');
+                    // ไม่บอก Accept-Ranges เบราว์เซอร์จะโหลดทั้งไฟล์ก่อนถึงจะเล่นได้
+                    // และลากแถบเวลาไม่ได้เลย ซึ่งใช้ไม่ได้กับคลิปหลักร้อย MB
+                    res.setHeader('Accept-Ranges', 'bytes');
+
+                    if (req.query.download) {
+                        // ชื่อไฟล์เป็น ASCII ล้วน (id-โต๊ะ-ออเดอร์-วันเวลา) จึงไม่ต้องเข้ารหัสแบบ RFC 5987
+                        res.setHeader('Content-Disposition',
+                            'attachment; filename="' + name.replace(/"/g, '') + '"');
+                    }
+
+                    var range = req.headers.range;
+                    if (!range) {
+                        res.setHeader('Content-Length', total);
+                        return fs.createReadStream(filePath).pipe(res);
+                    }
+
+                    // รูปแบบที่เบราว์เซอร์ส่งมาคือ "bytes=เริ่ม-จบ" โดยส่วนจบละไว้ได้
+                    var m = /bytes=(\d*)-(\d*)/.exec(range);
+                    var start = m && m[1] ? parseInt(m[1], 10) : 0;
+                    var end = m && m[2] ? parseInt(m[2], 10) : total - 1;
+
+                    if (isNaN(start) || isNaN(end) || start > end || start >= total) {
+                        res.setHeader('Content-Range', 'bytes */' + total);
+                        return res.status(416).end();
+                    }
+                    if (end >= total) end = total - 1;
+
+                    res.status(206);
+                    res.setHeader('Content-Range', 'bytes ' + start + '-' + end + '/' + total);
+                    res.setHeader('Content-Length', (end - start) + 1);
+                    fs.createReadStream(filePath, { start: start, end: end }).pipe(res);
+                });
+            });
+    }).catch(err => {
+        console.log('video_hd_file connect error:', err.message);
+        res.status(500).json({ status: 'error', message: err.message });
     });
 });
 
