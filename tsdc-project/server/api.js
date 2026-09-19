@@ -8681,12 +8681,12 @@ app.post('/search_video_hd', function (req, res) {
 /* ---------------------------------------------------------------------
    รายชื่อร้านสำหรับ dropdown ของหน้าค้นหา
 
-   ดึงเฉพาะร้านที่ "มีวิดีโออยู่จริง" ไม่ใช่ทะเบียนร้านทั้งหมด
+   ดึงเฉพาะร้านที่ "มีวิดีโออยู่จริง" และ "มีใน master (TSDC_WMS_CUSTOMER_CHANNEL)"
    วัดเมื่อ 12 ก.ย. 2026: มีวิดีโอ 13 ร้าน · ทะเบียนทั้งหมด 143 ร้าน
    ถ้าเอามาทั้งหมดจะมีตัวเลือกที่กดแล้วไม่เจออะไรเลย 130 ตัว
 
-   ชื่อร้านมาจาก channel table ซึ่งบางร้านไม่มีชื่อ (7 จาก 13 ณ วันที่วัด)
-   ฝั่งหน้าเว็บต้องเผื่อกรณีชื่อว่างแล้วแสดงแค่รหัส
+   ร้านที่มีวิดีโอแต่ไม่อยู่ใน master ไม่เอามาให้เลือก (เช่น TFA-42, LIONOFF, POINTREDEEM)
+   ณ 19 ก.ย. 2026 มี 7 จาก 13 ร้าน — วิดีโอของร้านพวกนี้ยังค้นได้ทางเลขออเดอร์ / เลขพัสดุ
    --------------------------------------------------------------------- */
 app.get('/video_seller_options', function (req, res) {
     var query = `
@@ -8694,7 +8694,7 @@ app.get('/video_seller_options', function (req, res) {
              , MAX(c.[FTShop_name_th]) AS [FTShop_name_th]
              , COUNT(*) AS [CLIPS]
         FROM [TSDC_VIDEO_HD] v WITH (NOLOCK)
-        OUTER APPLY (
+        CROSS APPLY (
             SELECT TOP 1 [FTShop_name_th]
             FROM [TSDC_WMS_CUSTOMER_CHANNEL] WITH (NOLOCK)
             WHERE [FTShop_id] = v.[FTShop_id]
