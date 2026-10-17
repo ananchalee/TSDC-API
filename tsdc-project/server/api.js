@@ -8086,7 +8086,10 @@ app.post('/tracking_running_groupsku', function (req, res) {
                                     when len(@TABLE_RUNNING) = 4 then  CONVERT(nvarchar,@TABLE_RUNNING)
                                 end REF_INDEX )
 
-            ---- 1) DETAIL: หน้ารายงานไม่ได้สแกนไอเทม จึงดึงรายการจริงจาก TSDC_PICK_CHECK_NEW_TRACKING
+            ---- 1) DETAIL: หน้ารายงานไม่ได้สแกนไอเทม จึงดึงรายการจากแถวของ group sku เอง
+            ----    (เดิมดึงจาก TSDC_PICK_CHECK_NEW_TRACKING ซึ่งเป็นตารางงานชั่วคราว ถูกล้างหลังจบ order
+            ----     group ที่ค้างพิมพ์ข้ามวันจึงพิมพ์ไม่ได้ — ตรวจ 17 ต.ค. 2026: 16 แถวที่เคยพิมพ์
+            ----     ITEM_ID / ITEM_ID_BARCODE / QTY ตรงกับที่ดึงจาก NEW_TRACKING ทุกแถว)
             insert into TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
                 ( REF_INDEX
                 ,CONTAINERID
@@ -8106,17 +8109,18 @@ app.post('/tracking_running_groupsku', function (req, res) {
                 ,'${SHIPMENT_ID}'
                 ,'${SELLER_NO}'
                 ,@BOX_NO_ORDER
-                ,ITEM_ID
-                ,SUM(ISNULL(QTY_PICK,0))
+                ,LTRIM(RTRIM(ITEM_ID))
+                ,SUM(ISNULL(QTY,0))
                 ,'${USER_CHECK}'
                 ,LTRIM(RTRIM('${TABLE_CHECK}'))
-                ,MAX(ITEM_ID_BARCODE)
+                ,MAX(LTRIM(RTRIM(ITEM_ID_BARCODE)))
                 ,'${TRACKING}'
                 ,'${BOX_SIZE}'
-            from TSDC_PICK_CHECK_NEW_TRACKING
-            where LTRIM(RTRIM(SHIPMENT_ID)) = '${SHIPMENT_ID}'
-            and LTRIM(RTRIM(SELLER_NO)) = '${SELLER_NO}'
-            group by ITEM_ID
+            from TSDC_PICK_CHECK_NEW_TRACKING_GROUP_SKU
+            where LTRIM(RTRIM(GROUP_PICK)) = '${GROUP_PICK}'
+            and LTRIM(RTRIM(SHIPMENT_ID)) = '${SHIPMENT_ID}'
+            ${condition_tracking}
+            group by LTRIM(RTRIM(ITEM_ID))
 
             ---- 2) BOX_CONTROL: รวม QTY จากแถว DETAIL ที่เพิ่ง insert ไป
             insert into TSDC_PICK_CHECK_BOX_CONTROL_NEW
@@ -8231,7 +8235,7 @@ app.post('/tracking_running_groupsku', function (req, res) {
                         query: query
                     };
                 } else if (Number(data[0].QTY) === 0) {
-                    //// ไม่พบไอเทมของ shipment นี้ใน TSDC_PICK_CHECK_NEW_TRACKING
+                    //// ไม่พบไอเทมของ shipment นี้ในแถว group sku (QTY ว่าง/0)
                     //// ไม่มีแถว DETAIL ให้รวม เลข running จึงไม่ควรถูกใช้ต่อ
                     dataout = {
                         status: 'null',
