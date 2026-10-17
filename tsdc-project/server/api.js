@@ -5730,6 +5730,153 @@ app.post('/updateConQtyChecktrack', function (req, res) {
     });
 });
 
+/* ยืนยันจำนวนทั้ง tracking แทนการสแกน item ทีละชิ้น (เมนู Check Order Confirm Print Track)
+   แทนลูป BOX_CONTROL_DETAIL + updateConQtyChecktrack ที่เดิมต้องยิงทีละชิ้น
+   - เขียนสองตารางเหมือน flow สแกน: QTY_CHECK ใน TSDC_PICK_CHECK_NEW_TRACKING
+     และแถวกล่องที่ยังไม่ปิด (REF_INDEX is null) ใน TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+     เพราะ tracking_running (ตอนปิดกล่อง) หยิบจำนวนจากแถวหลังนี้ ไม่ได้อ่าน QTY_CHECK
+   - ข้ามรายการ ORDER_TYPE = 'CANCEL' ให้ตรงกับ CheckConOnlinetrack ที่ไม่นับ CANCEL ใน SUMCON/SUMCHECK
+   - ItEM ที่ไม่มี ITEM_ID_BARCODE จะไม่ยืนยันให้ทั้งออเดอร์ (ตอบ nobarcode) เพราะแถวกล่อง
+     ที่ไม่มีบาร์โค้ดจะย้อน Rescan_checkitem_track ไม่ได้
+   - ครอบ transaction เพราะถ้าเขียนไม่ครบทั้งสองตาราง จำนวนที่ปิดกล่องจะไม่ตรงกับที่เช็คไว้ */
+app.post('/confirmQtyChecktrack', function (req, res) {
+    var fromdata = req.body;
+    var byTracking = usesTracking(fromdata.conditiontracking);
+    getPool().then(pool => {
+
+        var query = `
+        SET NOCOUNT ON;
+
+        DECLARE @remain TABLE (
+            ITEM_ID varchar(25),
+            ITEM_ID_BARCODE varchar(30),
+            QTY_REMAIN decimal(18,0)
+        );
+
+        INSERT INTO @remain (ITEM_ID, ITEM_ID_BARCODE, QTY_REMAIN)
+        SELECT ITEM_ID, ITEM_ID_BARCODE, SUM(QTY_PICK - ISNULL(QTY_CHECK,0))
+        FROM TSDC_PICK_CHECK_NEW_TRACKING a
+        WHERE SHIPMENT_ID = @shipment_id
+          AND SELLER_NO = @SELLER_NO
+          AND ISNULL(ORDER_TYPE,'') <> 'CANCEL'
+          AND ISNULL(QTY_CHECK,0) < QTY_PICK
+          ${byTracking ? "AND a.TRACKING = @TRACKING" : ""}
+        GROUP BY ITEM_ID, ITEM_ID_BARCODE;
+
+        IF EXISTS (SELECT 1 FROM @remain WHERE ITEM_ID_BARCODE IS NULL OR LTRIM(RTRIM(ITEM_ID_BARCODE)) = '')
+        BEGIN
+            SELECT 'nobarcode' AS CONFIRM_STATUS
+                 , CAST(0 AS decimal(18,0)) AS QTY_CONFIRM
+                 , (SELECT STRING_AGG(ITEM_ID, ', ') FROM @remain
+                    WHERE ITEM_ID_BARCODE IS NULL OR LTRIM(RTRIM(ITEM_ID_BARCODE)) = '') AS ITEM_LIST;
+        END
+        ELSE IF NOT EXISTS (SELECT 1 FROM @remain)
+        BEGIN
+            SELECT 'nothing' AS CONFIRM_STATUS
+                 , CAST(0 AS decimal(18,0)) AS QTY_CONFIRM
+                 , '' AS ITEM_LIST;
+        END
+        ELSE
+        BEGIN
+            BEGIN TRY
+                BEGIN TRANSACTION;
+
+                UPDATE d
+                SET d.QTY = d.QTY + r.QTY_REMAIN
+                FROM TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW d
+                INNER JOIN @remain r
+                        ON r.ITEM_ID_BARCODE = d.ITEM_ID_BARCODE
+                       AND r.ITEM_ID = d.ITEM_ID
+                WHERE d.REF_INDEX IS NULL
+                  AND d.PO_NO = @shipment_id
+                  AND d.SELLER_NO = @SELLER_NO
+                  AND d.TABLE_CHECK = @TABLE_CHECK
+                  ${byTracking ? "AND d.Tracking = @TRACKING" : ""};
+
+                INSERT INTO TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+                    (REF_INDEX, CONTAINERID, PO_NO, SELLER_NO, BOX_NO_ORDER,
+                     ITEM_ID, QTY, USER_CHECK, TABLE_CHECK, ITEM_ID_BARCODE, Tracking)
+                SELECT NULL, @CONTAINER_ID, @shipment_id, @SELLER_NO, NULL,
+                       r.ITEM_ID, r.QTY_REMAIN, @PIN_CODE, LTRIM(RTRIM(@TABLE_CHECK)),
+                       r.ITEM_ID_BARCODE, @TRACKING_VALUE
+                FROM @remain r
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW d
+                    WHERE d.REF_INDEX IS NULL
+                      AND d.PO_NO = @shipment_id
+                      AND d.SELLER_NO = @SELLER_NO
+                      AND d.TABLE_CHECK = @TABLE_CHECK
+                      AND d.ITEM_ID_BARCODE = r.ITEM_ID_BARCODE
+                      AND d.ITEM_ID = r.ITEM_ID
+                      ${byTracking ? "AND d.Tracking = @TRACKING" : ""}
+                );
+
+ 
+                UPDATE a
+                SET QTY_CHECK = QTY_PICK,
+                    USER_CHECK = @USER_NAME,
+                    END_DATE_TIME = GETDATE(),
+                    START_DATE_TIME = (CASE WHEN ISNULL(QTY_CHECK,0) = 0 THEN GETDATE() ELSE START_DATE_TIME END),
+                    TABLE_CHECK = @TABLE_CHECK
+                FROM TSDC_PICK_CHECK_NEW_TRACKING a
+                WHERE SHIPMENT_ID = @shipment_id
+                  AND SELLER_NO = @SELLER_NO
+                  AND ISNULL(ORDER_TYPE,'') <> 'CANCEL'
+                  AND ISNULL(QTY_CHECK,0) < QTY_PICK
+                  ${byTracking ? "AND a.TRACKING = @TRACKING" : ""};
+
+               
+                INSERT INTO TSDC_PICK_CHECK_LOG_NEW
+                    (CONTAINER_ID, ITEM_ID, QTY_CHECK, DATE_TIME_STAMP, USER_CHECK, SHIPMENT_ID, TABLE_CHECK, WARNING)
+                SELECT @CONTAINER_ID, r.ITEM_ID, r.QTY_REMAIN, GETDATE(), @USER_NAME, @shipment_id, @TABLE_CHECK, NULL
+                FROM @remain r;
+
+                COMMIT TRANSACTION;
+
+                SELECT 'success' AS CONFIRM_STATUS
+                     , (SELECT SUM(QTY_REMAIN) FROM @remain) AS QTY_CONFIRM
+                     , '' AS ITEM_LIST;
+            END TRY
+            BEGIN CATCH
+                IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
+                THROW;
+            END CATCH
+        END
+       `;
+
+        var params = {
+            shipment_id: fromdata.shipment_id,
+            SELLER_NO: fromdata.SELLER_NO,
+            CONTAINER_ID: fromdata.CONTAINER_ID,
+            TABLE_CHECK: fromdata.TABLE_CHECK,
+            USER_NAME: fromdata.USER_NAME,
+            PIN_CODE: fromdata.PIN_CODE,
+            TRACKING_VALUE: trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING)
+        };
+        if (byTracking) {
+            params.TRACKING = trackingValueOf(fromdata.conditiontracking, fromdata.TRACKING);
+        }
+
+        return bindParams(pool.request(), params).query(query, function (err_query, recordset) {
+            if (err_query) {
+                dataout = {
+                    status: 'error',
+                    member: err_query,
+                    query: query
+                };
+                res.json(dataout);
+            } else {
+                var data = recordset.recordset;
+                dataout = {
+                    status: data[0].CONFIRM_STATUS,
+                    data: data
+                };
+                res.json(dataout);
+            }
+        });
+    });
+});
+
 app.post('/UpdateChecktrackdate', function (req, res) {
     var fromdata = req.body;
     var Datenow = DateNow();
