@@ -1820,8 +1820,8 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
                                 ,[ITEM_ID_BARCODE]
                                 ,[Tracking]
                                 )
-                            VALUES
-                                (NULL
+                            SELECT
+                                NULL
                                 ,'${fromdata.CONTAINER_ID}'
                                 ,'${fromdata.shipment_id}'
                                 ,'${fromdata.SELLER_NO}'
@@ -1832,14 +1832,34 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
                                 ,LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))
                                 ,'${fromdata.ITEM_ID_BARCODE}'
                                 ,${trackingValue}
-                                )
+                            WHERE EXISTS (select 1 from TSDC_PICK_CHECK_NEW
+                                          where SHIPMENT_ID = '${fromdata.shipment_id}'
+                                          and SELLER_NO = '${fromdata.SELLER_NO}'
+                                          and ITEM_ID = '${fromdata.ITEM_ID}'
+                                          and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}')
+                               OR EXISTS (select 1 from TSDC_PICK_CHECK_NEW_TRACKING
+                                          where SHIPMENT_ID = '${fromdata.shipment_id}'
+                                          and SELLER_NO = '${fromdata.SELLER_NO}'
+                                          and ITEM_ID = '${fromdata.ITEM_ID}'
+                                          and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}')
 
                         `;
-                    return pool.request().query(query, function (err_query) {
+                    // กันแถวขยะ: เคยยิงเร็วแล้วบาร์โค้ดสองตัวต่อกัน (เช่น 88501369918868850136991893)
+                    // แถวนี้ถูกนับเข้ากล่องแต่ไม่บวก QTY_CHECK — บาร์โค้ดที่ไม่มีในออเดอร์ให้ตอบ error ไม่ INSERT
+                    // เช็คทั้งสองตาราง: เมนู A อ่าน TSDC_PICK_CHECK_NEW, เมนู B อ่าน _TRACKING
+                    // (ออเดอร์ของ B จำนวนมากไม่มีแถวคู่กันใน TSDC_PICK_CHECK_NEW)
+                    return pool.request().query(query, function (err_query, result) {
                         if (err_query) {
                             dataout = {
                                 status: 'error',
                                 member: err_query,
+                                query: query
+                            };
+                            res.json(dataout);
+                        } else if (!result || !result.rowsAffected || result.rowsAffected[0] === 0) {
+                            dataout = {
+                                status: 'error',
+                                member: 'barcode/item not in order',
                                 query: query
                             };
                             res.json(dataout);
@@ -2540,22 +2560,30 @@ app.post('/Rescan_checkitem', function (req, res) {
     //sql.close();
     getPool().then(pool => {
 
-        var query = `  
-        update TSDC_PICK_CHECK_NEW
-        set QTY_CHECK = CASE 
-               WHEN QTY_CHECK - QTY < 0 THEN 0
-               ELSE QTY_CHECK - QTY
+        // รวม QTY ต่อ ITEM_ID ก่อนหัก: ถ้า item เดียวมีหลายแถวในกล่องที่ยังไม่ปิด
+        // UPDATE...FROM แบบ join ตรงจะหักแค่แถวเดียว แต่ DELETE ลบทุกแถว → QTY_CHECK ค้างเกินกล่อง
+        var query = `
+        SET XACT_ABORT ON;
+        BEGIN TRAN;
+
+        update b
+        set QTY_CHECK = CASE
+               WHEN b.QTY_CHECK - a.QTY < 0 THEN 0
+               ELSE b.QTY_CHECK - a.QTY
                END
         ,USER_CHECK = NULL
         ,CHECK_DATE = NULL
         ,START_DATE_TIME = NULL
         ,END_DATE_TIME = NULL
         ,TABLE_CHECK = NULL
-         from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a,TSDC_PICK_CHECK_NEW b
-         where   REF_INDEX is null
-         and PO_NO = '${fromdata.shipment_id}'
-         AND a.SELLER_NO = '${fromdata.SELLER_NO}'
-         and a.PO_NO = b.SHIPMENT_ID 
+         from TSDC_PICK_CHECK_NEW b
+         join (select PO_NO, SELLER_NO, ITEM_ID, sum(QTY) as QTY
+               from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+               where REF_INDEX is null
+               and PO_NO = '${fromdata.shipment_id}'
+               AND SELLER_NO = '${fromdata.SELLER_NO}'
+               group by PO_NO, SELLER_NO, ITEM_ID) a
+           on a.PO_NO = b.SHIPMENT_ID
          AND a.SELLER_NO = B.SELLER_NO
          AND a.ITEM_ID = B.ITEM_ID;
 
@@ -2566,6 +2594,8 @@ app.post('/Rescan_checkitem', function (req, res) {
         where   REF_INDEX is null
         and PO_NO = '${fromdata.shipment_id}'
         AND SELLER_NO = '${fromdata.SELLER_NO}';
+
+        COMMIT TRAN;
      `;
 
 
@@ -6081,21 +6111,25 @@ app.post('/Rescan_checkitem_track', function (req, res) {
     //sql.close();
     getPool().then(pool => {
 
+        // รวม QTY ต่อ ITEM_ID+Tracking ก่อนหัก (เหตุผลเดียวกับ /Rescan_checkitem)
         var query = `  
-        update TSDC_PICK_CHECK_NEW_TRACKING
-		set QTY_CHECK = CASE 
-                    WHEN QTY_CHECK - QTY < 0 THEN 0
-                    ELSE QTY_CHECK - QTY
+        update b
+		set QTY_CHECK = CASE
+                    WHEN b.QTY_CHECK - d.QTY < 0 THEN 0
+                    ELSE b.QTY_CHECK - d.QTY
                 END
         ,CHECK_DATE = NULL
-		from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a,TSDC_PICK_CHECK_NEW_TRACKING b
-        where   REF_INDEX is null
-        and PO_NO = '${fromdata.shipment_id}'
-        AND a.SELLER_NO = '${fromdata.SELLER_NO}'  ${fromdata.conditiontracking || ''}
-		and a.PO_NO = b.SHIPMENT_ID 
-		AND a.SELLER_NO = B.SELLER_NO
-		AND a.ITEM_ID = B.ITEM_ID
-        And a.Tracking = B.TRACKING
+		from TSDC_PICK_CHECK_NEW_TRACKING b
+        join (select a.PO_NO, a.SELLER_NO, a.ITEM_ID, a.Tracking, sum(a.QTY) as QTY
+              from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
+              where   REF_INDEX is null
+              and PO_NO = '${fromdata.shipment_id}'
+              AND a.SELLER_NO = '${fromdata.SELLER_NO}'  ${fromdata.conditiontracking || ''}
+              group by a.PO_NO, a.SELLER_NO, a.ITEM_ID, a.Tracking) d
+		  on d.PO_NO = b.SHIPMENT_ID
+		AND d.SELLER_NO = B.SELLER_NO
+		AND d.ITEM_ID = B.ITEM_ID
+        And d.Tracking = B.TRACKING
 
      `;
 
