@@ -1820,8 +1820,8 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
                                 ,[ITEM_ID_BARCODE]
                                 ,[Tracking]
                                 )
-                            VALUES
-                                (NULL
+                            SELECT
+                                NULL
                                 ,'${fromdata.CONTAINER_ID}'
                                 ,'${fromdata.shipment_id}'
                                 ,'${fromdata.SELLER_NO}'
@@ -1832,14 +1832,34 @@ app.post('/BOX_CONTROL_DETAIL', function (req, res) {
                                 ,LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))
                                 ,'${fromdata.ITEM_ID_BARCODE}'
                                 ,${trackingValue}
-                                )
+                            WHERE EXISTS (select 1 from TSDC_PICK_CHECK_NEW
+                                          where SHIPMENT_ID = '${fromdata.shipment_id}'
+                                          and SELLER_NO = '${fromdata.SELLER_NO}'
+                                          and ITEM_ID = '${fromdata.ITEM_ID}'
+                                          and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}')
+                               OR EXISTS (select 1 from TSDC_PICK_CHECK_NEW_TRACKING
+                                          where SHIPMENT_ID = '${fromdata.shipment_id}'
+                                          and SELLER_NO = '${fromdata.SELLER_NO}'
+                                          and ITEM_ID = '${fromdata.ITEM_ID}'
+                                          and ITEM_ID_BARCODE = '${fromdata.ITEM_ID_BARCODE}')
 
                         `;
-                    return pool.request().query(query, function (err_query) {
+                    // กันแถวขยะ: เคยยิงเร็วแล้วบาร์โค้ดสองตัวต่อกัน (เช่น 88501369918868850136991893)
+                    // แถวนี้ถูกนับเข้ากล่องแต่ไม่บวก QTY_CHECK — บาร์โค้ดที่ไม่มีในออเดอร์ให้ตอบ error ไม่ INSERT
+                    // เช็คทั้งสองตาราง: เมนู A อ่าน TSDC_PICK_CHECK_NEW, เมนู B อ่าน _TRACKING
+                    // (ออเดอร์ของ B จำนวนมากไม่มีแถวคู่กันใน TSDC_PICK_CHECK_NEW)
+                    return pool.request().query(query, function (err_query, result) {
                         if (err_query) {
                             dataout = {
                                 status: 'error',
                                 member: err_query,
+                                query: query
+                            };
+                            res.json(dataout);
+                        } else if (!result || !result.rowsAffected || result.rowsAffected[0] === 0) {
+                            dataout = {
+                                status: 'error',
+                                member: 'barcode/item not in order',
                                 query: query
                             };
                             res.json(dataout);
@@ -2146,7 +2166,7 @@ app.post('/tracking_running', function (req, res) {
 
             declare @TABLE_RUNNING numeric(18)
             declare @BOX_NO_ORDER numeric(18)
-            declare @REF_INDEX  varchar(13)
+            declare @REF_INDEX  varchar(20)
             declare @YY char(2)
             declare @MM char(2)
             declare @DD char(2)
@@ -2154,20 +2174,18 @@ app.post('/tracking_running', function (req, res) {
             set @YY = (select right(YEAR(getdate()),2)) 
             set @MM = (select FORMAT(getdate(),'MM'))
             set @DD = (select FORMAT(getdate(),'dd'))
-            set @TABLE_RUNNING = (SELECT CASE WHEN (SELECT MAX(TABLE_RUNNING) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}' AND SUBSTRING(REF_INDEX,4,6) = CONVERT(date,getdate())) is NULL THEN 1
-                                ELSE (SELECT MAX(TABLE_RUNNING) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}' AND SUBSTRING(REF_INDEX,4,6) = CONVERT(date,getdate()) )+1
-                                END TABLE_RUNNING )
+            set @TABLE_RUNNING = (SELECT ISNULL(MAX(TABLE_RUNNING), 0) + 1
+                                    FROM dbo.TSDC_PICK_CHECK_BOX_CONTROL_NEW
+                                    WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+                                    AND CREATE_DATE >= CONVERT(date, GETDATE())
+                                    AND CREATE_DATE < DATEADD(day, 1, CONVERT(date, GETDATE())))
 
             set @BOX_NO_ORDER = (SELECT CASE WHEN (SELECT MAX(BOX_NO_ORDER) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE PO_NO = '${fromdata.shipment_id}' AND SELLER_NO = '${fromdata.SELLER_NO}') is NULL THEN 1
                                 ELSE (SELECT MAX(BOX_NO_ORDER) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE PO_NO = '${fromdata.shipment_id}' AND SELLER_NO = '${fromdata.SELLER_NO}')+1
                                 END BOX_NO_ORDER )
-            SET @REF_INDEX      = (SELECT  LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))+@YY+@MM+@DD
-                                + case WHEN @TABLE_RUNNING is NULL THEN '0001'
-                                    when len(@TABLE_RUNNING) = 1 then '000'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 2 then '00'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 3 then '0'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 4 then  CONVERT(nvarchar,@TABLE_RUNNING)
-                                end REF_INDEX )
+            SET @REF_INDEX      = ( LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))
+                                    + @YY + @MM + @DD
+                                    + RIGHT('0000' + CONVERT(VARCHAR(4), @TABLE_RUNNING), 4))
 
             insert into TSDC_PICK_CHECK_BOX_CONTROL_NEW
                 ( REF_INDEX
@@ -2248,11 +2266,15 @@ app.post('/tracking_running', function (req, res) {
                 ,'${fromdata.VAS_NAME_08}'
                 ,'${fromdata.VAS_NAME_09}'
                 ,${Status}
-            from 	 TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+            from 	 TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
             where REF_INDEX is null
             and PO_NO = '${fromdata.shipment_id}'
             AND SELLER_NO = '${fromdata.SELLER_NO}'
+            ${fromdata.conditiontracking || ''}
      `;
+        // ยอดบนกล่องต้องมาจากแถวชุดเดียวกับที่ UPDATE ด้านล่างประทับ REF_INDEX (กรอง conditiontracking เหมือนกัน)
+        // เดิมรวมทุกแถวที่ยังไม่ปิดของออเดอร์ แต่ประทับเฉพาะ tracking ที่เลือก
+        // → ถ้ามีแถวค้างของ tracking อื่น/แถว tracking ว่าง ยอดกล่องเกิน และแถวนั้นถูกนับซ้ำในกล่องถัดไป
 
 
         query += `
@@ -2540,22 +2562,30 @@ app.post('/Rescan_checkitem', function (req, res) {
     //sql.close();
     getPool().then(pool => {
 
-        var query = `  
-        update TSDC_PICK_CHECK_NEW
-        set QTY_CHECK = CASE 
-               WHEN QTY_CHECK - QTY < 0 THEN 0
-               ELSE QTY_CHECK - QTY
+        // รวม QTY ต่อ ITEM_ID ก่อนหัก: ถ้า item เดียวมีหลายแถวในกล่องที่ยังไม่ปิด
+        // UPDATE...FROM แบบ join ตรงจะหักแค่แถวเดียว แต่ DELETE ลบทุกแถว → QTY_CHECK ค้างเกินกล่อง
+        var query = `
+        SET XACT_ABORT ON;
+        BEGIN TRAN;
+
+        update b
+        set QTY_CHECK = CASE
+               WHEN b.QTY_CHECK - a.QTY < 0 THEN 0
+               ELSE b.QTY_CHECK - a.QTY
                END
         ,USER_CHECK = NULL
         ,CHECK_DATE = NULL
         ,START_DATE_TIME = NULL
         ,END_DATE_TIME = NULL
         ,TABLE_CHECK = NULL
-         from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a,TSDC_PICK_CHECK_NEW b
-         where   REF_INDEX is null
-         and PO_NO = '${fromdata.shipment_id}'
-         AND a.SELLER_NO = '${fromdata.SELLER_NO}'
-         and a.PO_NO = b.SHIPMENT_ID 
+         from TSDC_PICK_CHECK_NEW b
+         join (select PO_NO, SELLER_NO, ITEM_ID, sum(QTY) as QTY
+               from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+               where REF_INDEX is null
+               and PO_NO = '${fromdata.shipment_id}'
+               AND SELLER_NO = '${fromdata.SELLER_NO}'
+               group by PO_NO, SELLER_NO, ITEM_ID) a
+           on a.PO_NO = b.SHIPMENT_ID
          AND a.SELLER_NO = B.SELLER_NO
          AND a.ITEM_ID = B.ITEM_ID;
 
@@ -2566,6 +2596,8 @@ app.post('/Rescan_checkitem', function (req, res) {
         where   REF_INDEX is null
         and PO_NO = '${fromdata.shipment_id}'
         AND SELLER_NO = '${fromdata.SELLER_NO}';
+
+        COMMIT TRAN;
      `;
 
 
@@ -6081,21 +6113,30 @@ app.post('/Rescan_checkitem_track', function (req, res) {
     //sql.close();
     getPool().then(pool => {
 
-        var query = `  
-        update TSDC_PICK_CHECK_NEW_TRACKING
-		set QTY_CHECK = CASE 
-                    WHEN QTY_CHECK - QTY < 0 THEN 0
-                    ELSE QTY_CHECK - QTY
+        // หักยอดจากแถว detail ชุดเดียวกับที่ query2 จะลบเสมอ (เงื่อนไข REF_INDEX/PO/SELLER/conditiontracking เดียวกัน)
+        // - รวม QTY ต่อแถว NEW_TRACKING ก่อนหัก (UPDATE...FROM แบบ join ตรงหักแค่แถวเดียวเมื่อมีหลายแถว)
+        // - แถว detail ที่ Tracking ว่าง (ยิงตอนออเดอร์ยังไม่มี tracking) หักจาก item เดียวกันทุก tracking
+        //   ตรงกับตอนยิงที่ updateConQtyChecktrack ไม่กรอง tracking
+        //   เดิม join ด้วย d.Tracking = B.TRACKING → แถวว่างถูกลบแต่ไม่ถูกหัก
+        //   (เคส 2610205QX0TQSV: tracking ลงมาระหว่างยิง QTY_CHECK ค้าง 2 แต่กล่องได้ 1)
+        var query = `
+        update b
+		set QTY_CHECK = CASE
+                    WHEN b.QTY_CHECK - d.QTY < 0 THEN 0
+                    ELSE b.QTY_CHECK - d.QTY
                 END
         ,CHECK_DATE = NULL
-		from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a,TSDC_PICK_CHECK_NEW_TRACKING b
-        where   REF_INDEX is null
-        and PO_NO = '${fromdata.shipment_id}'
-        AND a.SELLER_NO = '${fromdata.SELLER_NO}'  ${fromdata.conditiontracking || ''}
-		and a.PO_NO = b.SHIPMENT_ID 
-		AND a.SELLER_NO = B.SELLER_NO
-		AND a.ITEM_ID = B.ITEM_ID
-        And a.Tracking = B.TRACKING
+		from TSDC_PICK_CHECK_NEW_TRACKING b
+        cross apply (select sum(a.QTY) as QTY
+              from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
+              where   REF_INDEX is null
+              and PO_NO = '${fromdata.shipment_id}'
+              AND a.SELLER_NO = '${fromdata.SELLER_NO}'  ${fromdata.conditiontracking || ''}
+              and a.ITEM_ID = b.ITEM_ID
+              and (a.Tracking = b.TRACKING or isnull(a.Tracking, '') = '')) d
+        where b.SHIPMENT_ID = '${fromdata.shipment_id}'
+        and b.SELLER_NO = '${fromdata.SELLER_NO}'
+        and d.QTY is not null
 
      `;
 
@@ -6138,6 +6179,80 @@ app.post('/Rescan_checkitem_track', function (req, res) {
             }
             sql.close();
         });
+    });
+});
+
+/* เมนู Audit Check B: เรียกก่อนยิงทุกชิ้นเมื่อหน้าเว็บยังจำ TRACKING ว่าง
+   tracking ถูกระบบภายนอก UPDATE ลง TSDC_PICK_CHECK_NEW_TRACKING ทีหลังได้ (ระหว่างที่กำลังยิงอยู่)
+   - ออเดอร์มี tracking ครบแล้วตัวเดียว → เติม tracking ให้แถว detail ที่ยังไม่ปิดกล่องและยังไม่มี tracking
+     แล้วตอบ tracking กลับให้หน้าเว็บใช้ต่อ (ไม่งั้น checktracking_Inshipment มองว่าเป็น tracking อื่นค้าง
+     และ endpoint ที่กรอง tracking มองไม่เห็นแถวที่ยิงไปก่อน)
+   - ยังไม่มี tracking → none / หลายตัวหรือมาไม่ครบ → multi (ไม่แตะข้อมูล ให้ไปเลือก tracking) */
+app.post('/syncBlankTracking', function (req, res) {
+    var fromdata = req.body;
+    getPool().then(pool => {
+        var query = `
+        SET XACT_ABORT ON;
+        BEGIN TRAN;
+
+        declare @n_tracking int, @n_blank int, @tracking varchar(100), @updated int = 0;
+
+        select @n_tracking = count(distinct TRACKING), @tracking = max(TRACKING)
+        from TSDC_PICK_CHECK_NEW_TRACKING
+        where SHIPMENT_ID = @shipment_id
+        and SELLER_NO = @SELLER_NO
+        and isnull(TRACKING, '') <> ''
+        and ORDER_TYPE <> 'CANCEL';
+
+        select @n_blank = count(*)
+        from TSDC_PICK_CHECK_NEW_TRACKING
+        where SHIPMENT_ID = @shipment_id
+        and SELLER_NO = @SELLER_NO
+        and isnull(TRACKING, '') = ''
+        and ORDER_TYPE <> 'CANCEL';
+
+        -- tracking ลงมาครบแล้ว (ไม่มีแถว tracking ว่างเหลือ) → เติม tracking ให้แถว detail ที่ยังว่าง
+        -- ตาม item: item ที่อยู่ใน tracking เดียวได้ tracking นั้น (ออเดอร์ tracking เดียว = ทุกแถว)
+        -- item ที่อยู่หลาย tracking ปล่อยว่างไว้ (บอกไม่ได้ว่าชิ้นนั้นเป็นของ tracking ไหน)
+        if @n_tracking >= 1 and @n_blank = 0
+        begin
+            update a
+            set Tracking = m.TRACKING
+            from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
+            cross apply (select max(t.TRACKING) as TRACKING, count(distinct t.TRACKING) as n
+                         from TSDC_PICK_CHECK_NEW_TRACKING t
+                         where t.SHIPMENT_ID = a.PO_NO
+                         and t.SELLER_NO = a.SELLER_NO
+                         and t.ITEM_ID = a.ITEM_ID
+                         and isnull(t.TRACKING, '') <> ''
+                         and t.ORDER_TYPE <> 'CANCEL') m
+            where a.PO_NO = @shipment_id
+            and a.SELLER_NO = @SELLER_NO
+            and a.REF_INDEX is null
+            and isnull(a.Tracking, '') = ''
+            and m.n = 1;
+            set @updated = @@ROWCOUNT;
+        end
+
+        COMMIT TRAN;
+
+        select @n_tracking as n_tracking, @n_blank as n_blank, @tracking as TRACKING, @updated as updated;
+        `;
+        return bindParams(pool.request(), { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO })
+            .query(query, function (err_query, recordset) {
+                if (err_query) {
+                    res.json({ status: 'error', member: err_query });
+                    return;
+                }
+                var r = recordset.recordset[0];
+                if (r.n_tracking === 0) {
+                    res.json({ status: 'none' });
+                } else if (r.n_tracking === 1 && r.n_blank === 0) {
+                    res.json({ status: 'success', TRACKING: r.TRACKING, updated: r.updated });
+                } else {
+                    res.json({ status: 'multi', n_tracking: r.n_tracking, n_blank: r.n_blank });
+                }
+            });
     });
 });
 
