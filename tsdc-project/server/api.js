@@ -2266,11 +2266,15 @@ app.post('/tracking_running', function (req, res) {
                 ,'${fromdata.VAS_NAME_08}'
                 ,'${fromdata.VAS_NAME_09}'
                 ,${Status}
-            from 	 TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW
+            from 	 TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
             where REF_INDEX is null
             and PO_NO = '${fromdata.shipment_id}'
             AND SELLER_NO = '${fromdata.SELLER_NO}'
+            ${fromdata.conditiontracking || ''}
      `;
+        // ยอดบนกล่องต้องมาจากแถวชุดเดียวกับที่ UPDATE ด้านล่างประทับ REF_INDEX (กรอง conditiontracking เหมือนกัน)
+        // เดิมรวมทุกแถวที่ยังไม่ปิดของออเดอร์ แต่ประทับเฉพาะ tracking ที่เลือก
+        // → ถ้ามีแถวค้างของ tracking อื่น/แถว tracking ว่าง ยอดกล่องเกิน และแถวนั้นถูกนับซ้ำในกล่องถัดไป
 
 
         query += `
@@ -6109,8 +6113,13 @@ app.post('/Rescan_checkitem_track', function (req, res) {
     //sql.close();
     getPool().then(pool => {
 
-        // รวม QTY ต่อ ITEM_ID+Tracking ก่อนหัก (เหตุผลเดียวกับ /Rescan_checkitem)
-        var query = `  
+        // หักยอดจากแถว detail ชุดเดียวกับที่ query2 จะลบเสมอ (เงื่อนไข REF_INDEX/PO/SELLER/conditiontracking เดียวกัน)
+        // - รวม QTY ต่อแถว NEW_TRACKING ก่อนหัก (UPDATE...FROM แบบ join ตรงหักแค่แถวเดียวเมื่อมีหลายแถว)
+        // - แถว detail ที่ Tracking ว่าง (ยิงตอนออเดอร์ยังไม่มี tracking) หักจาก item เดียวกันทุก tracking
+        //   ตรงกับตอนยิงที่ updateConQtyChecktrack ไม่กรอง tracking
+        //   เดิม join ด้วย d.Tracking = B.TRACKING → แถวว่างถูกลบแต่ไม่ถูกหัก
+        //   (เคส 2610205QX0TQSV: tracking ลงมาระหว่างยิง QTY_CHECK ค้าง 2 แต่กล่องได้ 1)
+        var query = `
         update b
 		set QTY_CHECK = CASE
                     WHEN b.QTY_CHECK - d.QTY < 0 THEN 0
@@ -6118,16 +6127,16 @@ app.post('/Rescan_checkitem_track', function (req, res) {
                 END
         ,CHECK_DATE = NULL
 		from TSDC_PICK_CHECK_NEW_TRACKING b
-        join (select a.PO_NO, a.SELLER_NO, a.ITEM_ID, a.Tracking, sum(a.QTY) as QTY
+        cross apply (select sum(a.QTY) as QTY
               from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
               where   REF_INDEX is null
               and PO_NO = '${fromdata.shipment_id}'
               AND a.SELLER_NO = '${fromdata.SELLER_NO}'  ${fromdata.conditiontracking || ''}
-              group by a.PO_NO, a.SELLER_NO, a.ITEM_ID, a.Tracking) d
-		  on d.PO_NO = b.SHIPMENT_ID
-		AND d.SELLER_NO = B.SELLER_NO
-		AND d.ITEM_ID = B.ITEM_ID
-        And d.Tracking = B.TRACKING
+              and a.ITEM_ID = b.ITEM_ID
+              and (a.Tracking = b.TRACKING or isnull(a.Tracking, '') = '')) d
+        where b.SHIPMENT_ID = '${fromdata.shipment_id}'
+        and b.SELLER_NO = '${fromdata.SELLER_NO}'
+        and d.QTY is not null
 
      `;
 
@@ -6170,6 +6179,80 @@ app.post('/Rescan_checkitem_track', function (req, res) {
             }
             sql.close();
         });
+    });
+});
+
+/* เมนู Audit Check B: เรียกก่อนยิงทุกชิ้นเมื่อหน้าเว็บยังจำ TRACKING ว่าง
+   tracking ถูกระบบภายนอก UPDATE ลง TSDC_PICK_CHECK_NEW_TRACKING ทีหลังได้ (ระหว่างที่กำลังยิงอยู่)
+   - ออเดอร์มี tracking ครบแล้วตัวเดียว → เติม tracking ให้แถว detail ที่ยังไม่ปิดกล่องและยังไม่มี tracking
+     แล้วตอบ tracking กลับให้หน้าเว็บใช้ต่อ (ไม่งั้น checktracking_Inshipment มองว่าเป็น tracking อื่นค้าง
+     และ endpoint ที่กรอง tracking มองไม่เห็นแถวที่ยิงไปก่อน)
+   - ยังไม่มี tracking → none / หลายตัวหรือมาไม่ครบ → multi (ไม่แตะข้อมูล ให้ไปเลือก tracking) */
+app.post('/syncBlankTracking', function (req, res) {
+    var fromdata = req.body;
+    getPool().then(pool => {
+        var query = `
+        SET XACT_ABORT ON;
+        BEGIN TRAN;
+
+        declare @n_tracking int, @n_blank int, @tracking varchar(100), @updated int = 0;
+
+        select @n_tracking = count(distinct TRACKING), @tracking = max(TRACKING)
+        from TSDC_PICK_CHECK_NEW_TRACKING
+        where SHIPMENT_ID = @shipment_id
+        and SELLER_NO = @SELLER_NO
+        and isnull(TRACKING, '') <> ''
+        and ORDER_TYPE <> 'CANCEL';
+
+        select @n_blank = count(*)
+        from TSDC_PICK_CHECK_NEW_TRACKING
+        where SHIPMENT_ID = @shipment_id
+        and SELLER_NO = @SELLER_NO
+        and isnull(TRACKING, '') = ''
+        and ORDER_TYPE <> 'CANCEL';
+
+        -- tracking ลงมาครบแล้ว (ไม่มีแถว tracking ว่างเหลือ) → เติม tracking ให้แถว detail ที่ยังว่าง
+        -- ตาม item: item ที่อยู่ใน tracking เดียวได้ tracking นั้น (ออเดอร์ tracking เดียว = ทุกแถว)
+        -- item ที่อยู่หลาย tracking ปล่อยว่างไว้ (บอกไม่ได้ว่าชิ้นนั้นเป็นของ tracking ไหน)
+        if @n_tracking >= 1 and @n_blank = 0
+        begin
+            update a
+            set Tracking = m.TRACKING
+            from TSDC_PICK_CHECK_BOX_CONTROL_DETAIL_NEW a
+            cross apply (select max(t.TRACKING) as TRACKING, count(distinct t.TRACKING) as n
+                         from TSDC_PICK_CHECK_NEW_TRACKING t
+                         where t.SHIPMENT_ID = a.PO_NO
+                         and t.SELLER_NO = a.SELLER_NO
+                         and t.ITEM_ID = a.ITEM_ID
+                         and isnull(t.TRACKING, '') <> ''
+                         and t.ORDER_TYPE <> 'CANCEL') m
+            where a.PO_NO = @shipment_id
+            and a.SELLER_NO = @SELLER_NO
+            and a.REF_INDEX is null
+            and isnull(a.Tracking, '') = ''
+            and m.n = 1;
+            set @updated = @@ROWCOUNT;
+        end
+
+        COMMIT TRAN;
+
+        select @n_tracking as n_tracking, @n_blank as n_blank, @tracking as TRACKING, @updated as updated;
+        `;
+        return bindParams(pool.request(), { shipment_id: fromdata.shipment_id, SELLER_NO: fromdata.SELLER_NO })
+            .query(query, function (err_query, recordset) {
+                if (err_query) {
+                    res.json({ status: 'error', member: err_query });
+                    return;
+                }
+                var r = recordset.recordset[0];
+                if (r.n_tracking === 0) {
+                    res.json({ status: 'none' });
+                } else if (r.n_tracking === 1 && r.n_blank === 0) {
+                    res.json({ status: 'success', TRACKING: r.TRACKING, updated: r.updated });
+                } else {
+                    res.json({ status: 'multi', n_tracking: r.n_tracking, n_blank: r.n_blank });
+                }
+            });
     });
 });
 
