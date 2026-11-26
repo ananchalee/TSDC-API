@@ -1581,7 +1581,7 @@ app.post('/tracking_running_Old', function (req, res) {
 
         declare @TABLE_RUNNING numeric(18)
         declare @BOX_NO_ORDER numeric(18)
-        declare @REF_INDEX  varchar(13)
+        declare @REF_INDEX  varchar(20)
         declare @YY char(2)
         declare @MM char(2)
         declare @DD char(2)
@@ -1595,20 +1595,20 @@ app.post('/tracking_running_Old', function (req, res) {
             set @YY = (select right(YEAR(getdate()),2)) 
             set @MM = (select FORMAT(getdate(),'MM'))
             set @DD = (select FORMAT(getdate(),'dd'))
-            set @TABLE_RUNNING = (SELECT CASE WHEN (SELECT MAX(TABLE_RUNNING) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}' AND SUBSTRING(REF_INDEX,4,6) = CONVERT(date,getdate())) is NULL THEN 1
-                                ELSE (SELECT MAX(TABLE_RUNNING) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}' AND SUBSTRING(REF_INDEX,4,6) = CONVERT(date,getdate()) )+1
-                                END TABLE_RUNNING )
+            ---- กรองงานวันนี้ด้วย CREATE_DATE (เหมือน tracking_running ฝั่ง online)
+            ---- เดิมใช้ SUBSTRING(REF_INDEX,4,6) ซึ่งถูกแค่โต๊ะ 3 ตัว เช่น P04; โต๊ะ 4 ตัวเช่น P042 ได้ '226112' → แปลงเป็น date ไม่ได้ → error
+            set @TABLE_RUNNING = (SELECT ISNULL(MAX(TABLE_RUNNING), 0) + 1
+                                    FROM dbo.TSDC_PICK_CHECK_BOX_CONTROL_NEW
+                                    WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+                                    AND CREATE_DATE >= CONVERT(date, GETDATE())
+                                    AND CREATE_DATE < DATEADD(day, 1, CONVERT(date, GETDATE())))
 
             set @BOX_NO_ORDER = @count
-            SET @REF_INDEX      = (SELECT  LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))+@YY+@MM+@DD
-                                + case WHEN @TABLE_RUNNING is NULL THEN '0001'
-                                    when len(@TABLE_RUNNING) = 1 then '000'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 2 then '00'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 3 then '0'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 4 then  CONVERT(nvarchar,@TABLE_RUNNING)
-                                end REF_INDEX )
+            SET @REF_INDEX      = ( LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))
+                                    + @YY + @MM + @DD
+                                    + RIGHT('0000' + CONVERT(VARCHAR(4), @TABLE_RUNNING), 4))
 
-            SET @Bill_NO_REF    ='${fromdata.BILL_NO}' + RIGHT('0000' + CONVERT(nvarchar, @counticc), 4);                          
+            SET @Bill_NO_REF    ='${fromdata.BILL_NO}' + RIGHT('0000' + CONVERT(nvarchar, @count), 4);                          
         
             insert into TSDC_PICK_CHECK_BOX_CONTROL_NEW
                 ( REF_INDEX
@@ -1780,7 +1780,7 @@ app.post('/tracking_running_Old2', function (req, res) {
 
         declare @TABLE_RUNNING numeric(18)
         declare @BOX_NO_ORDER numeric(18)
-        declare @REF_INDEX  varchar(13)
+        declare @REF_INDEX  varchar(20)
         declare @YY char(2)
         declare @MM char(2)
         declare @DD char(2)
@@ -1797,18 +1797,18 @@ app.post('/tracking_running_Old2', function (req, res) {
             set @YY = (select right(YEAR(getdate()),2)) 
             set @MM = (select FORMAT(getdate(),'MM'))
             set @DD = (select FORMAT(getdate(),'dd'))
-            set @TABLE_RUNNING = (SELECT CASE WHEN (SELECT MAX(TABLE_RUNNING) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}' AND SUBSTRING(REF_INDEX,4,6) = CONVERT(date,getdate())) is NULL THEN 1
-                                ELSE (SELECT MAX(TABLE_RUNNING) FROM TSDC_PICK_CHECK_BOX_CONTROL_NEW  WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}' AND SUBSTRING(REF_INDEX,4,6) = CONVERT(date,getdate()) )+1
-                                END TABLE_RUNNING )
+            ---- กรองงานวันนี้ด้วย CREATE_DATE (เหมือน tracking_running ฝั่ง online)
+            ---- เดิมใช้ SUBSTRING(REF_INDEX,4,6) ซึ่งถูกแค่โต๊ะ 3 ตัว เช่น P04; โต๊ะ 4 ตัวเช่น P042 ได้ '226112' → แปลงเป็น date ไม่ได้ → error
+            set @TABLE_RUNNING = (SELECT ISNULL(MAX(TABLE_RUNNING), 0) + 1
+                                    FROM dbo.TSDC_PICK_CHECK_BOX_CONTROL_NEW
+                                    WHERE TABLE_CHECK = '${fromdata.TABLE_CHECK}'
+                                    AND CREATE_DATE >= CONVERT(date, GETDATE())
+                                    AND CREATE_DATE < DATEADD(day, 1, CONVERT(date, GETDATE())))
 
             set @BOX_NO_ORDER = @count
-            SET @REF_INDEX      = (SELECT  LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))+@YY+@MM+@DD
-                                + case WHEN @TABLE_RUNNING is NULL THEN '0001'
-                                    when len(@TABLE_RUNNING) = 1 then '000'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 2 then '00'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 3 then '0'+ CONVERT(nvarchar,@TABLE_RUNNING)
-                                    when len(@TABLE_RUNNING) = 4 then  CONVERT(nvarchar,@TABLE_RUNNING)
-                                end REF_INDEX )
+            SET @REF_INDEX      = ( LTRIM(RTRIM('${fromdata.TABLE_CHECK}'))
+                                    + @YY + @MM + @DD
+                                    + RIGHT('0000' + CONVERT(VARCHAR(4), @TABLE_RUNNING), 4))
 
               SET @Bill_NO_REF      = (SELECT  '${fromdata.BILL_NO}'
                                 + case WHEN @count is NULL THEN '0001'
