@@ -61,6 +61,39 @@ function getPool() {
     return _poolPromise;
 }
 
+/* pool แยกที่ timeout ยาว 60 วินาที ใช้กับงานที่อาจต้องรอ lock ฝั่ง 10.26.1.11
+   ---------------------------------------------------------------------
+   mssql 4.3.5 ตั้ง requestTimeout ได้แค่ระดับ connection (ค่า default 15 วินาที)
+   ตั้งรายคำสั่งไม่ได้ เลยต้องแยกเป็น pool อีกตัว ไม่ไปเปลี่ยนค่าของ endpoint อื่น
+
+   ทำไมต้องรอนาน: job "3.LION.23.Process Print Pick Paper from Manht" บน .11
+   รันทุก 5 นาที แต่ใช้เวลารอบละ 3-4 นาที และ escalate lock ขึ้นเป็นทั้งตาราง
+   TSDC_MANHT_PICK_PAPER บ่อยมาก (17,257 ครั้งในช่วง 25-27 พ.ย. 2026)
+   คำสั่งใน job บางตัวใช้เวลาถึง 13.6 วินาทีแม้ตอนค่ำ ทำให้การกดพิมพ์
+   timeout ที่ 15 วินาทีแบบเงียบๆ จนผู้ใช้ต้องกดซ้ำ */
+var _poolLongPromise = null;
+
+function getPoolLong() {
+    if (_poolLongPromise) return _poolLongPromise;
+
+    var cfg = Object.assign({}, db, {
+        requestTimeout: 60000,
+        pool: { max: 10, min: 0, idleTimeoutMillis: 300000 }
+    });
+
+    var p = new sql.ConnectionPool(cfg);
+    p.on('error', function (err) {
+        console.error('[sql pool long] error:', err && err.message);
+        _poolLongPromise = null;
+    });
+
+    _poolLongPromise = p.connect().catch(function (err) {
+        _poolLongPromise = null;
+        throw err;
+    });
+    return _poolLongPromise;
+}
+
 /* =====================================================================
    ผูกค่าเข้า query แบบ parameter แทนการต่อ string
    ---------------------------------------------------------------------
@@ -7591,43 +7624,54 @@ app.post('/Get_ITEM_LOCATION_MANHT_PICK_PAPER', function (req, res) {
 });
 
 app.post('/Update_MANHT_PICK_PAPER', function (req, res) {
-    var fromdata = req.body;
-    var Datenow = DateNow();
-    //sql.close();
-    getPool().then(pool => {
+    var fromdata = req.body || {};
 
-        // typeDesc = อัพเดตทั้งประเภทในครั้งเดียว (หน้า Report Print Wave Order)
-        // type     = แบบเดิม ทีละ TYPE_PICK คงไว้ให้ของเดิมเรียกได้เหมือนเดิม
-        const condition_TYPE_PICK = fromdata.typeDesc
-            ? ` AND TYPE_PICK_DESC = '${fromdata.typeDesc}' `
-            : (fromdata.type ? ` AND TYPE_PICK =  '${fromdata.type}' ` : '');
+    // typeDesc = อัพเดตทั้งประเภทในครั้งเดียว (หน้า Report Print Wave Order)
+    // type     = แบบเดิม ทีละ TYPE_PICK คงไว้ให้ของเดิมเรียกได้เหมือนเดิม
+    // ไม่ส่งทั้งคู่ = ทั้ง wave (กรณีการ์ด ORDER)
+    var typeDesc = fromdata.typeDesc ? String(fromdata.typeDesc) : null;
+    var type     = (!typeDesc && fromdata.type) ? String(fromdata.type) : null;
 
-        var query = `        
-        
-        update [10.26.1.11].[TSDC_CONVEYOR].[DBO].TSDC_MANHT_PICK_PAPER
-        set STATUS_PRINT = 'Y'
-        ,PROCRESS_DATE = getdate()
-        where  LAUNCH_NUM = '${fromdata.waveno}' ${condition_TYPE_PICK}
-         
+    if (!fromdata.waveno || String(fromdata.waveno).trim() === '') {
+        return res.json({ status: 'error', message: 'waveno is required' });
+    }
 
-       `;
-        return pool.request().query(query, function (err_query) {
-            if (err_query) {
-                dataout = {
-                    status: 'error',
-                    member: err_query,
-                    query: query
-                };
-                res.json(dataout);
-            } else {
-                dataout = {
-                    status: 'success',
-                    query: query
-                };
-                res.json(dataout);
-            }
-            sql.close();
-        });
+    /* สั่งให้ .11 รัน UPDATE เองทั้งคำสั่ง (EXEC ... AT) แทนการเขียนผ่านชื่อ
+       4 ส่วน [10.26.1.11].[TSDC_CONVEYOR]... ซึ่ง SQL ที่ .21 จะดึงแถวข้ามมา
+       แล้ว update กลับไปทีละแถว ทำให้ช้าและค้าง lock นานกว่า
+       ค่าผูกเป็น parameter (?) และส่งจำนวนแถวที่ update ได้กลับมาด้วย
+       ต้องเปิด RPC Out ไว้ที่ linked server (เช็คแล้ว 27 พ.ย. 2026: เปิดอยู่) */
+    var query = `
+        EXEC ('
+            UPDATE TSDC_CONVEYOR.dbo.TSDC_MANHT_PICK_PAPER
+            SET    STATUS_PRINT  = ''Y'',
+                   PROCRESS_DATE = GETDATE()
+            WHERE  LAUNCH_NUM = ?
+              AND  (? IS NULL OR TYPE_PICK_DESC = ?)
+              AND  (? IS NULL OR TYPE_PICK = ?);
+
+            SELECT @@ROWCOUNT AS UPDATED_ROWS;
+        ', @waveno, @typeDesc, @typeDesc, @type, @type) AT [10.26.1.11]
+    `;
+
+    var t0 = Date.now();
+    getPoolLong().then(function (pool) {
+        var request = pool.request()
+            .input('waveno',   sql.VarChar(PARAM_LEN), String(fromdata.waveno).trim())
+            .input('typeDesc', sql.VarChar(PARAM_LEN), typeDesc)
+            .input('type',     sql.VarChar(PARAM_LEN), type);
+        return request.query(query);
+    }).then(function (result) {
+        var rows = (result.recordset && result.recordset[0]) ? result.recordset[0].UPDATED_ROWS : null;
+        var ms = Date.now() - t0;
+        if (ms > 5000) {
+            console.warn('[Update_MANHT_PICK_PAPER] slow', ms + 'ms', fromdata.waveno, typeDesc || type || '(all)');
+        }
+        res.json({ status: 'success', updated: rows, ms: ms });
+    }).catch(function (err) {
+        console.error('[Update_MANHT_PICK_PAPER] error', fromdata.waveno, typeDesc || type || '(all)',
+            (Date.now() - t0) + 'ms', err && err.message);
+        res.json({ status: 'error', message: err && err.message });
     });
 });
 
